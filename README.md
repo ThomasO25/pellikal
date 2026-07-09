@@ -1,171 +1,181 @@
 # Pellikal Window Enhancements — Website
 
-A fast, mobile-first, static marketing site for **Pellikal Window Enhancements** (residential &
-commercial window film, Long Island & NYC). Built with plain HTML, CSS and vanilla JavaScript —
-**no build step, no framework, no backend.** It's designed to deploy to GitHub Pages as-is.
+A professional, **multi-page** website for Pellikal Window Enhancements (residential & commercial
+window film, Long Island & NYC), built to your brand guidelines — **Mulish** type, **deep-navy +
+cyan**, the **stacked-panes logo**, the **diagonal capsule photo masks**, and the real photos from
+your brand kit. Plain HTML/CSS/JS, no build step, no framework, not Wix.
 
-Primary goals: get the phone to ring, get texts, and capture quote-form leads.
+Highlights
+- **Separate pages** with shared, organized files (one stylesheet, shared scripts, assets folder).
+- A **film-install loading animation**, scroll reveals, **animated stat counters**, a **gallery
+  lightbox**, a **back-to-top** button, and a **drag-to-compare tint slider** (bare glass vs. film).
+- A **Formspree** consultation form, click-to-call everywhere, sticky mobile call/text bar.
+- A secure **Supabase admin** to manage **gallery photos**, edit the **bio / mission / intro text**,
+  and add/remove **customer testimonials**.
+- The admin page is **not linked anywhere** — it's reachable only by typing its URL.
 
 ---
 
-## What's in here
-
+## File structure
 ```
-pellikal/
-├── index.html                ← Home ( / )
-├── residential/index.html    ← /residential/
-├── commercial/index.html     ← /commercial/
-├── ll97/index.html           ← /ll97/  (Local Law 97)
-├── solutions/index.html      ← /solutions/  (all film types, with #anchors)
-├── get-a-quote/index.html    ← /get-a-quote/  (Formspree form)
-├── faq/index.html            ← /faq/  (FAQ + FAQ schema)
-├── assets/
-│   ├── css/styles.css        ← All styles (one file)
-│   ├── js/main.js            ← All behavior (one file)
-│   └── images/               ← Put your photos here (see "Images" below)
-├── sitemap.xml
-├── robots.txt
-├── CNAME                     ← Custom domain for GitHub Pages
-└── .nojekyll                 ← Tells GitHub Pages to serve files as-is
+pellikal-site/
+├── index.html            ← Home
+├── residential.html
+├── commercial.html
+├── local-law-97.html
+├── solutions.html
+├── about.html
+├── contact.html          ← Free-consultation form (Formspree)
+├── faq.html
+├── admin.html            ← Staff dashboard (unlinked; noindex)
+├── 404.html
+├── css/
+│   └── styles.css        ← all styling
+├── js/
+│   ├── config.js         ← ⭐ EDIT THIS: Formspree ID + Supabase keys
+│   ├── main.js           ← site behavior (all public pages)
+│   └── admin.js          ← admin dashboard (admin page only)
+├── assets/images/        ← logo icons, share image, brand photos
+├── robots.txt  ·  sitemap.xml  ·  CNAME  ·  .nojekyll
+```
+Every page shares the same header/footer markup, so navigation works even with JavaScript disabled,
+and each page has its own title, description and canonical URL for search engines.
+
+---
+
+## 1. Preview
+Open **`index.html`** in any browser and click around.
+
+## 2. Deploy (GitHub Pages)
+1. Create a repo and upload the **contents** of this folder (so `index.html` is at the repo root).
+2. **Settings → Pages → Source:** *Deploy from a branch*, branch **main**, folder **/(root)**.
+3. Custom domain: `CNAME` already contains `www.pellikal.com`. Add a DNS **CNAME** record for `www`
+   → `<username>.github.io`, then enable **Enforce HTTPS**. Keep `.nojekyll`.
+
+## 3. Connect everything — edit ONE file: `js/config.js`
+```js
+window.PELLIKAL_CONFIG = {
+  FORMSPREE_ID: "abcdwxyz",                 // from your Formspree endpoint /f/abcdwxyz
+  SUPABASE_URL: "https://xxxx.supabase.co", // Supabase → Project Settings → API
+  SUPABASE_ANON_KEY: "eyJhbGciOi...",       // the anon public key (safe to expose)
+  SUPABASE_BUCKET: "gallery",
+  GALLERY_TABLE: "gallery_images",
+  CONTENT_TABLE: "site_content",
+  TESTIMONIALS_TABLE: "testimonials"
+};
+```
+Leave the Supabase fields blank to keep the site in demo mode (placeholders + default text). Leave
+`FORMSPREE_ID` as-is to keep the form in demo mode (shows success, doesn't send).
+
+### Formspree (contact form) — ~5 min
+Create a form at **formspree.io**, copy the ID after `/f/`, put it in `FORMSPREE_ID`, and set the
+notification email to **info@pellikal.com**.
+
+---
+
+## 4. Turn on the admin (Supabase) — ~15 min
+
+### Step 1 — Project + keys
+Create a free project at **supabase.com** → **Project Settings → API** → copy the **Project URL** and
+**anon public** key into `js/config.js`.
+
+### Step 2 — Storage bucket
+**Storage → Create bucket** → name it exactly **`gallery`**, turn **Public bucket ON**.
+
+### Step 3 — Tables + security (SQL Editor → paste → Run)
+```sql
+-- 1) GALLERY PHOTOS
+create table if not exists gallery_images (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  url text not null, path text, category text, caption text
+);
+alter table gallery_images enable row level security;
+create policy "Public read gallery"  on gallery_images for select using (true);
+create policy "Staff insert gallery" on gallery_images for insert to authenticated with check (true);
+create policy "Staff delete gallery" on gallery_images for delete to authenticated using (true);
+
+-- 2) EDITABLE SITE TEXT (bio, mission, homepage intro)
+create table if not exists site_content (
+  key text primary key, value text, updated_at timestamptz not null default now()
+);
+alter table site_content enable row level security;
+create policy "Public read content"  on site_content for select using (true);
+create policy "Staff insert content" on site_content for insert to authenticated with check (true);
+create policy "Staff update content" on site_content for update to authenticated using (true) with check (true);
+create policy "Staff delete content" on site_content for delete to authenticated using (true);
+
+-- 3) CUSTOMER TESTIMONIALS
+create table if not exists testimonials (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  quote text not null, author text not null
+);
+alter table testimonials enable row level security;
+create policy "Public read testimonials"  on testimonials for select using (true);
+create policy "Staff insert testimonials" on testimonials for insert to authenticated with check (true);
+create policy "Staff delete testimonials" on testimonials for delete to authenticated using (true);
+```
+Then allow signed-in staff to upload/delete files in the bucket:
+```sql
+create policy "Staff upload gallery bucket" on storage.objects
+  for insert to authenticated with check (bucket_id = 'gallery');
+create policy "Staff delete gallery bucket" on storage.objects
+  for delete to authenticated using (bucket_id = 'gallery');
 ```
 
-The existing indexed URLs (`/`, `/residential/`, `/commercial/`, `/ll97/`, `/solutions/`,
-`/get-a-quote/`, `/faq/`) are **preserved**, so you keep your current SEO.
+### Step 4 — Create your login
+**Authentication → Users → Add user** (enable *Auto Confirm*); enter your email + password.
+
+### Step 5 — Use it
+Go to **https://www.pellikal.com/admin.html** and sign in. Three tabs:
+- **Photos** — upload/delete gallery images (category + caption).
+- **Bio & Mission** — edit the Who We Are, Mission, and homepage intro text (blank a field to restore
+  the built-in default).
+- **Testimonials** — add/remove real customer reviews.
+
+> **The admin page is intentionally not linked** from the menu, footer, or sitemap, and it's set to
+> `noindex`. Bookmark **/admin.html**. It's your private door in.
 
 ---
 
-## Deploy to GitHub Pages
-
-1. Create a new GitHub repository (e.g. `pellikal-site`).
-2. Upload the **contents** of this `pellikal/` folder to the repo root (so `index.html` is at the
-   top level of the repo, not inside a subfolder).
-3. In the repo: **Settings → Pages**.
-4. Under **Build and deployment → Source**, choose **Deploy from a branch**.
-5. Select branch **main** and folder **/ (root)**, then **Save**.
-6. Wait 1–2 minutes. GitHub gives you a URL like `https://<username>.github.io/`.
-
-### Custom domain (www.pellikal.com)
-
-- The included **CNAME** file already contains `www.pellikal.com`. If your final domain differs,
-  edit that file so it contains exactly your domain on one line.
-- At your DNS provider, point the domain to GitHub Pages:
-  - For **www**: add a `CNAME` record → `<username>.github.io`
-  - For the **root/apex** (pellikal.com): add GitHub's A records, or a redirect from apex → www.
-    See GitHub's docs: "Managing a custom domain for your GitHub Pages site."
-- Back in **Settings → Pages**, confirm the custom domain and tick **Enforce HTTPS** once it's
-  available.
-
-> The `.nojekyll` file is intentional — it prevents GitHub from hiding folders and lets
-> `/assets/…` load correctly. Leave it in place.
+## Security — what's in place, honestly
+No website is "unhackable," but this follows current best practices:
+- **No secrets in the browser.** The anon key is designed to be public; it can't bypass your rules.
+- **Row-level security (RLS)** is enforced on Supabase's servers: anyone can *read* gallery/text/
+  reviews (they're shown on the site), but **inserting, editing and deleting require a signed-in
+  staff account**. A visitor editing the page's JavaScript still can't write to your database.
+- **Auth** is handled by Supabase (hashed passwords, tokens) — not by any code in this site.
+- **Spam protection** on the form via a hidden honeypot plus Formspree's own filtering.
+- **XSS-safe rendering:** photo captions, testimonials and edited text are inserted as plain text /
+  escaped, so pasted HTML can't run.
+- Serve over **HTTPS** (GitHub Pages does this once your domain is set).
+- Optional hardening: enable email confirmation / limit sign-ups in Supabase Auth so only your
+  account exists, and turn on 2-factor on your Supabase login.
 
 ---
 
-## Before you go live — required setup
+## Editing content directly
+All copy is plain HTML in the page files. Shared header/footer live in each page (edit once per file,
+or ask us to regenerate). The phone appears as `tel:+15163369586` and display `516-336-9586` — update
+both if it changes. Text the admin can edit is marked with `data-content="…"`; the words between the
+tags are the defaults shown until changed in the admin.
 
-Two things must be connected, plus your images. Search the files for the word **REPLACE** to find
-every spot.
+### Please keep (trust & legal)
+Copy avoids fabricated reviews/awards/certifications and unconditional guarantees. Warranty =
+*"manufacturer-backed lifetime warranty available."* The Local Law 97 page does **not** promise
+compliance and carries the required disclaimer. Add only real testimonials.
 
-### 1) Connect the quote form (Formspree)
-
-The `/get-a-quote/` form submits with AJAX to **Formspree** (free tier available).
-
-1. Sign up at <https://formspree.io> and create a new form.
-2. Copy your form endpoint — it looks like `https://formspree.io/f/abcdwxyz`.
-3. Open `get-a-quote/index.html`, find:
-   ```html
-   <form id="quote-form" ... action="https://formspree.io/f/FORMSPREE_ID" ...>
-   ```
-   Replace **FORMSPREE_ID** with your form's ID (the part after `/f/`).
-4. Set the form's notification email in Formspree to **info@pellikal.com** (or wherever you want
-   leads to land).
-
-> Until you do this, the form runs in **demo mode**: it shows a success message but does **not**
-> send. The Formspree form ID is public by design — it is not a secret.
-
-### 2) Images
-
-Drop real photos into `assets/images/` using these exact filenames (used across the site):
-
-| Filename | Where it's used | Suggested size |
-|---|---|---|
-| `hero-window-film.jpg` | Home hero | tall, ~1200×1500 (4:5) |
-| `residential-window-film.jpg` | Home + Residential | ~1200×900 (4:3) |
-| `commercial-window-film.jpg` | Home | ~1200×900 |
-| `low-e-film.jpg`, `privacy-film.jpg`, `solar-film.jpg`, `neutral-film.jpg`, `ceramic-film.jpg`, `security-film.jpg`, `anti-graffiti-film.jpg` | Solutions | ~1200×900 each |
-| `gallery-1.jpg`, `gallery-2.jpg`, `gallery-3.jpg` | Home gallery | ~1000×750 |
-| `gallery-before.jpg`, `gallery-after.jpg` | Home before/after slider | same dimensions as each other |
-| `og-default.jpg` | Social share preview | **1200×630** |
-| `favicon.ico` | Browser tab icon | 32×32 / 48×48 |
-
-**Nice touch:** until you add photos, the site shows tasteful labeled placeholders automatically —
-so it looks intentional, not broken. Replace them whenever you're ready; no code changes needed.
-Optional: add a real logo at `assets/images/logo.svg` and un-comment the logo line in each header.
-
-### 3) Analytics & Google Ads (optional but recommended)
-
-Each page has a commented analytics block in the `<head>`. To turn it on:
-
-1. Un-comment the block and add your **GA4 ID** (`G-XXXXXXXXXX`).
-2. For **Google Ads** conversion tracking, add `gtag('config', 'AW-CONVERSION_ID')` in that block,
-   then open `assets/js/main.js` and set your conversion label inside `trackConversion()`.
-3. The site already fires events on:
-   - **click-to-call** (`tel:` links)
-   - **click-to-text** (`sms:` links)
-   - **lead** (successful quote-form submit)
-
-Prefer Google Tag Manager? Add your GTM container in the same block; the code already pushes to
-`dataLayer`.
-
----
-
-## Editing content
-
-- **Phone number** appears as `tel:+15163369586` (links) and `516-336-9586` (display). If the
-  number ever changes, update both.
-- **Business info / disclaimers** live in the shared footer at the bottom of each page.
-- Everything is hand-editable HTML — open a file, change the text, commit. No compiling.
-
-### A note on claims (please keep)
-
-To keep the site trustworthy and legally safe, the copy intentionally **avoids**:
-
-- fabricated reviews, ratings, awards, certifications or years-in-business,
-- unconditional guarantees (warranty is described as *"manufacturer-backed lifetime warranty
-  available"*),
-- any promise that window film makes a building **compliant** with Local Law 97.
-
-If you add testimonials, use **real** ones. If you add a specific stat, make sure it's accurate.
-
----
+## SEO
+This is now a true multi-page site: each page has a unique title, description and canonical URL, all
+listed in `sitemap.xml`, with LocalBusiness schema on the home page. After launch, verify the site in
+**Google Search Console** and submit the sitemap.
 
 ## Launch checklist
-
-- [ ] Replace **FORMSPREE_ID** in `get-a-quote/index.html` and test a real submission
-- [ ] Confirm quote leads arrive at **info@pellikal.com**
-- [ ] Add real images to `assets/images/` (see table above), including `og-default.jpg` (1200×630)
-- [ ] Add `favicon.ico`
-- [ ] Turn on GA4 / GTM (un-comment analytics block, add IDs)
-- [ ] Set up Google Ads conversion ID + label (if running ads)
-- [ ] Test every page on a phone: tap-to-call, tap-to-text, sticky bottom bar, menu, form
-- [ ] Check the before/after slider drags smoothly
-- [ ] Deploy to GitHub Pages and connect **www.pellikal.com** (CNAME + DNS), enable HTTPS
-- [ ] Submit `sitemap.xml` in **Google Search Console** and verify the property
-- [ ] Spot-check that old URLs still resolve (`/residential/`, `/commercial/`, `/ll97/`,
-      `/solutions/`, `/get-a-quote/`, `/faq/`)
-- [ ] Run the pages through Google's **Rich Results Test** to confirm the LocalBusiness / FAQ /
-      Breadcrumb schema is valid
-- [ ] Optional: run Lighthouse (mobile) and confirm strong performance/accessibility scores
-
----
-
-## Tech notes
-
-- **Accessibility:** semantic landmarks, one `<h1>` per page, labeled form fields, visible focus
-  states, `aria-expanded` on the menu and FAQ, a skip link, and reduced-motion support.
-- **Performance:** two small static assets, system-friendly fonts loaded once, lazy visual reveals
-  via `IntersectionObserver`, no framework.
-- **SEO:** unique title + meta description per page, canonical URLs, Open Graph/Twitter tags,
-  JSON-LD (LocalBusiness, Service, FAQPage, BreadcrumbList), `sitemap.xml`, `robots.txt`.
-- **No browser storage** is used, so it runs anywhere without cookie banners for storage.
-
-Questions about the build? Everything is plain HTML/CSS/JS — open the files and read along.
+- [ ] `js/config.js`: add your **Formspree ID** and test a real submission → info@pellikal.com
+- [ ] `js/config.js`: add **Supabase URL + anon key**; run the three SQL blocks + storage policies;
+      create your login; then at **/admin.html** upload a test photo, edit the bio, add a testimonial
+- [ ] Phone check on mobile: tap-to-call, tap-to-text, sticky bar, menu, tint slider, form
+- [ ] Deploy to GitHub Pages; connect **www.pellikal.com** (CNAME + DNS); enable HTTPS
+- [ ] Submit `sitemap.xml` in Google Search Console; run Google's Rich Results Test on the home page
+- [ ] Bookmark **/admin.html**

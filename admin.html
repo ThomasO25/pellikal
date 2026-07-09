@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site Admin | Pellikal</title>
+<meta name="description" content="Staff area.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="canonical" href="https://www.pellikal.com/admin.html">
+<meta name="theme-color" content="#0E1B40">
+<meta name="format-detection" content="telephone=yes">
+<link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/images/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pellikal Window Enhancements">
+<meta property="og:title" content="Site Admin | Pellikal">
+<meta property="og:description" content="Staff area.">
+<meta property="og:url" content="https://www.pellikal.com/admin.html">
+<meta property="og:image" content="https://www.pellikal.com/assets/images/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Site Admin | Pellikal">
+<meta name="twitter:image" content="https://www.pellikal.com/assets/images/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="loader" id="loader" role="status" aria-label="Loading Pellikal">
+  <div class="loader__glass"></div><div class="loader__grid"></div>
+  <div class="loader__film"></div><div class="loader__haze"></div><div class="loader__squeegee"></div>
+  <div class="loader__inner">
+    <svg class="loader__mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><g stroke="#15BCD4" stroke-width="1.7" stroke-linejoin="round"><path d="M26 8H42L38 40H22Z" fill="#5F7496"/><path d="M34.4 8 31 40M24.5 24H41"/><path d="M18 12H34L30 44H14Z" fill="#AABCD6"/><path d="M26.4 12 23 44M16.5 28H33"/></g></svg>
+    <p class="loader__word">PELLIKAL</p><p class="loader__label">Installing film…</p>
+  </div>
+</div>
+<header class="site-header">
+  <div class="container header__inner">
+    <a class="logo" href="index.html" aria-label="Pellikal — home"><svg class="logo__icon" viewBox="0 0 48 48" fill="none" aria-hidden="true"><g stroke="#15BCD4" stroke-width="1.7" stroke-linejoin="round"><path d="M26 8H42L38 40H22Z" fill="#5F7496"/><path d="M34.4 8 31 40M24.5 24H41"/><path d="M18 12H34L30 44H14Z" fill="#AABCD6"/><path d="M26.4 12 23 44M16.5 28H33"/></g></svg><span class="logo__word">PELLIKAL</span></a>
+    <nav class="nav" aria-label="Primary">
+      <button class="nav__toggle" id="navToggle" aria-expanded="false" aria-controls="navMenu"><span class="bars" aria-hidden="true"></span>Menu</button>
+      <ul class="nav__menu" id="navMenu"><li><a href="index.html">Home</a></li><li><a href="residential.html">Residential</a></li><li><a href="commercial.html">Commercial</a></li><li><a href="local-law-97.html">Local Law 97</a></li><li><a href="solutions.html">Solutions</a></li><li><a href="about.html">About</a></li><li><a href="faq.html">FAQ</a></li></ul>
+    </nav>
+    <div class="header__cta">
+      <a class="btn btn--ghost header__phone" href="tel:+15163369586">516-336-9586</a>
+      <a class="btn btn--cyan" href="contact.html">Free Consultation</a>
+    </div>
+  </div>
+</header>
+<main id="main">
+
+  <section class="page-hero"><div class="container">
+    <nav class="crumbs"><a href="index.html">Home</a> / <span class="cur">Admin</span></nav>
+    <p class="eyebrow">Staff only</p><h1>Site Admin</h1>
+    <p class="page-hero__sub">Sign in to manage gallery photos, edit your bio &amp; mission text, and add customer testimonials — changes appear on the live site instantly.</p>
+  </div></section>
+  <section class="section"><div class="container admin-shell">
+
+    <!-- Setup notice (until Supabase keys are added) -->
+    <div id="admin-setup" class="admin-card" style="display:none">
+      <div class="callout callout--warn"><strong>Almost there.</strong> To turn on the admin, add your free Supabase project keys in <code>js/config.js</code> (fill in <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code>). Full step-by-step instructions are in <code>README.md</code>.</div>
+      <h3>What you'll be able to do once it's connected</h3>
+      <ul class="checks"><li>Log in securely with your email and password</li><li>Upload &amp; delete gallery photos (with a category and caption)</li><li>Edit your <b>Who We Are</b> bio, <b>Mission</b>, and homepage intro text</li><li>Add and remove <b>customer testimonials</b></li></ul>
+      <p style="margin-top:1.2rem;color:var(--muted)">Until then, the site shows sensible default text and tasteful placeholders, so it always looks finished.</p>
+    </div>
+
+    <!-- Login -->
+    <div id="admin-login" class="admin-card" style="display:none;max-width:440px;margin-inline:auto">
+      <h3 style="margin-bottom:.3rem">Sign in</h3>
+      <p style="color:var(--muted);font-size:.95rem">Staff access for Pellikal site management.</p>
+      <div id="admin-login-err" class="callout callout--warn" style="display:none"></div>
+      <div class="field"><label for="admin-email">Email</label><input type="email" id="admin-email" autocomplete="email" placeholder="you@pellikal.com"></div>
+      <div class="field"><label for="admin-pass">Password</label><input type="password" id="admin-pass" autocomplete="current-password" placeholder="Your password"></div>
+      <button id="admin-login-btn" class="btn btn--cyan btn--lg btn--block">Sign in</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="admin-dash" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1.2rem">
+        <p style="margin:0;color:var(--muted);font-size:.95rem" id="admin-who"></p>
+        <button id="admin-logout" class="btn btn--ghost">Sign out</button>
+      </div>
+      <div class="admin-tabs">
+        <button class="admin-tab is-on" data-tab="photos">Photos</button>
+        <button class="admin-tab" data-tab="content">Bio &amp; Mission</button>
+        <button class="admin-tab" data-tab="testimonials">Testimonials</button>
+      </div>
+
+      <!-- Photos tab -->
+      <div class="admin-pane" data-pane="photos">
+        <div class="admin-card" style="margin-bottom:1.5rem">
+          <h3 style="margin:0 0 .3rem">Add a photo</h3>
+          <div id="admin-upload-msg" class="callout" style="display:none;margin-top:1rem"></div>
+          <div class="form__row" style="margin-top:1rem">
+            <div class="field"><label for="up-file">Photo</label><input type="file" id="up-file" accept="image/*"></div>
+            <div class="field"><label for="up-cat">Category</label><select id="up-cat"><option>Residential</option><option>Commercial</option><option>Solar</option><option>Privacy</option><option>Security</option><option>Anti-Graffiti</option><option>Low-E</option><option>Ceramic</option></select></div>
+          </div>
+          <div class="field"><label for="up-cap">Caption (optional)</label><input type="text" id="up-cap" placeholder="e.g. Solar film — Garden City home"></div>
+          <button id="up-btn" class="btn btn--cyan btn--lg">Upload photo</button>
+        </div>
+        <div class="admin-card">
+          <h3 style="margin:0 0 .3rem">Current gallery photos</h3>
+          <p style="margin:0;color:var(--muted);font-size:.95rem">These appear in the “Our work” section on the home page.</p>
+          <div class="admin-grid" id="admin-grid"></div>
+          <p id="admin-empty" style="display:none;color:var(--muted);margin-top:1.2rem">No photos yet — upload your first one above.</p>
+        </div>
+      </div>
+
+      <!-- Content tab -->
+      <div class="admin-pane" data-pane="content" style="display:none">
+        <div class="admin-card">
+          <h3 style="margin:0 0 .3rem">Edit your text</h3>
+          <p style="margin:0 0 1rem;color:var(--muted);font-size:.95rem">Update the words shown on the site. Leave a field blank to keep the built-in default.</p>
+          <div id="content-msg" class="callout" style="display:none"></div>
+          <div class="field"><label for="c-hero_subtitle">Homepage hero subtitle</label><textarea id="c-hero_subtitle" data-key="hero_subtitle" rows="2"></textarea></div>
+          <div class="field"><label for="c-about_title">About — “Who we are” heading</label><input type="text" id="c-about_title" data-key="about_title"></div>
+          <div class="field"><label for="c-about_intro">Homepage “Who we are” intro</label><textarea id="c-about_intro" data-key="about_intro" rows="3"></textarea></div>
+          <div class="field"><label for="c-about_body">About page — “Who we are” body</label><textarea id="c-about_body" data-key="about_body" rows="4"></textarea></div>
+          <div class="field"><label for="c-mission_title">About — “Mission” heading</label><input type="text" id="c-mission_title" data-key="mission_title"></div>
+          <div class="field"><label for="c-mission_body">About page — Mission body</label><textarea id="c-mission_body" data-key="mission_body" rows="4"></textarea></div>
+          <button id="content-save" class="btn btn--cyan btn--lg">Save changes</button>
+        </div>
+      </div>
+
+      <!-- Testimonials tab -->
+      <div class="admin-pane" data-pane="testimonials" style="display:none">
+        <div class="admin-card" style="margin-bottom:1.5rem">
+          <h3 style="margin:0 0 .3rem">Add a testimonial</h3>
+          <p style="margin:0 0 1rem;color:var(--muted);font-size:.95rem">Only add real reviews from your customers.</p>
+          <div id="t-msg" class="callout" style="display:none"></div>
+          <div class="field"><label for="t-quote">Quote</label><textarea id="t-quote" rows="3" placeholder="Pellikal's film made a huge difference…"></textarea></div>
+          <div class="field"><label for="t-author">Customer name</label><input type="text" id="t-author" placeholder="e.g. Sarah M., Garden City"></div>
+          <button id="t-add" class="btn btn--cyan btn--lg">Add testimonial</button>
+        </div>
+        <div class="admin-card">
+          <h3 style="margin:0 0 .3rem">Current testimonials</h3>
+          <div id="t-list" style="margin-top:1rem;display:grid;gap:.8rem"></div>
+          <p id="t-empty" style="display:none;color:var(--muted);margin-top:1rem">No testimonials yet — add your first above.</p>
+        </div>
+      </div>
+    </div>
+
+  </div></section>
+
+</main>
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <a class="logo logo--dark" href="index.html" aria-label="Pellikal — home"><svg class="logo__icon" viewBox="0 0 48 48" fill="none" aria-hidden="true"><g stroke="#15BCD4" stroke-width="1.7" stroke-linejoin="round"><path d="M26 8H42L38 40H22Z" fill="#5F7496"/><path d="M34.4 8 31 40M24.5 24H41"/><path d="M18 12H34L30 44H14Z" fill="#AABCD6"/><path d="M26.4 12 23 44M16.5 28H33"/></g></svg><span class="logo__word">PELLIKAL</span></a>
+        <p>Transforming ordinary windows into extraordinary spaces. Residential &amp; commercial window film across Long Island and NYC. Llumar SelectPRO dealer.</p>
+      </div>
+      <div><h4>Services</h4><ul>
+        <li><a href="solutions.html">All Film Solutions</a></li>
+        <li><a href="residential.html">Residential Film</a></li>
+        <li><a href="commercial.html">Commercial Film</a></li>
+        <li><a href="local-law-97.html">Local Law 97</a></li>
+      </ul></div>
+      <div><h4>Company</h4><ul>
+        <li><a href="about.html">About</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="contact.html">Free Consultation</a></li>
+      </ul></div>
+      <div class="footer__contact"><h4>Contact</h4><ul>
+        <li><a href="tel:+15163369586"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>516-336-9586</a></li>
+        <li><a href="sms:+15163369586"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Text us</a></li>
+        <li><a href="mailto:info@pellikal.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>info@pellikal.com</a></li>
+      </ul>
+      <h4 style="margin-top:1.4rem">Service Area</h4>
+      <p style="font-size:.92rem;margin:0">Long Island · Nassau · Suffolk · Queens · Brooklyn · Manhattan · NYC</p></div>
+    </div>
+    <div class="footer__bottom">
+      <p>© <span id="year">2025</span> Pellikal Window Enhancements. All rights reserved.</p>
+      <p>Llumar® SelectPRO Dealer · Manufacturer-backed lifetime warranty available</p>
+    </div>
+    <p class="footer__legal">Window film can be part of a broader energy-efficiency strategy. Pellikal does not provide legal or engineering compliance certification for Local Law 97 or any other regulation. Product performance varies by film type, glass and application. Warranty terms are set and provided by the film manufacturer.</p>
+  </div>
+</footer>
+<div class="mobile-bar" aria-label="Quick contact">
+  <a class="mobile-bar__call" href="tel:+15163369586"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call</a>
+  <a class="mobile-bar__text" href="sms:+15163369586"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Text</a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/main.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
