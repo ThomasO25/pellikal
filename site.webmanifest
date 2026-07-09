@@ -1,0 +1,14 @@
+{
+  "name": "Pellikal Window Enhancements",
+  "short_name": "Pellikal",
+  "description": "Residential & commercial window film — Long Island & NYC.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0E1B40",
+  "theme_color": "#0E1B40",
+  "icons": [
+    { "src": "assets/images/favicon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "assets/images/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "assets/images/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

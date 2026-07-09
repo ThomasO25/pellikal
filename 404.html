@@ -1,6 +1,10 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Page not found | Pellikal</title><meta name="robots" content="noindex">
 <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/images/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
 <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css"></head>
 <body><main id="main"><section class="section" style="min-height:70vh;display:grid;place-items:center;text-align:center;background:linear-gradient(180deg,#fff,var(--mist))">
@@ -9,6 +13,20 @@
 <h1>We couldn't find that page</h1>
 <p class="lead">The page you're looking for may have moved. Let's get you back on track.</p>
 <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:1.4rem">
-<a class="btn btn--cyan btn--lg" href="index.html">Back to home</a>
+<a class="btn btn--cyan btn--lg" href="./" data-home>Back to home</a>
 <a class="btn btn--ghost btn--lg" href="tel:+15163369586">Call 516-336-9586</a></div>
-</div></section></main></body></html>
+</div></section></main>
+<script>
+/* A 404 can be served at any path depth, so compute the correct site root:
+   custom domain (root) -> "/"; GitHub Pages project site -> "/<repo>/". */
+(function(){
+  var base="/";
+  if(location.hostname.indexOf("github.io")>-1){
+    var seg=location.pathname.split("/").filter(Boolean);
+    if(seg.length){base="/"+seg[0]+"/";}
+  }
+  var links=document.querySelectorAll("[data-home]");
+  for(var i=0;i<links.length;i++){links[i].setAttribute("href",base);}
+})();
+</script>
+</body></html>

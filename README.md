@@ -19,16 +19,18 @@ Highlights
 ## File structure
 ```
 pellikal-site/
-├── index.html            ← Home
-├── residential.html
-├── commercial.html
-├── local-law-97.html
-├── solutions.html
-├── about.html
-├── contact.html          ← Free-consultation form (Formspree)
-├── faq.html
-├── admin.html            ← Staff dashboard (unlinked; noindex)
+├── index.html            ← Home  (served at /)
+├── residential/index.html    → /residential/
+├── commercial/index.html     → /commercial/
+├── local-law-97/index.html   → /local-law-97/
+├── solutions/index.html      → /solutions/
+├── contact/index.html        → /contact/   (Formspree form)
+├── about/index.html          → /about/
+├── faq/index.html            → /faq/
+├── admin/index.html          → /admin/     (Staff dashboard; unlinked; noindex)
 ├── 404.html
+│   (residential.html, commercial.html, … at the root are tiny redirect
+│    stubs that forward the old .html URLs to the new clean folders)
 ├── css/
 │   └── styles.css        ← all styling
 ├── js/
@@ -38,7 +40,7 @@ pellikal-site/
 ├── assets/images/        ← logo icons, share image, brand photos
 ├── robots.txt  ·  sitemap.xml  ·  CNAME  ·  .nojekyll
 ```
-Every page shares the same header/footer markup, so navigation works even with JavaScript disabled,
+The site uses **clean, extensionless URLs**: each page lives in its own folder as `index.html`, which GitHub Pages serves at `/residential/`, `/contact/`, etc. Asset links are relative per folder depth, so the site works identically at the GitHub Pages project path (`/pellikal/`) and at the root custom domain. The old `.html` URLs still work — each one is a small redirect stub that forwards to its clean folder URL. Every page shares the same header/footer markup, so navigation works even with JavaScript disabled,
 and each page has its own title, description and canonical URL for search engines.
 
 ---
@@ -128,14 +130,14 @@ create policy "Staff delete gallery bucket" on storage.objects
 **Authentication → Users → Add user** (enable *Auto Confirm*); enter your email + password.
 
 ### Step 5 — Use it
-Go to **https://www.pellikal.com/admin.html** and sign in. Three tabs:
+Go to **https://www.pellikal.com/admin/** and sign in. Three tabs:
 - **Photos** — upload/delete gallery images (category + caption).
 - **Bio & Mission** — edit the Who We Are, Mission, and homepage intro text (blank a field to restore
   the built-in default).
 - **Testimonials** — add/remove real customer reviews.
 
 > **The admin page is intentionally not linked** from the menu, footer, or sitemap, and it's set to
-> `noindex`. Bookmark **/admin.html**. It's your private door in.
+> `noindex`. Bookmark **/admin/**. It's your private door in.
 
 ---
 
@@ -174,8 +176,8 @@ listed in `sitemap.xml`, with LocalBusiness schema on the home page. After launc
 ## Launch checklist
 - [ ] `js/config.js`: add your **Formspree ID** and test a real submission → info@pellikal.com
 - [ ] `js/config.js`: add **Supabase URL + anon key**; run the three SQL blocks + storage policies;
-      create your login; then at **/admin.html** upload a test photo, edit the bio, add a testimonial
+      create your login; then at **/admin/** upload a test photo, edit the bio, add a testimonial
 - [ ] Phone check on mobile: tap-to-call, tap-to-text, sticky bar, menu, tint slider, form
 - [ ] Deploy to GitHub Pages; connect **www.pellikal.com** (CNAME + DNS); enable HTTPS
 - [ ] Submit `sitemap.xml` in Google Search Console; run Google's Rich Results Test on the home page
-- [ ] Bookmark **/admin.html**
+- [ ] Bookmark **/admin/**
