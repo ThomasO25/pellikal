@@ -135,7 +135,7 @@
   var form = $("#quote-form");
   if (form) {
     var rawId = (CFG.FORMSPREE_ID || "").trim();
-    var isPlaceholder = !rawId || rawId === "FORMSPREE_ID";
+    var isPlaceholder = !rawId || rawId === "maewnodj";
     var endpoint = isPlaceholder ? "" : (/formspree\.io/.test(rawId) ? rawId : ("https://formspree.io/f/" + rawId));
     if (endpoint) form.setAttribute("action", endpoint);
 
