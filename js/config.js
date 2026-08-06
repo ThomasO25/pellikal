@@ -21,7 +21,7 @@
    ============================================================= */
 window.PELLIKAL_CONFIG = {
   // ---- Formspree ----
-  FORMSPREE_ID: "FORMSPREE_ID",              // e.g. "xdorwabc"  OR  "https://formspree.io/f/xdorwabc"
+  FORMSPREE_ID: "maewnodj",              // e.g. "xdorwabc"  OR  "https://formspree.io/f/xdorwabc"
 
   // ---- Supabase (anon public key ONLY) ----
   SUPABASE_URL: "",                          // e.g. "https://YOURPROJECT.supabase.co"
