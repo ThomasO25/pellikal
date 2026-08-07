@@ -24,8 +24,8 @@ window.PELLIKAL_CONFIG = {
   FORMSPREE_ID: "maewnodj",              // e.g. "xdorwabc"  OR  "https://formspree.io/f/xdorwabc"
 
   // ---- Supabase (anon public key ONLY) ----
-  SUPABASE_URL: "",                          // e.g. "https://YOURPROJECT.supabase.co"
-  SUPABASE_ANON_KEY: "",                     // the anon public key (NOT the service_role key)
+  SUPABASE_URL: "https://btmkronkwvtcvqcwefsi.supabase.co",                          // e.g. "https://YOURPROJECT.supabase.co"
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0bWtyb25rd3Z0Y3ZxY3dlZnNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwNTk5MTcsImV4cCI6MjEwMTYzNTkxN30.nRCUTpU2xpV-WWFlAbYc4wVc-rtuC-OZ17BgjpOAPP0",                     // the anon public key (NOT the service_role key)
 
   // ---- Names you created in Supabase (only change if you renamed them) ----
   SUPABASE_BUCKET: "gallery",                // Storage bucket (Public)
