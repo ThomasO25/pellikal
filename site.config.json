@@ -1,61 +1,187 @@
 {
   "_comment": "SINGLE SOURCE OF TRUTH for business details. Edit here, then run: python3 tools/build.py",
-
   "business": {
-    "name":         "Pellikal Window Enhancements",
+    "name": "Pellikal Window Enhancements",
     "phoneDisplay": "516-336-9586",
-    "phoneLink":    "+15163369586",
-    "phoneSchema":  "+1-516-336-9586",
-    "email":        "info@pellikal.com",
-    "domain":       "https://www.pellikal.com/",
-    "serviceArea":  "Long Island · Nassau · Suffolk · Queens · Brooklyn · Manhattan · NYC"
+    "phoneLink": "+15163369586",
+    "phoneSchema": "+1-516-336-9586",
+    "email": "info@pellikal.com",
+    "domain": "https://www.pellikal.com/",
+    "serviceArea": "Long Island · Nassau · Suffolk · Queens · Brooklyn · Manhattan · NYC"
   },
-
   "_analyticsComment": "PRODUCTION Google IDs. The GTM container snippet is stamped into every public page by tools/build.py. GA4 is configured INSIDE GTM - do not add a gtag.js snippet to the pages or page views will be counted twice.",
   "analytics": {
-    "gtmContainerId":   "GTM-MK2PHWB",
-    "ga4MeasurementId": "G-TPD5SKWWVC",
-    "_ga4Note": "Recorded here for reference only. Configure it as a Google tag inside GTM.",
-    "excludeFromTracking": ["admin/index.html", "local-law-97/index.html"]
+    "gtmContainerId": "GTM-MK2PHWB",
+    "ga4MeasurementId": "G-J8SQ4CC7BT",
+    "googleAdsId": "AW-859941989",
+    "_idNote": "GTM is the ONLY tag installed on the pages. GA4 and Google Ads are configured INSIDE the GTM container - never add gtag.js to a page or measurement double-counts. The GA4 and Ads IDs are recorded here purely as the authoritative reference for the marketing specialist.",
+    "_retiredGa4": "G-TPD5SKWWVC - WRONG/OLD property. Must not be used anywhere.",
+    "excludeFromTracking": [
+      "admin/index.html",
+      "local-law-97/index.html"
+    ]
   },
-
   "_navComment": "Order here = order in the menu. 'slug' is the folder name; home is \"\".",
   "nav": [
-    { "slug": "",             "label": "Home" },
-    { "slug": "residential",  "label": "Residential" },
-    { "slug": "commercial",   "label": "Commercial" },
-    { "slug": "solutions",    "label": "Solutions" },
-    { "slug": "about",        "label": "About" },
-    { "slug": "faq",          "label": "FAQ" }
+    {
+      "slug": "",
+      "label": "Home"
+    },
+    {
+      "slug": "residential",
+      "label": "Residential"
+    },
+    {
+      "slug": "commercial",
+      "label": "Commercial"
+    },
+    {
+      "slug": "solutions",
+      "label": "Solutions"
+    },
+    {
+      "slug": "about",
+      "label": "About"
+    },
+    {
+      "slug": "faq",
+      "label": "FAQ"
+    }
   ],
-
   "_footerComment": "Links shown in the footer columns.",
   "footerServices": [
-    { "slug": "solutions",    "label": "All Film Solutions" },
-    { "slug": "residential",  "label": "Residential Film" },
-    { "slug": "commercial",   "label": "Commercial Film" }
+    {
+      "slug": "solutions",
+      "label": "All Film Solutions"
+    },
+    {
+      "slug": "residential",
+      "label": "Residential Film"
+    },
+    {
+      "slug": "commercial",
+      "label": "Commercial Film"
+    }
   ],
   "footerCompany": [
-    { "slug": "about",   "label": "About" },
-    { "slug": "faq",     "label": "FAQ" },
-    { "slug": "contact", "label": "Free Consultation" },
-    { "slug": "privacy", "label": "Privacy Policy" }
+    {
+      "slug": "about",
+      "label": "About"
+    },
+    {
+      "slug": "faq",
+      "label": "FAQ"
+    },
+    {
+      "slug": "contact",
+      "label": "Free Consultation"
+    },
+    {
+      "slug": "privacy",
+      "label": "Privacy Policy"
+    },
+    {
+      "slug": "terms",
+      "label": "Terms of Use"
+    },
+    {
+      "slug": "accessibility",
+      "label": "Accessibility"
+    }
   ],
-
   "_syncOnlyComment": "Files with no header/footer, but which still contain the phone/email and must stay in sync.",
-  "syncOnly": ["404.html", "js/main.js"],
-
+  "syncOnly": [
+    "404.html",
+    "js/main.js"
+  ],
   "_pagesComment": "Every page on the site. 'redirect: true' also creates the old .html forwarder at the root.",
   "pages": [
-    { "slug": "",             "file": "index.html",             "inSitemap": true,  "priority": "1.0", "redirect": false },
-    { "slug": "residential",  "file": "residential/index.html", "inSitemap": true,  "priority": "0.9", "redirect": true  },
-    { "slug": "commercial",   "file": "commercial/index.html",  "inSitemap": true,  "priority": "0.9", "redirect": true  },
-    { "slug": "local-law-97", "file": "local-law-97/index.html","inSitemap": false, "priority": "0.0", "redirect": true, "redirectTo": "commercial", "partials": false },
-    { "slug": "solutions",    "file": "solutions/index.html",   "inSitemap": true,  "priority": "0.8", "redirect": true  },
-    { "slug": "about",        "file": "about/index.html",       "inSitemap": true,  "priority": "0.7", "redirect": true  },
-    { "slug": "faq",          "file": "faq/index.html",         "inSitemap": true,  "priority": "0.7", "redirect": true  },
-    { "slug": "contact",      "file": "contact/index.html",     "inSitemap": true,  "priority": "0.9", "redirect": true  },
-    { "slug": "privacy",      "file": "privacy/index.html",     "inSitemap": true,  "priority": "0.3", "redirect": true  },
-    { "slug": "admin",        "file": "admin/index.html",       "inSitemap": false, "priority": "0.0", "redirect": true  }
+    {
+      "slug": "",
+      "file": "index.html",
+      "inSitemap": true,
+      "priority": "1.0",
+      "redirect": false
+    },
+    {
+      "slug": "residential",
+      "file": "residential/index.html",
+      "inSitemap": true,
+      "priority": "0.9",
+      "redirect": true
+    },
+    {
+      "slug": "commercial",
+      "file": "commercial/index.html",
+      "inSitemap": true,
+      "priority": "0.9",
+      "redirect": true
+    },
+    {
+      "slug": "local-law-97",
+      "file": "local-law-97/index.html",
+      "inSitemap": false,
+      "priority": "0.0",
+      "redirect": true,
+      "redirectTo": "commercial",
+      "partials": false
+    },
+    {
+      "slug": "solutions",
+      "file": "solutions/index.html",
+      "inSitemap": true,
+      "priority": "0.8",
+      "redirect": true
+    },
+    {
+      "slug": "about",
+      "file": "about/index.html",
+      "inSitemap": true,
+      "priority": "0.7",
+      "redirect": true
+    },
+    {
+      "slug": "faq",
+      "file": "faq/index.html",
+      "inSitemap": true,
+      "priority": "0.7",
+      "redirect": true
+    },
+    {
+      "slug": "contact",
+      "file": "contact/index.html",
+      "inSitemap": true,
+      "priority": "0.9",
+      "redirect": true
+    },
+    {
+      "slug": "privacy",
+      "file": "privacy/index.html",
+      "inSitemap": true,
+      "priority": "0.3",
+      "redirect": true
+    },
+    {
+      "slug": "terms",
+      "file": "terms/index.html",
+      "inSitemap": true,
+      "priority": "0.3",
+      "redirect": true
+    },
+    {
+      "slug": "accessibility",
+      "file": "accessibility/index.html",
+      "inSitemap": true,
+      "priority": "0.3",
+      "redirect": true
+    },
+    {
+      "slug": "admin",
+      "file": "admin/index.html",
+      "inSitemap": false,
+      "priority": "0.0",
+      "redirect": true,
+      "partials": false
+    }
   ]
 }

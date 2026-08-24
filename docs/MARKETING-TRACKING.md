@@ -36,7 +36,7 @@ The ID lives in **one place**: `site.config.json` →
 ```json
 "analytics": {
   "gtmContainerId":   "GTM-MK2PHWB",
-  "ga4MeasurementId": "G-TPD5SKWWVC"
+  "ga4MeasurementId": "G-J8SQ4CC7BT"
 }
 ```
 
@@ -50,7 +50,7 @@ individual pages** — the build overwrites it.
 
 | | |
 |---|---|
-| **Existing Measurement ID** | `G-TPD5SKWWVC` |
+| **Existing Measurement ID** | `G-J8SQ4CC7BT` |
 | How it should be installed | As a **Google tag inside GTM** |
 | Direct gtag.js on the site | **None — intentionally** |
 
@@ -61,7 +61,7 @@ to untangle and nothing was removed. The GA4 property itself is untouched.
 **Set it up like this:**
 
 1. GTM → **Tags → New → Google Tag**
-2. Tag ID: `G-TPD5SKWWVC`
+2. Tag ID: `G-J8SQ4CC7BT`
 3. Trigger: **Initialization – All Pages**
 4. Publish
 
@@ -222,7 +222,7 @@ configured inside GTM.
 
 ## 9. Verifying GA4 Realtime (after GA4 is configured in GTM)
 
-1. Publish the GTM container with the GA4 Google tag (`G-TPD5SKWWVC`).
+1. Publish the GTM container with the GA4 Google tag (`G-J8SQ4CC7BT`).
 2. GA4 → **Reports → Realtime**.
 3. Open `https://www.pellikal.com` in a normal browser window (not Preview).
 4. Within ~30 seconds you should see 1 active user and a `page_view`.

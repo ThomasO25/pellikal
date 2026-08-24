@@ -211,11 +211,14 @@
   }
   function loadTestimonials() {
     var wrap = $("#quotes"); if (!wrap) return;
-    function empty() { clear(wrap); var p = el("p", "note-inline", "Customer testimonials will appear here."); p.style.gridColumn = "1/-1"; p.style.textAlign = "center"; wrap.appendChild(p); }
-    if (!configured) { empty(); return; }
+    /* PROGRESSIVE ENHANCEMENT: the page already contains a meaningful static
+       fallback. We only ever REPLACE it once real testimonials come back.
+       If Supabase is unconfigured, slow, blocked, failing or simply empty,
+       we leave the existing HTML untouched so the section is never blank. */
+    if (!configured) return;
     SB.from(CFG.TESTIMONIALS_TABLE).select("*").order("created_at", { ascending: false }).limit(6)
       .then(function (res) {
-        if (res.error || !res.data || !res.data.length) { empty(); return; }
+        if (res.error || !res.data || !res.data.length) return;   // keep static fallback
         clear(wrap);
         res.data.forEach(function (t) {
           var fig = el("figure", "quote");
@@ -224,7 +227,36 @@
           fig.appendChild(el("figcaption", "quote__by", "\u2014 " + (t.author || "")));
           wrap.appendChild(fig);
         });
-      }).catch(empty);
+      }).catch(function () {});   // keep static fallback
   }
-  loadGallery(); loadContent(); loadTestimonials();
+  /* ---------- Projects (Supabase enhances the static cards) ---------- */
+  function loadProjects() {
+    var home = $("[data-projects-home]");
+    if (!home || !configured) return;                       // keep static fallback
+    SB.from("projects").select("*").order("sort_order", { ascending: true }).limit(6)
+      .then(function (res) {
+        if (res.error || !res.data || !res.data.length) return;   // keep static fallback
+        var rows = res.data.filter(function (p) { return p.featured; });
+        if (!rows.length) rows = res.data;
+        clear(home);
+        rows.slice(0, 6).forEach(function (p) {
+          var art = el("article", "proj");
+          var media = el("div", "proj__media");
+          var url = safeUrl(p.image_url);
+          if (url) { var im = document.createElement("img"); im.src = url; im.loading = "lazy"; im.decoding = "async"; im.alt = (p.title ? p.title + " — " : "") + "Pellikal window film project"; media.appendChild(im); }
+          art.appendChild(media);
+          var body = el("div", "proj__body");
+          body.appendChild(el("h3", null, p.title || "Project"));
+          var meta = [p.location, p.service].filter(Boolean).join(" \u00B7 ");
+          if (meta) body.appendChild(el("p", "proj__meta", meta));
+          if (p.description) body.appendChild(el("p", "proj__l", p.description));
+          if (p.challenge) body.appendChild(el("p", "proj__l", "Challenge: " + p.challenge));
+          if (p.result) body.appendChild(el("p", "proj__l", "Result: " + p.result));
+          art.appendChild(body); home.appendChild(art);
+        });
+        var note = document.querySelector("[data-ph-note]"); if (note) note.remove();
+      }).catch(function () {});                              // keep static fallback
+  }
+
+  loadGallery(); loadContent(); loadTestimonials(); loadProjects();
 })();

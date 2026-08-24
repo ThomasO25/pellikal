@@ -28,7 +28,7 @@ window.PELLIKAL_CONFIG = {
      by tools/build.py from "analytics" in site.config.json.
      To change the container ID, edit site.config.json and re-run:
          python3 tools/build.py
-     GA4 (G-TPD5SKWWVC) is configured INSIDE the GTM container —
+     GA4 (G-J8SQ4CC7BT) is configured INSIDE the GTM container —
      never add a gtag.js snippet here or page views double-count. */
 
   /* Consent Mode default. false = analytics/ads storage allowed on
@@ -47,5 +47,6 @@ window.PELLIKAL_CONFIG = {
   SUPABASE_BUCKET: "gallery",                // Storage bucket (Public)
   GALLERY_TABLE: "gallery_images",
   CONTENT_TABLE: "site_content",
-  TESTIMONIALS_TABLE: "testimonials"
+  TESTIMONIALS_TABLE: "testimonials",
+  PROJECTS_TABLE: "projects"
 };
