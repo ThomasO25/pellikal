@@ -801,3 +801,34 @@ body{overflow-x:clip}
 .pillbadge--off{background:#eef1f5;color:#5B6B82}
 .cms__empty{color:var(--muted);font-size:.9rem;padding:1rem;text-align:center;border:1px dashed var(--line);border-radius:11px}
 @media (max-width:1040px){.cms__wrap{grid-template-columns:1fr}.cms__prevwrap{position:static}}
+
+/* ---- Real-photography presentation (Aug 2026) ---------------------------
+   Photos are never rotated. Decorative containers may tilt; images do not. */
+.hero__cap,.shot figcaption{display:block;margin-top:.6rem;font-size:.78rem;color:var(--muted);line-height:1.5}
+.shot{margin:0}
+.shot img{width:100%;height:auto;display:block;border-radius:clamp(14px,1.8vw,20px);box-shadow:0 24px 56px rgba(14,27,64,.16)}
+.shot--dark img{box-shadow:0 24px 56px rgba(0,0,0,.35)}
+.section--navy .shot figcaption{color:var(--on-dark-mut)}
+.protect__grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-top:1.6rem}
+.protect__grid .protect{padding:1.1rem 1.15rem}
+.protect__grid .protect h3{margin:0 0 .3rem;font-size:.98rem}
+.protect__grid .protect p{font-size:.88rem}
+/* Official LLumar SelectPro mark: supplied black artwork, shown on white so it
+   is never recoloured. Generous clear space, fixed proportions. */
+.selectpro__badge{background:#fff;border-radius:14px;padding:clamp(1.3rem,2.4vw,1.9rem) clamp(1.1rem,2vw,1.5rem);display:flex;align-items:center;justify-content:center}
+.selectpro__badge img{width:100%;max-width:320px;height:auto;display:block;object-fit:contain;aspect-ratio:1726/438}
+.selectpro__note{display:none}
+.center{text-align:center}
+@media (max-width:720px){.protect__grid{grid-template-columns:1fr}}
+
+
+/* The supplied LLumar SelectPro artwork must never be stretched. These win over
+   any generic image sizing so the mark keeps its exact 1726:438 proportions. */
+.selectpro__badge img,
+.shot img[src*="llumar-selectpro"]{height:auto!important;aspect-ratio:1726/438;object-fit:contain}
+
+
+/* Trademark symbols should sit as small superscripts, not full-size glyphs. */
+h1 sup,h2 sup,h3 sup,.trustbar sup,.logo sup{font-size:.42em;top:-.7em;line-height:0;font-weight:700}
+.selectpro__inner{grid-template-columns:300px 1fr}
+@media (max-width:900px){.selectpro__inner{grid-template-columns:1fr}}
