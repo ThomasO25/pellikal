@@ -158,7 +158,18 @@
       var btn = form.querySelector('button[type="submit"]'), label = btn.textContent;
       btn.textContent = "Sending\u2026"; btn.disabled = true;
       fetch(endpoint, { method: "POST", body: new FormData(form), headers: { Accept: "application/json" } })
-        .then(function (r) { if (r.ok) { form.reset(); fmsg(okMsg); } else return r.json().then(function (d) { throw new Error((d && d.errors && d.errors[0] && d.errors[0].message) || "send failed"); }); })
+        .then(function (r) {
+          if (r.ok) {
+            form.reset(); fmsg(okMsg);
+            /* CONVERSION — fires ONLY here, after Formspree returns a
+               successful HTTP response. Clicking Submit is not enough,
+               and a rejected or failed submission fires nothing.
+               No personal data is passed; see js/tracking.js. */
+            if (window.PELLIKAL_TRACK_LEAD) {
+              window.PELLIKAL_TRACK_LEAD(form.id === "home-form" ? "homepage_form" : "contact_form");
+            }
+          } else return r.json().then(function (d) { throw new Error((d && d.errors && d.errors[0] && d.errors[0].message) || "send failed"); });
+        })
         .catch(function () { fmsg(errMsg, "Sorry \u2014 something went wrong, so your message wasn\u2019t sent. Your details are still here; please try again or call/text 516-336-9586."); })
         .finally(function () { btn.textContent = label; btn.disabled = false; });
     });

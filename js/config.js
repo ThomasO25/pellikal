@@ -21,6 +21,22 @@
    ============================================================= */
 window.PELLIKAL_CONFIG = {
   // ---- Formspree ----
+
+  /* ---- Google Tag Manager ----
+     The container ID is NOT set here. The official GTM snippet is
+     installed directly in the <head> of every public page, generated
+     by tools/build.py from "analytics" in site.config.json.
+     To change the container ID, edit site.config.json and re-run:
+         python3 tools/build.py
+     GA4 (G-TPD5SKWWVC) is configured INSIDE the GTM container —
+     never add a gtag.js snippet here or page views double-count. */
+
+  /* Consent Mode default. false = analytics/ads storage allowed on
+     load (typical for a US-only local business). Set to true only if
+     a consent banner is added. See tracking.js. */
+  CONSENT_DEFAULT_DENIED: false,
+
+  /* ---- Formspree (contact form) ---- */
   FORMSPREE_ID: "maewnodj",              // e.g. "xdorwabc"  OR  "https://formspree.io/f/xdorwabc"
 
   // ---- Supabase (anon public key ONLY) ----

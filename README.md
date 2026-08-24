@@ -1,183 +1,187 @@
 # Pellikal Window Enhancements — Website
 
-A professional, **multi-page** website for Pellikal Window Enhancements (residential & commercial
-window film, Long Island & NYC), built to your brand guidelines — **Mulish** type, **deep-navy +
-cyan**, the **stacked-panes logo**, the **diagonal capsule photo masks**, and the real photos from
-your brand kit. Plain HTML/CSS/JS, no build step, no framework, not Wix.
+A plain HTML / CSS / JavaScript website hosted on GitHub Pages.
+**No framework, no npm, and no build step needed to edit page content.**
 
-Highlights
-- **Separate pages** with shared, organized files (one stylesheet, shared scripts, assets folder).
-- A **film-install loading animation**, scroll reveals, **animated stat counters**, a **gallery
-  lightbox**, a **back-to-top** button, and a **drag-to-compare tint slider** (bare glass vs. film).
-- A **Formspree** consultation form, click-to-call everywhere, sticky mobile call/text bar.
-- A secure **Supabase admin** to manage **gallery photos**, edit the **bio / mission / intro text**,
-  and add/remove **customer testimonials**.
-- The admin page is **not linked anywhere** — it's reachable only by typing its URL.
+Live at **https://www.pellikal.com**
 
 ---
 
-## File structure
-```
-pellikal-site/
-├── index.html            ← Home  (served at /)
-├── residential/index.html    → /residential/
-├── commercial/index.html     → /commercial/
-├── local-law-97/index.html   → /local-law-97/
-├── solutions/index.html      → /solutions/
-├── contact/index.html        → /contact/   (Formspree form)
-├── about/index.html          → /about/
-├── faq/index.html            → /faq/
-├── admin/index.html          → /admin/     (Staff dashboard; unlinked; noindex)
-├── 404.html
-│   (residential.html, commercial.html, … at the root are tiny redirect
-│    stubs that forward the old .html URLs to the new clean folders)
-├── css/
-│   └── styles.css        ← all styling
-├── js/
-│   ├── config.js         ← ⭐ EDIT THIS: Formspree ID + Supabase keys
-│   ├── main.js           ← site behavior (all public pages)
-│   └── admin.js          ← admin dashboard (admin page only)
-├── assets/images/        ← logo icons, share image, brand photos
-├── robots.txt  ·  sitemap.xml  ·  CNAME  ·  .nojekyll
-```
-The site uses **clean, extensionless URLs**: each page lives in its own folder as `index.html`, which GitHub Pages serves at `/residential/`, `/contact/`, etc. Asset links are relative per folder depth, so the site works identically at the GitHub Pages project path (`/pellikal/`) and at the root custom domain. The old `.html` URLs still work — each one is a small redirect stub that forwards to its clean folder URL. Every page shares the same header/footer markup, so navigation works even with JavaScript disabled,
-and each page has its own title, description and canonical URL for search engines.
+## Start here: the two rules
+
+1. **To change words on a page** — open that page's `index.html`, edit the text
+   inside `<main>`, save. That's it. Nothing to run.
+
+2. **To change the phone number, email, menu or footer** — edit
+   **`site.config.json`**, then run:
+
+   ```bash
+   python3 tools/build.py
+   ```
+
+   That copies the change into every page. You never edit the header or footer
+   inside a page — the build overwrites it.
 
 ---
 
-## 1. Preview
-Open **`index.html`** in any browser and click around.
+## What every file is
 
-## 2. Deploy (GitHub Pages)
-1. Create a repo and upload the **contents** of this folder (so `index.html` is at the repo root).
-2. **Settings → Pages → Source:** *Deploy from a branch*, branch **main**, folder **/(root)**.
-3. Custom domain: `CNAME` already contains `www.pellikal.com`. Add a DNS **CNAME** record for `www`
-   → `<username>.github.io`, then enable **Enforce HTTPS**. Keep `.nojekyll`.
-
-## 3. Connect everything — edit ONE file: `js/config.js`
-```js
-window.PELLIKAL_CONFIG = {
-  FORMSPREE_ID: "abcdwxyz",                 // from your Formspree endpoint /f/abcdwxyz
-  SUPABASE_URL: "https://xxxx.supabase.co", // Supabase → Project Settings → API
-  SUPABASE_ANON_KEY: "eyJhbGciOi...",       // the anon public key (safe to expose)
-  SUPABASE_BUCKET: "gallery",
-  GALLERY_TABLE: "gallery_images",
-  CONTENT_TABLE: "site_content",
-  TESTIMONIALS_TABLE: "testimonials"
-};
 ```
-Leave the Supabase fields blank to keep the site in demo mode (placeholders + default text). Leave
-`FORMSPREE_ID` as-is to keep the form in demo mode (shows success, doesn't send).
+site.config.json     ⭐ Phone, email, menu, service area, page list.
+                        THE one place business details live.
 
-### Formspree (contact form) — ~5 min
-Create a form at **formspree.io**, copy the ID after `/f/`, put it in `FORMSPREE_ID`, and set the
-notification email to **info@pellikal.com**.
+index.html              Home page
+about/index.html        About page           → served at /about/
+contact/index.html      Contact page         → served at /contact/
+faq/index.html          FAQ
+residential/index.html  Residential
+commercial/index.html   Commercial
+solutions/index.html    Solutions
+local-law-97/index.html Redirect only → /commercial/ (see docs/LOCAL-LAW-REMOVAL.md)
+privacy/index.html      Privacy policy
+admin/index.html        Staff content manager (unlinked, not indexed)
+404.html                Shown for a bad URL
+
+about.html              ⚠️ NOT a page — a redirect. See "Why two abouts?"
+commercial.html         (same) … one for each page above
+
+partials/
+  header.html           The site header + menu, shared by every page
+  footer.html           The footer + sticky mobile call bar
+
+tools/
+  build.py              Copies partials + config into every page
+
+css/
+  styles.css            All styling. Contents list at the top of the file.
+
+js/
+  config.js             Formspree ID, Supabase keys, Google Tag Manager ID
+  main.js               Site behaviour: menu, form, gallery, animations
+  tracking.js           Google Tag Manager loader + analytics events
+  admin.js              Powers /admin/ only
+
+assets/images/          Photos, logos, favicons
+docs/                   Reference documents (marketing, phone audit, setup)
+
+CNAME                   Tells GitHub Pages the domain is www.pellikal.com
+.nojekyll               Stops GitHub from reprocessing the files
+robots.txt              Search-engine rules
+sitemap.xml             Generated by build.py — don't edit by hand
+```
 
 ---
 
-## 4. Turn on the admin (Supabase) — ~15 min
+## Why two "abouts"? (`about/` and `about.html`)
 
-### Step 1 — Project + keys
-Create a free project at **supabase.com** → **Project Settings → API** → copy the **Project URL** and
-**anon public** key into `js/config.js`.
+This is the thing that looks wrong but isn't:
 
-### Step 2 — Storage bucket
-**Storage → Create bucket** → name it exactly **`gallery`**, turn **Public bucket ON**.
+| File | What it is |
+|---|---|
+| `about/index.html` | **The real page.** Browsers show it at `/about/` |
+| `about.html` | **A redirect.** A few lines that forward `/about.html` → `/about/` |
 
-### Step 3 — Tables + security (SQL Editor → paste → Run)
-```sql
--- 1) GALLERY PHOTOS
-create table if not exists gallery_images (
-  id uuid primary key default gen_random_uuid(),
-  created_at timestamptz not null default now(),
-  url text not null, path text, category text, caption text
-);
-alter table gallery_images enable row level security;
-create policy "Public read gallery"  on gallery_images for select using (true);
-create policy "Staff insert gallery" on gallery_images for insert to authenticated with check (true);
-create policy "Staff delete gallery" on gallery_images for delete to authenticated using (true);
+The site used to use addresses like `pellikal.com/about.html`. It now uses the
+cleaner `pellikal.com/about/`. Google and other sites still hold links to the
+old addresses, so each one stays behind as a small forwarder.
 
--- 2) EDITABLE SITE TEXT (bio, mission, homepage intro)
-create table if not exists site_content (
-  key text primary key, value text, updated_at timestamptz not null default now()
-);
-alter table site_content enable row level security;
-create policy "Public read content"  on site_content for select using (true);
-create policy "Staff insert content" on site_content for insert to authenticated with check (true);
-create policy "Staff update content" on site_content for update to authenticated using (true) with check (true);
-create policy "Staff delete content" on site_content for delete to authenticated using (true);
+**Deleting them would turn those existing links into 404s and throw away the
+search ranking they carry.** They're generated by `build.py`, and each says
+`REDIRECT ONLY — this is not a real page` at the top.
 
--- 3) CUSTOMER TESTIMONIALS
-create table if not exists testimonials (
-  id uuid primary key default gen_random_uuid(),
-  created_at timestamptz not null default now(),
-  quote text not null, author text not null
-);
-alter table testimonials enable row level security;
-create policy "Public read testimonials"  on testimonials for select using (true);
-create policy "Staff insert testimonials" on testimonials for insert to authenticated with check (true);
-create policy "Staff delete testimonials" on testimonials for delete to authenticated using (true);
-```
-Then allow signed-in staff to upload/delete files in the bucket:
-```sql
-create policy "Staff upload gallery bucket" on storage.objects
-  for insert to authenticated with check (bucket_id = 'gallery');
-create policy "Staff delete gallery bucket" on storage.objects
-  for delete to authenticated using (bucket_id = 'gallery');
-```
-
-### Step 4 — Create your login
-**Authentication → Users → Add user** (enable *Auto Confirm*); enter your email + password.
-
-### Step 5 — Use it
-Go to **https://www.pellikal.com/admin/** and sign in. Three tabs:
-- **Photos** — upload/delete gallery images (category + caption).
-- **Bio & Mission** — edit the Who We Are, Mission, and homepage intro text (blank a field to restore
-  the built-in default).
-- **Testimonials** — add/remove real customer reviews.
-
-> **The admin page is intentionally not linked** from the menu, footer, or sitemap, and it's set to
-> `noindex`. Bookmark **/admin/**. It's your private door in.
+You never edit them. Add a page to `site.config.json` with `"redirect": true`
+and one is created for you.
 
 ---
 
-## Security — what's in place, honestly
-No website is "unhackable," but this follows current best practices:
-- **No secrets in the browser.** The anon key is designed to be public; it can't bypass your rules.
-- **Row-level security (RLS)** is enforced on Supabase's servers: anyone can *read* gallery/text/
-  reviews (they're shown on the site), but **inserting, editing and deleting require a signed-in
-  staff account**. A visitor editing the page's JavaScript still can't write to your database.
-- **Auth** is handled by Supabase (hashed passwords, tokens) — not by any code in this site.
-- **Spam protection** on the form via a hidden honeypot plus Formspree's own filtering.
-- **XSS-safe rendering:** photo captions, testimonials and edited text are inserted as plain text /
-  escaped, so pasted HTML can't run.
-- Serve over **HTTPS** (GitHub Pages does this once your domain is set).
-- Optional hardening: enable email confirmation / limit sign-ups in Supabase Auth so only your
-  account exists, and turn on 2-factor on your Supabase login.
+## How the shared header and footer work
+
+Every page contains marker comments:
+
+```html
+<!-- @partial:header -->
+   …generated header — do not edit here…
+<!-- @end -->
+```
+
+`build.py` replaces whatever sits between those markers. Everything outside
+them — all your real page content — is never touched.
+
+Which means:
+
+- Pages stay **complete, standalone HTML**. Open one in a browser and it works,
+  with no server and no build.
+- But the repeated parts (header, footer) are written **once** in `partials/`,
+  so a menu change is one edit instead of ten.
 
 ---
 
-## Editing content directly
-All copy is plain HTML in the page files. Shared header/footer live in each page (edit once per file,
-or ask us to regenerate). The phone appears as `tel:+15163369586` and display `516-336-9586` — update
-both if it changes. Text the admin can edit is marked with `data-content="…"`; the words between the
-tags are the defaults shown until changed in the admin.
+## Common tasks
 
-### Please keep (trust & legal)
-Copy avoids fabricated reviews/awards/certifications and unconditional guarantees. Warranty =
-*"manufacturer-backed lifetime warranty available."* The Local Law 97 page does **not** promise
-compliance and carries the required disclaimer. Add only real testimonials.
+**Change the phone number**
+Edit `phoneDisplay`, `phoneLink` and `phoneSchema` in `site.config.json`, then
+run the build. It updates every page, every `tel:` and `sms:` link, the
+structured data, the meta descriptions and the JavaScript fallback messages.
 
-## SEO
-This is now a true multi-page site: each page has a unique title, description and canonical URL, all
-listed in `sitemap.xml`, with LocalBusiness schema on the home page. After launch, verify the site in
-**Google Search Console** and submit the sitemap.
+**Add or reorder a menu item**
+Edit the `nav` array in `site.config.json` → run the build.
 
-## Launch checklist
-- [ ] `js/config.js`: add your **Formspree ID** and test a real submission → info@pellikal.com
-- [ ] `js/config.js`: add **Supabase URL + anon key**; run the three SQL blocks + storage policies;
-      create your login; then at **/admin/** upload a test photo, edit the bio, add a testimonial
-- [ ] Phone check on mobile: tap-to-call, tap-to-text, sticky bar, menu, tint slider, form
-- [ ] Deploy to GitHub Pages; connect **www.pellikal.com** (CNAME + DNS); enable HTTPS
-- [ ] Submit `sitemap.xml` in Google Search Console; run Google's Rich Results Test on the home page
-- [ ] Bookmark **/admin/**
+**Change footer links**
+Edit `footerServices` / `footerCompany` in `site.config.json` → run the build.
+
+**Edit the words on a page**
+Open that page's `index.html` and change the text inside `<main>`. No build.
+
+**Change a brand colour**
+`css/styles.css` → the `:root` block at the top → edit `--navy` or `--cyan`.
+
+**Add a whole new page**
+1. Copy an existing folder: `cp -r about/ services/`
+2. Edit `services/index.html` — title, description, canonical URL, and the
+   content inside `<main>`. Leave the `@partial` markers alone.
+3. Add it to `pages` (and to `nav` if it belongs in the menu) in
+   `site.config.json`
+4. Run `python3 tools/build.py`
+
+**Turn on Google Analytics / Ads**
+`js/config.js` → set `GTM_CONTAINER_ID`, and replace `GTM-XXXXXXX` in the
+`<noscript>` block on each page. See `docs/MARKETING-TRACKING.md`.
+
+---
+
+## Deploying
+
+Push to the `main` branch; GitHub Pages redeploys in about a minute.
+
+**Run `python3 tools/build.py` before pushing** if you touched
+`site.config.json` or anything in `partials/`. Forgetting doesn't break the
+site — the change just won't be on every page yet.
+
+---
+
+## The connected services
+
+| Service | Purpose | Where its key lives |
+|---|---|---|
+| **Formspree** | Delivers the contact form to email | `js/config.js` → `FORMSPREE_ID` |
+| **Supabase** | Gallery, testimonials, editable text, `/admin/` login | `js/config.js` → `SUPABASE_URL`, `SUPABASE_ANON_KEY` |
+| **Google Tag Manager** | Analytics + ads measurement (live: `GTM-MK2PHWB`) | `site.config.json` → `analytics` |
+
+**Security note:** the Supabase key in `js/config.js` is the **anon public**
+key. It's designed to be visible in a browser — protection comes from
+row-level security rules on Supabase's servers. Never put a `service_role` key
+in any file here.
+
+**If Supabase is down the site still works.** Every page has its normal content
+written into the HTML; Supabase only replaces it when it responds.
+
+---
+
+## Reference documents
+
+| Document | Contents |
+|---|---|
+| `docs/MARKETING-TRACKING.md` | Every analytics event, for the ads specialist |
+| `docs/OWNER-MARKETING-SETUP.md` | Accounts and access the owner must set up |
+| `docs/PHONE-AUDIT.md` | Every place the phone number appears |
+| `docs/LOCAL-LAW-REMOVAL.md` | What was removed and how the old URL redirects |
