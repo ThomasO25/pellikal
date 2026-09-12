@@ -832,3 +832,21 @@ body{overflow-x:clip}
 h1 sup,h2 sup,h3 sup,.trustbar sup,.logo sup{font-size:.42em;top:-.7em;line-height:0;font-weight:700}
 .selectpro__inner{grid-template-columns:300px 1fr}
 @media (max-width:900px){.selectpro__inner{grid-template-columns:1fr}}
+
+/* ---- Window Inserts page: image slots until authorised assets arrive ---- */
+.imgslot{margin:0}
+.imgslot__box{aspect-ratio:4/3;border:1.5px dashed var(--line);border-radius:clamp(14px,1.8vw,20px);background:repeating-linear-gradient(135deg,#f6f8fa 0 14px,#eef1f5 14px 28px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;color:var(--muted);font-size:.86rem;text-align:center;padding:1rem}
+.imgslot__k{font-size:.62rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan-ink)}
+.imgslot--dark .imgslot__box{border-color:rgba(255,255,255,.25);background:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 14px,rgba(255,255,255,.02) 14px 28px);color:var(--on-dark-mut)}
+.imgslot--dark .imgslot__k{color:var(--cyan-2)}
+.imgslot img{width:100%;height:auto;display:block;border-radius:clamp(14px,1.8vw,20px);box-shadow:0 24px 56px rgba(14,27,64,.16)}
+.card--link{display:block;text-decoration:none;color:inherit}
+.card--link h3{color:var(--navy)}
+.card__go{display:inline-block;margin-top:.9rem;font-weight:800;font-size:.9rem;color:var(--cyan-ink)}
+.card--link:hover .card__go{text-decoration:underline}
+
+/* Filled insert-project photos: real photography, shown level and captioned. */
+.imgslot--filled img{width:100%;height:auto;display:block;border-radius:clamp(14px,1.8vw,20px);box-shadow:0 24px 56px rgba(14,27,64,.16)}
+.imgslot--filled figcaption{display:block;margin-top:.6rem;font-size:.78rem;color:var(--muted);line-height:1.5}
+.imgslot--dark.imgslot--filled figcaption{color:var(--on-dark-mut)}
+.imgslot--dark.imgslot--filled img{box-shadow:0 24px 56px rgba(0,0,0,.35)}

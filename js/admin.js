@@ -34,6 +34,9 @@
   var PROJECTS = CFG.PROJECTS_TABLE || "projects";
   var EDIT = $("#cms-edit"), PREV = $("#cms-prev");
   var draft = {}, saved = {};
+  /* If an admin uploads a project image but leaves/restarts the editor before
+     publishing, keep a cleanup hook so the unused Storage object is removed. */
+  var projectDraftCleanup = null;
 
   /* ---------- little builders ---------- */
   function field(labelText, node, hint) {
@@ -90,9 +93,32 @@
       return { ok: true };
     });
   }
+  /* Remove a Storage object and REPORT the outcome.
+     Returns a promise of true/false — callers must await it.
+     A null/empty path means the image is a static repo asset (seeded rows
+     have image_path = null), so there is nothing in Storage to delete and we
+     must never try. */
+  function removeStorage(path) {
+    if (!path) return Promise.resolve(true);
+    return SB.storage.from(CFG.SUPABASE_BUCKET).remove([path])
+      .then(function (r) {
+        if (r && r.error) { console.warn("[Pellikal] storage remove failed:", r.error.message); return false; }
+        return true;
+      })
+      .catch(function (e) { console.warn("[Pellikal] storage remove failed:", e && e.message); return false; });
+  }
+
   function uploadImage(file) {
-    if (!/^image\//.test(file.type)) return Promise.reject(new Error("That file isn't an image."));
-    var path = Date.now() + "-" + file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return Promise.reject(new Error("Only JPEG, PNG or WebP images are allowed."));
+    /* Randomised object path. The original filename is never trusted or
+       reused — only a whitelisted extension is carried over. Type and size
+       are ALSO enforced server-side by the bucket; this check is just UX. */
+    var EXT = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+    var ext = EXT[file.type];
+    if (!ext) return Promise.reject(new Error("Only JPEG, PNG or WebP images are allowed."));
+    if (file.size > 8 * 1024 * 1024) return Promise.reject(new Error("That image is larger than 8 MB."));
+    var path = (crypto && crypto.randomUUID ? crypto.randomUUID()
+                : Date.now() + "-" + Math.random().toString(16).slice(2)) + "." + ext;
     return SB.storage.from(CFG.SUPABASE_BUCKET).upload(path, file, { cacheControl: "3600", upsert: false })
       .then(function (r) { if (r.error) throw r.error; return { url: SB.storage.from(CFG.SUPABASE_BUCKET).getPublicUrl(path).data.publicUrl, path: path }; });
   }
@@ -105,12 +131,14 @@
     var status = el("p", "microcopy", ""); status.style.margin = ".4rem 0 0";
     file.addEventListener("change", function () {
       var f = file.files && file.files[0]; if (!f) return;
-      status.textContent = "Uploading\u2026";
+      status.textContent = "Uploading\u2026"; file.disabled = true;
       uploadImage(f).then(function (r) {
         prev.src = r.url; prev.style.display = "block";
         status.textContent = "Uploaded. Press Publish changes to make it live.";
         onPicked(r.url, r.path);
-      }).catch(function (e) { status.textContent = "Upload failed: " + (e.message || "please try again."); });
+      }).catch(function (e) {
+        status.textContent = "Upload failed: " + (e.message || "please try again.");
+      }).then(function () { file.disabled = false; });
     });
     wrap.appendChild(prev); wrap.appendChild(file); wrap.appendChild(status);
     return wrap;
@@ -120,10 +148,10 @@
   function viewHome() {
     clear(EDIT); clear(PREV);
     EDIT.appendChild(el("h2", null, "Homepage"));
-    EDIT.appendChild(el("p", "hint", "The headline, hero photo, Llumar SelectPro section and closing call-to-action. The preview updates as you type; the website changes only when you press Publish."));
+    EDIT.appendChild(el("p", "hint", "The headline, the Llumar SelectPro paragraph and the closing call-to-action. The preview updates as you type; the website changes only when you press Publish. (Photos are changed in Projects and Photos.)"));
 
     var bar = publishBar(function () {
-      return publishContent(["hero_headline", "hero_subtitle", "hero_image", "selectpro_badge", "selectpro_text", "cta_headline", "cta_text"]).then(function (r) {
+      return publishContent(["hero_headline", "hero_subtitle", "selectpro_text", "cta_headline", "cta_text"]).then(function (r) {
         var old = EDIT.querySelector(".okbox,.warnbox"); if (old) old.remove();
         if (!r.ok) { EDIT.insertBefore(note("err", "Couldn\u2019t publish: " + r.msg), EDIT.children[2]); return false; }
         EDIT.insertBefore(note("ok", "Changes published successfully. They are live on your website."), EDIT.children[2]);
@@ -139,8 +167,6 @@
 
     EDIT.appendChild(field("Main headline", h));
     EDIT.appendChild(field("Headline paragraph", s, "One or two sentences under the headline."));
-    EDIT.appendChild(field("Hero photo", imagePicker("f-hi", draft.hero_image, function (u) { draft.hero_image = u; bar._mark(); prev(); }), "One strong landscape photo of a luxury or coastal home."));
-    EDIT.appendChild(field("Llumar SelectPro badge", imagePicker("f-sb", draft.selectpro_badge, function (u) { draft.selectpro_badge = u; bar._mark(); prev(); }), "Upload the official badge here to replace the placeholder."));
     EDIT.appendChild(field("Llumar SelectPro paragraph", sp, "Have this wording approved by Llumar before publishing."));
     EDIT.appendChild(field("Closing headline", ch));
     EDIT.appendChild(field("Closing paragraph", ct));
@@ -181,16 +207,40 @@
     listProjects(list, formHost);
   }
   function projectForm(host, existing, onSaved) {
+    /* Starting another project/editor abandons any not-yet-published upload
+       from the previous draft. Remove it before building the next form. */
+    if (projectDraftCleanup) {
+      var oldDraftCleanup = projectDraftCleanup; projectDraftCleanup = null;
+      oldDraftCleanup().then(function (ok) {
+        if (!ok) console.warn("[Pellikal] abandoned project draft image could not be removed.");
+      });
+    }
     clear(host);
     var p = existing || {};
+    /* Track the LAST successfully saved image, not merely the image that was
+       present when this editor first opened. An existing project can be
+       published more than once without reopening the form. */
+    var savedImageUrl = p.image_url || "";
+    var savedImagePath = p.image_path || "";
+    var draftUploadPath = null;
     var d = { title: p.title || "", location: p.location || "", service: p.service || "", description: p.description || "",
-              challenge: p.challenge || "", result: p.result || "", image_url: p.image_url || "", image_path: p.image_path || "",
+              challenge: p.challenge || "", result: p.result || "", image_url: p.image_url || "", image_path: p.image_path || "", alt_text: p.alt_text || "",
               featured: p.featured !== false, sort_order: p.sort_order || 0 };
+
+    function armDraftCleanup() {
+      projectDraftCleanup = function () {
+        var path = draftUploadPath; draftUploadPath = null;
+        if (!path) return Promise.resolve(true);
+        return removeStorage(path);
+      };
+    }
+    armDraftCleanup();
 
     var t = input("p-t", d.title, "Waterfront residence");
     var loc = input("p-l", d.location, "Sag Harbor, NY");
     var svc = input("p-s", d.service, "Ceramic solar-control film");
     var desc = textarea("p-d", d.description, "One or two sentences about the property.");
+    var altf = input("p-alt", d.alt_text, "e.g. Cedar-shingled home with large filmed picture windows");
     var ch = textarea("p-c", d.challenge, "What problem was the customer facing?");
     var rs = textarea("p-r", d.result, "What the film achieved.");
     var feat = document.createElement("input"); feat.type = "checkbox"; feat.id = "p-f"; feat.checked = d.featured;
@@ -203,14 +253,29 @@
     host.appendChild(field("Short description", desc));
     host.appendChild(field("Challenge", ch));
     host.appendChild(field("Solution / result", rs));
-    host.appendChild(field("Project photo", imagePicker("p-i", d.image_url, function (u, pa) { d.image_url = u; d.image_path = pa; bar._mark(); prev(); })));
+    host.appendChild(field("Project photo", imagePicker("p-i", d.image_url, function (u, pa) {
+      /* A newly uploaded image is a draft until the DB row saves. If the admin
+         picks another image before publishing, remove the earlier draft now.
+         The original saved image is intentionally kept until AFTER a successful
+         DB update so a failed save can never break the live project. */
+      var previousDraft = draftUploadPath;
+      d.image_url = u; d.image_path = pa; draftUploadPath = pa;
+      if (previousDraft && previousDraft !== pa) {
+        removeStorage(previousDraft).then(function (ok) {
+          if (!ok) alert("The previous draft image could not be removed from storage. It is unused but the project is safe.");
+        });
+      }
+      bar._mark(); prev();
+    })));
+    host.appendChild(field("Photo description (alt text)", altf,
+      "Describe what is visible, in one plain sentence. Screen readers read this aloud, and it helps search. Required when there is a photo."));
     var fl = el("label", "fl", "Show on homepage"); fl.setAttribute("for", "p-f"); host.appendChild(fl);
     var frow = el("div"); frow.style.cssText = "display:flex;align-items:center;gap:.5rem;margin-top:.3rem";
     frow.appendChild(feat); frow.appendChild(el("span", "microcopy", "Featured projects appear in the homepage \u201COur work\u201D section."));
     host.appendChild(frow);
     host.appendChild(field("Sort order", sort, "Lower numbers appear first."));
 
-    function sync() { d.title = t.value; d.location = loc.value; d.service = svc.value; d.description = desc.value; d.challenge = ch.value; d.result = rs.value; d.featured = feat.checked; d.sort_order = parseInt(sort.value || "0", 10); }
+    function sync() { d.title = t.value; d.location = loc.value; d.service = svc.value; d.description = desc.value; d.challenge = ch.value; d.result = rs.value; d.alt_text = altf.value; d.featured = feat.checked; d.sort_order = parseInt(sort.value || "0", 10); }
     function prev() {
       clear(PREV);
       var art = el("article", "proj");
@@ -225,20 +290,47 @@
       if (d.result) b.appendChild(el("p", "proj__l", "Result: " + d.result));
       art.appendChild(b); PREV.appendChild(art);
     }
-    [t, loc, svc, desc, ch, rs, sort].forEach(function (n) { n.addEventListener("input", function () { sync(); bar._mark(); prev(); }); });
+    [t, loc, svc, desc, ch, rs, altf, sort].forEach(function (n) { n.addEventListener("input", function () { sync(); bar._mark(); prev(); }); });
     feat.addEventListener("change", function () { sync(); bar._mark(); prev(); });
 
     var bar = publishBar(function () {
       sync();
       if (!d.title) { alert("Give the project a title first."); return false; }
+      if (d.image_url && !(d.alt_text || "").trim()) {
+        alert("Please add a photo description (alt text) so the image is accessible.");
+        return false;
+      }
       var row = { title: d.title, location: d.location, service: d.service, description: d.description,
                   challenge: d.challenge, result: d.result, image_url: d.image_url, image_path: d.image_path,
-                  featured: d.featured, sort_order: d.sort_order };
+                  alt_text: d.alt_text, featured: d.featured, sort_order: d.sort_order };
       var q = existing ? SB.from(PROJECTS).update(row).eq("id", existing.id) : SB.from(PROJECTS).insert(row);
       return q.then(function (r) {
-        if (r.error) { alert("Couldn't publish: " + r.error.message); return false; }
-        onSaved(); if (!existing) projectForm(host, null, onSaved);
-        return true;
+        if (r.error) {
+          /* The database did not take ownership of the new upload. Remove that
+             draft object so a failed publish does not leak Storage files. */
+          var failedDraft = draftUploadPath; draftUploadPath = null;
+          return (failedDraft ? removeStorage(failedDraft) : Promise.resolve(true)).then(function (ok) {
+            if (!ok) console.warn("[Pellikal] failed project upload cleanup also failed.");
+            d.image_url = savedImageUrl; d.image_path = savedImagePath; armDraftCleanup(); prev();
+            alert("Couldn't publish: " + r.error.message);
+            return false;
+          });
+        }
+
+        /* The row now owns the new upload. Only after the successful DB save
+           may we delete the old Storage object. Static seeded assets have a
+           null/empty image_path and are therefore never touched. */
+        draftUploadPath = null; projectDraftCleanup = null;
+        var replacedOriginal = savedImagePath && savedImagePath !== d.image_path ? savedImagePath : "";
+        var cleanup = replacedOriginal ? removeStorage(replacedOriginal) : Promise.resolve(true);
+        return cleanup.then(function (ok) {
+          if (!ok) alert("Saved, but the previous image could not be removed from storage. It is now unused.");
+          savedImageUrl = d.image_url || "";
+          savedImagePath = d.image_path || "";
+          if (existing) armDraftCleanup();
+          onSaved(); if (!existing) projectForm(host, null, onSaved);
+          return true;
+        });
       });
     });
     host.appendChild(bar); prev();
@@ -263,9 +355,11 @@
         acts.appendChild(smallBtn("Delete", "del", function () {
           if (!confirm("Delete \u201C" + (p.title || "this project") + "\u201D? This cannot be undone.")) return;
           SB.from(PROJECTS).delete().eq("id", p.id).then(function (rr) {
-            if (rr.error) { alert(rr.error.message); return; }
-            if (p.image_path) { try { SB.storage.from(CFG.SUPABASE_BUCKET).remove([p.image_path]); } catch (e) {} }
-            listProjects(host, formHost);
+            if (rr.error) { alert("Couldn't delete: " + rr.error.message); return; }
+            return removeStorage(p.image_path).then(function (ok) {
+              if (!ok) alert("Project deleted, but its image could not be removed from storage. It is now unused.");
+              listProjects(host, formHost);
+            });
           });
         }));
         it.appendChild(acts); host.appendChild(it);
@@ -284,16 +378,26 @@
     var msg = el("p", "microcopy", "");
     EDIT.appendChild(field("Choose a photo", file));
     EDIT.appendChild(field("Caption", cap));
-    EDIT.appendChild(field("Description for accessibility", alt));
+    EDIT.appendChild(field("Photo description (alt text)", alt, "Required. One plain sentence describing what is visible \u2014 screen readers read this aloud."));
     EDIT.appendChild(btn("Upload photo", "btn--cyan", function () {
       var f = file.files && file.files[0]; if (!f) { msg.textContent = "Choose a photo first."; return; }
+      if (!alt.value.trim()) { msg.textContent = "Please add a photo description (alt text) before uploading."; return; }
       msg.textContent = "Uploading\u2026";
+      var uploaded = null;
       uploadImage(f).then(function (r) {
+        uploaded = r;
         return SB.from(CFG.GALLERY_TABLE).insert({ url: r.url, path: r.path, caption: cap.value.trim(), alt_text: alt.value.trim() });
       }).then(function (r) {
         if (r.error) throw r.error;
+        uploaded = null;
         msg.textContent = "Photo published to your gallery."; file.value = ""; cap.value = ""; alt.value = ""; listPhotos(grid);
-      }).catch(function (e) { msg.textContent = "Upload failed: " + (e.message || "please try again."); });
+      }).catch(function (e) {
+        var cleanup = uploaded && uploaded.path ? removeStorage(uploaded.path) : Promise.resolve(true);
+        cleanup.then(function (ok) {
+          msg.textContent = "Upload failed: " + (e.message || "please try again.") +
+            (ok ? "" : " The unused uploaded file also could not be removed; tell the site administrator.");
+        });
+      });
     }));
     EDIT.appendChild(msg);
     var gh = el("h2", null, "Your photos"); gh.style.marginTop = "2rem"; EDIT.appendChild(gh);
@@ -316,9 +420,11 @@
         acts.appendChild(smallBtn("Delete", "del", function () {
           if (!confirm("Delete this photo?")) return;
           SB.from(CFG.GALLERY_TABLE).delete().eq("id", p.id).then(function (rr) {
-            if (rr.error) { alert(rr.error.message); return; }
-            if (p.path) { try { SB.storage.from(CFG.SUPABASE_BUCKET).remove([p.path]); } catch (e) {} }
-            listPhotos(host);
+            if (rr.error) { alert("Couldn't delete: " + rr.error.message); return; }
+            return removeStorage(p.path).then(function (ok) {
+              if (!ok) alert("Photo deleted, but the file could not be removed from storage. It is now unused.");
+              listPhotos(host);
+            });
           });
         }));
         it.appendChild(acts); host.appendChild(it);
@@ -379,49 +485,205 @@
     });
   }
 
-  /* ===================== BUSINESS INFORMATION ===================== */
-  function viewBusiness() {
-    clear(EDIT); clear(PREV);
-    EDIT.appendChild(el("h2", null, "Business Information"));
-    EDIT.appendChild(el("p", "hint", "Your phone, email and service area. If any of these are left blank the website keeps showing its built-in details, so nothing can go missing."));
-    var ph = input("b-p", draft.business_phone || "", "516-336-9586", "tel");
-    var em = input("b-e", draft.business_email || "", "info@pellikal.com", "email");
-    var ar = textarea("b-a", draft.service_area || "", "Hamptons \u00B7 East End \u00B7 North Fork \u00B7 Long Island \u00B7 Manhattan");
-    EDIT.appendChild(field("Phone number", ph));
-    EDIT.appendChild(field("Email address", em));
-    EDIT.appendChild(field("Primary service area", ar));
-    function prev() {
-      clear(PREV);
-      PREV.appendChild(el("p", "microcopy", "Shown across the website:"));
-      PREV.appendChild(el("h3", null, ph.value || "516-336-9586"));
-      PREV.appendChild(el("p", null, em.value || "info@pellikal.com"));
-      PREV.appendChild(el("p", "microcopy", ar.value || "Hamptons \u00B7 East End \u00B7 Long Island"));
-    }
-    var bar = publishBar(function () {
-      draft.business_phone = ph.value; draft.business_email = em.value; draft.service_area = ar.value;
-      return publishContent(["business_phone", "business_email", "service_area"]).then(function (r) {
-        var old = EDIT.querySelector(".okbox,.warnbox"); if (old) old.remove();
-        if (!r.ok) { EDIT.appendChild(note("err", "Couldn\u2019t publish: " + r.msg)); return false; }
-        EDIT.appendChild(note("ok", "Changes published successfully.")); return true;
-      });
-    });
-    [ph, em, ar].forEach(function (n) { n.addEventListener("input", function () { bar._mark(); prev(); }); });
-    EDIT.appendChild(bar); prev();
-  }
+  /* Business Information (phone / email / service area) is intentionally NOT
+     editable here. Those values generate tel:, sms: and mailto: links, meta
+     descriptions and JSON-LD across every page, so they live in
+     site.config.json and are applied by tools/build.py. Editing them at
+     runtime could only ever change some occurrences and would leave the site
+     inconsistent. See docs/DATA-MODEL.md. */
 
   /* ===================== shell ===================== */
-  var VIEWS = { home: viewHome, projects: viewProjects, photos: viewPhotos, quotes: viewQuotes, business: viewBusiness };
+  var VIEWS = { home: viewHome, projects: viewProjects, photos: viewPhotos, quotes: viewQuotes };
+  var activeView = null;
   function go(name) {
+    /* Leaving Projects without publishing should not strand a just-uploaded
+       draft image in Storage. Cleanup is best-effort and never blocks nav. */
+    if (activeView === "projects" && name !== "projects" && projectDraftCleanup) {
+      var cleanupDraft = projectDraftCleanup; projectDraftCleanup = null;
+      cleanupDraft().then(function (ok) {
+        if (!ok) console.warn("[Pellikal] abandoned project image could not be removed while leaving Projects.");
+      });
+    }
+    activeView = name;
     $$("#cms-nav button").forEach(function (b) { b.classList.toggle("is-on", b.getAttribute("data-view") === name); });
     (VIEWS[name] || viewHome)();
   }
   function show(id) { var e = $(id); if (e) e.style.display = ""; }
   function hide(id) { var e = $(id); if (e) e.style.display = "none"; }
+  /* AUTHORISATION GATE.
+     Being signed in is NOT authorisation. Before any CMS chrome is shown we
+     ask the database whether this user is an approved admin, via the
+     am_i_admin() RPC (which reads app_admins under SECURITY DEFINER).
+     A normal account gets a clear refusal and is signed out.
+
+     This is a UX gate only — the real enforcement is row-level security on
+     the server. Even if someone forced this function to run, every write
+     would still be rejected by Postgres. */
+  /* ===================== ACCESS CONTROL =====================
+     Two independent gates, in order:
+
+       1. APPROVED ADMIN — am_i_admin() asks the database whether this
+          user's UUID is in app_admins. Being signed in proves nothing.
+
+       2. MFA (aal2) — the session must have completed a TOTP challenge.
+          Supabase records this as the "aal" claim in the JWT.
+
+     Both gates are ALSO enforced server-side: every write policy requires
+     public.is_admin_mfa(), which is is_admin() AND aal2. So this screen is
+     convenience — a password-only session that skipped the UI entirely would
+     still be refused by Postgres on every insert, update and delete.
+     ========================================================= */
+
+  var currentSession = null;
+
   function enter(session) {
-    hide("#admin-login"); hide("#admin-setup");
+    currentSession = session;
+    hide("#admin-login"); hide("#admin-setup"); hide("#admin-mfa"); hide("#admin-mfa-enroll");
+
+    SB.rpc("am_i_admin").then(function (res) {
+      if (res.error || res.data !== true) return denyAccess(res.error);   // gate 1
+      return checkAssurance();                                            // gate 2
+    }).catch(function (e) { denyAccess(e); });
+  }
+
+  /* Decide whether this session already satisfies MFA, needs a code, or needs
+     first-time enrolment. */
+  function checkAssurance() {
+    return SB.auth.mfa.getAuthenticatorAssuranceLevel().then(function (r) {
+      if (r.error) throw r.error;
+      var cur = r.data && r.data.currentLevel;
+      var next = r.data && r.data.nextLevel;
+      if (cur === "aal2") return showCMS();              // already verified
+      if (next === "aal2") return showChallenge();       // has a factor, needs the code
+      return showEnroll();                               // no factor yet
+    }).catch(function (e) { denyAccess(e); });
+  }
+
+  function showCMS() {
+    hide("#admin-login"); hide("#admin-mfa"); hide("#admin-mfa-enroll");
     $("#cms").classList.add("is-on");
-    var who = $("#admin-who"); if (who && session && session.user) who.textContent = session.user.email;
+    var who = $("#admin-who");
+    if (who && currentSession && currentSession.user) who.textContent = currentSession.user.email;
     loadContent().then(function () { go("home"); }).catch(function () { go("home"); });
+  }
+
+  /* ---- existing authenticator: ask for the 6-digit code ---- */
+  function showChallenge() {
+    hide("#admin-login"); show("#admin-mfa");
+    var code = $("#mfa-code"), err = $("#mfa-err"), btn = $("#mfa-verify");
+    err.style.display = "none"; code.value = ""; code.focus();
+
+    function verify() {
+      var val = (code.value || "").replace(/\D/g, "");
+      if (val.length !== 6) { err.textContent = "Enter the 6-digit code from your app."; err.style.display = "block"; return; }
+      btn.textContent = "Verifying\u2026"; btn.disabled = true; err.style.display = "none";
+      SB.auth.mfa.listFactors().then(function (lf) {
+        if (lf.error) throw lf.error;
+        var totp = (lf.data && lf.data.totp) || [];
+        if (!totp.length) return showEnroll();
+        return SB.auth.mfa.challengeAndVerify({ factorId: totp[0].id, code: val }).then(function (v) {
+          if (v.error) throw v.error;
+          return checkAssurance();     // re-read the AAL rather than assuming
+        });
+      }).catch(function (e) {
+        err.textContent = (e && e.message) ? e.message : "That code wasn\u2019t accepted. Try the next one.";
+        err.style.display = "block"; code.value = ""; code.focus();
+      }).then(function () { btn.textContent = "Verify"; btn.disabled = false; });
+    }
+    btn.onclick = verify;
+    code.onkeydown = function (e) { if (e.key === "Enter") verify(); };
+    $("#mfa-cancel").onclick = function (e) { e.preventDefault(); SB.auth.signOut().then(function () { location.reload(); }); };
+  }
+
+  /* ---- first login: enrol a TOTP factor ---- */
+  function showEnroll() {
+    hide("#admin-login"); hide("#admin-mfa"); show("#admin-mfa-enroll");
+    var err = $("#mfa-enroll-err"), btn = $("#mfa-enroll-verify");
+    var qr = $("#mfa-qr"), secret = $("#mfa-secret"), code = $("#mfa-enroll-code");
+    err.style.display = "none";
+    var factorId = null;
+
+    /* mfa.enroll() creates an UNVERIFIED factor. If setup is abandoned halfway
+       and restarted, those unverified factors would otherwise pile up on the
+       account forever. So: clear out any unverified TOTP factors first, then
+       enrol exactly one.
+
+       A VERIFIED factor is never touched here — if one existed we would not be
+       on this screen at all (checkAssurance would have sent us to the code
+       challenge). The status check below is belt-and-braces so a change in
+       Supabase's response shape can never unenrol a working authenticator. */
+    SB.auth.mfa.listFactors()
+      .then(function (lf) {
+        if (lf.error) throw lf.error;
+        /* listFactors().data.totp contains verified TOTP factors only. The
+           complete factor list (including abandoned/unverified enrollments)
+           is data.all. An empty [] is truthy in JavaScript, so falling back
+           with `totp || all` silently skipped stale factors. */
+        var all = (lf.data && Array.isArray(lf.data.all)) ? lf.data.all : [];
+        var stale = all.filter(function (f) {
+          return f && f.id && f.factor_type === "totp" && f.status === "unverified";
+        });
+        if (!stale.length) return null;
+        return Promise.all(stale.map(function (f) {
+          return SB.auth.mfa.unenroll({ factorId: f.id }).catch(function (e) {
+            console.warn("[Pellikal] could not clear stale MFA factor:", e && e.message);
+          });
+        }));
+      })
+      .catch(function (e) { console.warn("[Pellikal] factor cleanup skipped:", e && e.message); })
+      .then(function () {
+        return SB.auth.mfa.enroll({ factorType: "totp", friendlyName: "Pellikal admin" });
+      })
+      .then(function (r) {
+        if (r.error) throw r.error;
+        factorId = r.data.id;
+        var t = r.data.totp || {};
+        /* The QR arrives as an SVG data URI. Only ever assign it to an <img>
+           src after checking the scheme — an <img> cannot execute SVG script,
+           and we never inject the markup into the DOM. */
+        if (typeof t.qr_code === "string" && /^data:image\/svg\+xml[,;]/i.test(t.qr_code)) {
+          qr.src = t.qr_code; qr.style.display = "inline-block";
+        }
+        if (t.secret) secret.value = t.secret;
+        code.focus();
+      })
+      .catch(function (e) {
+        err.textContent = (e && e.message) ? e.message : "Couldn\u2019t start two-factor setup.";
+        err.style.display = "block";
+      });
+
+    function verify() {
+      var val = (code.value || "").replace(/\D/g, "");
+      if (!factorId) { err.textContent = "Setup didn\u2019t start. Reload and try again."; err.style.display = "block"; return; }
+      if (val.length !== 6) { err.textContent = "Enter the 6-digit code from your app."; err.style.display = "block"; return; }
+      btn.textContent = "Verifying\u2026"; btn.disabled = true; err.style.display = "none";
+      SB.auth.mfa.challengeAndVerify({ factorId: factorId, code: val })
+        .then(function (v) { if (v.error) throw v.error; return checkAssurance(); })
+        .catch(function (e) {
+          err.textContent = (e && e.message) ? e.message : "That code wasn\u2019t accepted. Wait for the next one and retry.";
+          err.style.display = "block"; code.value = ""; code.focus();
+        })
+        .then(function () { btn.textContent = "Confirm and continue"; btn.disabled = false; });
+    }
+    btn.onclick = verify;
+    code.onkeydown = function (e) { if (e.key === "Enter") verify(); };
+    $("#mfa-enroll-cancel").onclick = function (e) { e.preventDefault(); SB.auth.signOut().then(function () { location.reload(); }); };
+  }
+
+  function denyAccess(err) {
+    $("#cms").classList.remove("is-on");
+    hide("#admin-mfa"); hide("#admin-mfa-enroll");
+    show("#admin-login");
+    /* Keep the on-screen message generic. Database/auth error strings can
+       disclose schema or configuration detail, and they mean nothing to the
+       person reading them. Technical detail goes to the console instead. */
+    if (err) console.warn("[Pellikal] admin access denied:", (err && err.message) || err);
+    var box = $("#admin-login-err");
+    if (box) {
+      box.textContent = "This account is not authorised for the Pellikal site manager. Ask the site owner to add you.";
+      box.style.display = "block";
+    }
+    try { SB.auth.signOut(); } catch (e) {}
   }
   function doLogin() {
     var email = $("#admin-email").value.trim(), pass = $("#admin-pass").value, err = $("#admin-login-err");
@@ -435,7 +697,7 @@
     });
   }
   function init() {
-    hide("#admin-setup"); hide("#admin-login");
+    hide("#admin-setup"); hide("#admin-login"); hide("#admin-mfa"); hide("#admin-mfa-enroll");
     if (!configured) { show("#admin-setup"); return; }
     $$("#cms-nav button").forEach(function (b) { b.addEventListener("click", function () { go(b.getAttribute("data-view")); }); });
     $("#admin-logout").addEventListener("click", function () { SB.auth.signOut().then(function () { location.reload(); }); });

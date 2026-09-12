@@ -132,6 +132,18 @@
   var yr = $("#year"); if (yr) yr.textContent = new Date().getFullYear();
 
   /* ---------- Contact form (Formspree) — never fakes success ---------- */
+  /* /contact/?service=window-inserts pre-selects the dropdown so a visitor
+     arriving from the Window Inserts page doesn't have to hunt for it. */
+  (function prefillService() {
+    var sel = $("#service"); if (!sel) return;
+    var q = (location.search.match(/[?&]service=([^&]+)/) || [])[1];
+    if (!q) return;
+    q = decodeURIComponent(q).toLowerCase().replace(/-/g, " ");
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].text.toLowerCase().indexOf(q.split(" ")[0]) > -1) { sel.selectedIndex = i; break; }
+    }
+  })();
+
   var form = $("#quote-form");
   if (form) {
     var rawId = (CFG.FORMSPREE_ID || "").trim();
@@ -155,6 +167,12 @@
         return;
       }
 
+      /* Capture the service CATEGORY now — form.reset() runs on success and
+         would clear it. This is a dropdown label, never free text or PII. */
+      var svcEl = form.querySelector('[name="service"], [name="goal"]');
+      var leadService = window.PELLIKAL_SERVICE_SLUG ? window.PELLIKAL_SERVICE_SLUG(svcEl ? svcEl.value : "") : "";
+      var leadPageType = document.body.getAttribute("data-page-type") || "";
+
       var btn = form.querySelector('button[type="submit"]'), label = btn.textContent;
       btn.textContent = "Sending\u2026"; btn.disabled = true;
       fetch(endpoint, { method: "POST", body: new FormData(form), headers: { Accept: "application/json" } })
@@ -166,7 +184,7 @@
                and a rejected or failed submission fires nothing.
                No personal data is passed; see js/tracking.js. */
             if (window.PELLIKAL_TRACK_LEAD) {
-              window.PELLIKAL_TRACK_LEAD(form.id === "home-form" ? "homepage_form" : "contact_form");
+              window.PELLIKAL_TRACK_LEAD(form.id === "home-form" ? "homepage_form" : "contact_form", leadService, leadPageType);
             }
           } else return r.json().then(function (d) { throw new Error((d && d.errors && d.errors[0] && d.errors[0].message) || "send failed"); });
         })
@@ -188,7 +206,7 @@
   function loadGallery() {
     var g = $("#gallery"); if (!g) return;
     if (!configured) { galleryPlaceholders(); return; }
-    SB.from(CFG.GALLERY_TABLE).select("*").order("created_at", { ascending: false }).limit(12)
+    SB.from(CFG.GALLERY_TABLE).select("*").eq("is_published", true).order("sort_order", { ascending: true }).order("created_at", { ascending: false }).limit(12)
       .then(function (res) {
         if (res.error || !res.data || !res.data.length) { galleryPlaceholders(); return; }
         clear(g);
@@ -203,7 +221,7 @@
   }
   function loadContent() {
     if (!configured || !$$("[data-content]").length) return;
-    SB.from(CFG.CONTENT_TABLE).select("*").then(function (res) {
+    SB.from(CFG.CONTENT_TABLE).select("*").eq("is_published", true).then(function (res) {
       if (res.error || !res.data) return;
       var map = {}; res.data.forEach(function (r) { map[r.key] = r.value; });
       $$("[data-content]").forEach(function (e) { var k = e.getAttribute("data-content"); if (map[k] && String(map[k]).trim()) e.textContent = map[k]; });
@@ -216,7 +234,7 @@
        If Supabase is unconfigured, slow, blocked, failing or simply empty,
        we leave the existing HTML untouched so the section is never blank. */
     if (!configured) return;
-    SB.from(CFG.TESTIMONIALS_TABLE).select("*").order("created_at", { ascending: false }).limit(6)
+    SB.from(CFG.TESTIMONIALS_TABLE).select("*").eq("is_published", true).order("sort_order", { ascending: true }).order("created_at", { ascending: false }).limit(6)
       .then(function (res) {
         if (res.error || !res.data || !res.data.length) return;   // keep static fallback
         clear(wrap);
@@ -233,17 +251,33 @@
   function loadProjects() {
     var home = $("[data-projects-home]");
     if (!home || !configured) return;                       // keep static fallback
-    SB.from("projects").select("*").order("sort_order", { ascending: true }).limit(6)
+    /* The homepage shows AT MOST SIX featured projects.
+       Every condition is applied server-side, in this order, so the six rows
+       that come back are exactly the six that should render:
+         is_published = true   — never show a hidden project
+         featured     = true   — "Show on homepage" means what it says
+         sort_order   asc      — the owner controls the running order
+         limit 6               — the homepage design holds six
+
+       Filtering `featured` in JavaScript AFTER a limit(6) — which is what this
+       used to do — silently breaks: the database returns the first six
+       published rows, JS discards the unfeatured ones, and a featured seventh
+       project can never take the free slot. */
+    SB.from(CFG.PROJECTS_TABLE || "projects")
+      .select("*")
+      .eq("is_published", true)
+      .eq("featured", true)
+      .order("sort_order", { ascending: true })
+      .limit(6)
       .then(function (res) {
+        /* Static six-card HTML stays put unless the query returns usable rows. */
         if (res.error || !res.data || !res.data.length) return;   // keep static fallback
-        var rows = res.data.filter(function (p) { return p.featured; });
-        if (!rows.length) rows = res.data;
         clear(home);
-        rows.slice(0, 6).forEach(function (p) {
+        res.data.forEach(function (p) {
           var art = el("article", "proj");
           var media = el("div", "proj__media");
           var url = safeUrl(p.image_url);
-          if (url) { var im = document.createElement("img"); im.src = url; im.loading = "lazy"; im.decoding = "async"; im.alt = (p.title ? p.title + " — " : "") + "Pellikal window film project"; media.appendChild(im); }
+          if (url) { var im = document.createElement("img"); im.src = url; im.loading = "lazy"; im.decoding = "async"; im.alt = p.alt_text || ((p.title ? p.title + " \u2014 " : "") + "Pellikal window film project"); media.appendChild(im); }
           art.appendChild(media);
           var body = el("div", "proj__body");
           body.appendChild(el("h3", null, p.title || "Project"));

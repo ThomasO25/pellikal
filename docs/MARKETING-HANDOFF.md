@@ -43,7 +43,8 @@ matches exactly.
 | `view_contact_page` | `/contact/` loads | — | Contact |
 | `contact_form_submit` | Formspree **confirms** the contact form was accepted | — | Contact |
 | `homepage_form_submit` | Formspree **confirms** a homepage form was accepted | — | Homepage |
-| `generate_lead` | Immediately after either form-submit event | `lead_source` | Homepage / Contact |
+| `generate_lead` | Immediately after either form-submit event | `lead_source`, `service`, `page_type` | Homepage / Contact |
+| `window_insert_lead` | Same moment as `generate_lead`, **only** when the visitor chose "Window Inserts / Noise Reduction" | `lead_source` | Contact |
 
 **`click_location`:** `header` · `hero` · `page_hero` · `mobile_bar` · `footer` ·
 `final_cta` · `contact_page` · `body`

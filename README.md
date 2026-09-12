@@ -52,6 +52,9 @@ partials/
 tools/
   build.py              Copies partials + config into every page
 
+supabase/
+  migrations/0001_pellikal_cms.sql   ⭐ the ONE authoritative database schema
+
 css/
   styles.css            All styling. Contents list at the top of the file.
 
@@ -181,7 +184,16 @@ written into the HTML; Supabase only replaces it when it responds.
 
 | Document | Contents |
 |---|---|
-| `docs/MARKETING-TRACKING.md` | Every analytics event, for the ads specialist |
+| `docs/SECURITY.md` | How admin access, RLS and Storage are locked down |
+| `docs/SUPABASE-SETUP.md` | Exact dashboard steps for a fresh Supabase project |
+| `docs/ADMIN-RUNBOOK.md` | Day-to-day use of /admin/ |
+| `docs/DATA-MODEL.md` | What lives in Supabase vs site.config.json vs the HTML |
+| `docs/DEPLOYMENT-CHECKLIST.md` | Pre-push and post-deploy checks |
+| `docs/BACKUP-RECOVERY.md` | What to back up and how to restore |
+| `docs/SECURITY-TEST-MATRIX.md` | Tests to run against the real database |
+| `docs/MARKETING-HANDOFF.md` | Every analytics event, for the ads specialist |
 | `docs/OWNER-MARKETING-SETUP.md` | Accounts and access the owner must set up |
 | `docs/PHONE-AUDIT.md` | Every place the phone number appears |
 | `docs/LOCAL-LAW-REMOVAL.md` | What was removed and how the old URL redirects |
+| `docs/WINDOW-INSERTS-ASSETS.md` | Insert photography: what's used, what's still needed |
+| `docs/FINAL-CLAIMS-REVIEW.md` | Every marketing claim, categorised |

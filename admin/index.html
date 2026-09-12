@@ -56,6 +56,45 @@
   </div>
 </section>
 
+
+<!-- MFA CHALLENGE — admin already has a verified authenticator -->
+<section id="admin-mfa" class="section" style="display:none">
+  <div class="container" style="max-width:420px">
+    <p class="kicker">Two-factor authentication</p>
+    <h1>Enter your code</h1>
+    <p class="lead">Open your authenticator app and enter the current 6-digit code for Pellikal.</p>
+    <div class="field"><label for="mfa-code">6-digit code</label>
+      <input id="mfa-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></div>
+    <p id="mfa-err" class="callout callout--warn" style="display:none"></p>
+    <button class="btn btn--cyan btn--block btn--lg" id="mfa-verify">Verify</button>
+    <p class="microcopy" style="text-align:center"><a href="#" id="mfa-cancel">Sign out</a></p>
+  </div>
+</section>
+
+<!-- MFA ENROLMENT — approved admin with no authenticator yet -->
+<section id="admin-mfa-enroll" class="section" style="display:none">
+  <div class="container" style="max-width:520px">
+    <p class="kicker">One-time setup</p>
+    <h1>Set up two-factor authentication</h1>
+    <p class="lead">Before you can edit the website, add Pellikal to an authenticator app. This means a stolen password alone can never change the site.</p>
+    <ol class="microcopy" style="line-height:1.8;padding-left:1.1rem">
+      <li>Install Google Authenticator, Authy, 1Password or similar</li>
+      <li>Scan the code below, or type the setup key by hand</li>
+      <li>Enter the 6-digit code the app shows</li>
+    </ol>
+    <div id="mfa-qr-wrap" style="text-align:center;margin:1.2rem 0">
+      <img id="mfa-qr" alt="QR code for setting up two-factor authentication" width="220" height="220" style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:.6rem;display:none">
+    </div>
+    <div class="field"><label for="mfa-secret">Setup key (if you can't scan)</label>
+      <input id="mfa-secret" type="text" readonly style="font-family:ui-monospace,Menlo,monospace;letter-spacing:.06em"></div>
+    <div class="field"><label for="mfa-enroll-code">6-digit code from your app</label>
+      <input id="mfa-enroll-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></div>
+    <p id="mfa-enroll-err" class="callout callout--warn" style="display:none"></p>
+    <button class="btn btn--cyan btn--block btn--lg" id="mfa-enroll-verify">Confirm and continue</button>
+    <p class="microcopy" style="text-align:center">Keep the setup key somewhere safe. <a href="#" id="mfa-enroll-cancel">Sign out</a></p>
+  </div>
+</section>
+
 <!-- WEBSITE MANAGER -->
 <div class="cms" id="cms">
   <header class="cms__top">
@@ -70,7 +109,6 @@
     <button data-view="projects">Projects</button>
     <button data-view="photos">Photos</button>
     <button data-view="quotes">Testimonials</button>
-    <button data-view="business">Business Information</button>
   </nav>
   <main class="cms__wrap" id="cms-main">
     <section class="cms__edit" id="cms-edit"></section>

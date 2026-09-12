@@ -36,6 +36,10 @@
       "label": "Commercial"
     },
     {
+      "slug": "window-inserts",
+      "label": "Window Inserts"
+    },
+    {
       "slug": "solutions",
       "label": "Solutions"
     },
@@ -61,6 +65,10 @@
     {
       "slug": "commercial",
       "label": "Commercial Film"
+    },
+    {
+      "slug": "window-inserts",
+      "label": "Window Inserts"
     }
   ],
   "footerCompany": [
@@ -131,6 +139,13 @@
       "file": "solutions/index.html",
       "inSitemap": true,
       "priority": "0.8",
+      "redirect": true
+    },
+    {
+      "slug": "window-inserts",
+      "file": "window-inserts/index.html",
+      "inSitemap": true,
+      "priority": "0.9",
       "redirect": true
     },
     {

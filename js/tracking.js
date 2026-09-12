@@ -105,9 +105,34 @@
 
      lead_source values: "homepage_form" | "contact_form"
   --------------------------------------------------------- */
-  window.PELLIKAL_TRACK_LEAD = function (leadSource) {
+  /* leadSource: "homepage_form" | "contact_form"
+     service:    a short CATEGORY chosen from the form's dropdown — e.g.
+                 "window_inserts", "solar_heat_glare", "privacy". It is never
+                 free text and never identifies the customer.
+     pageType:   which page the form was on, e.g. "window_insert_landing". */
+  window.PELLIKAL_TRACK_LEAD = function (leadSource, service, pageType) {
     var src = leadSource === "homepage_form" ? "homepage_form" : "contact_form";
+    var params = { lead_source: src };
+    if (service) params.service = service;
+    if (pageType) params.page_type = pageType;
     push(src === "homepage_form" ? "homepage_form_submit" : "contact_form_submit");
-    push("generate_lead", { lead_source: src });
+    push("generate_lead", params);
+    /* Additional event so the Window Inserts campaign can be optimised on its
+       own conversion, separate from general film leads. Existing triggers on
+       generate_lead keep working unchanged. */
+    if (service === "window_inserts") push("window_insert_lead", { lead_source: src });
+  };
+
+  /* Turn the dropdown's human label into a safe, stable category slug. */
+  window.PELLIKAL_SERVICE_SLUG = function (label) {
+    label = String(label || "").toLowerCase();
+    if (label.indexOf("insert") > -1) return "window_inserts";
+    if (label.indexOf("solar") > -1 || label.indexOf("heat") > -1) return "solar_heat_glare";
+    if (label.indexOf("privacy") > -1) return "privacy";
+    if (label.indexOf("security") > -1) return "security_safety";
+    if (label.indexOf("graffiti") > -1) return "anti_graffiti";
+    if (label.indexOf("low-e") > -1 || label.indexOf("energy") > -1) return "low_e_energy";
+    if (label) return "not_sure";
+    return "";
   };
 })();
