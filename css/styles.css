@@ -850,3 +850,32 @@ h1 sup,h2 sup,h3 sup,.trustbar sup,.logo sup{font-size:.42em;top:-.7em;line-heig
 .imgslot--filled figcaption{display:block;margin-top:.6rem;font-size:.78rem;color:var(--muted);line-height:1.5}
 .imgslot--dark.imgslot--filled figcaption{color:var(--on-dark-mut)}
 .imgslot--dark.imgslot--filled img{box-shadow:0 24px 56px rgba(0,0,0,.35)}
+
+/* ==========================================================================
+   MANUFACTURER-SUPPLIED IMAGERY GATE  (/window-inserts/)
+   --------------------------------------------------------------------------
+   Six images on the Window Inserts page are manufacturer / product marketing
+   material, not Pellikal photography. They must not be published until
+   Pellikal has documented permission.
+
+   FAIL-SAFE BY DESIGN: the default is hidden. The assets appear only when
+   `WINDOW_INSERT_ASSETS_APPROVED: true` in js/config.js, which adds
+   .mfr-assets-approved to <html>. With JavaScript disabled the class is never
+   added, so the assets stay hidden — the safe direction.
+
+   Tagged elements are whole figures, one media column, and one entire section,
+   chosen so that nothing is left as an empty box or an orphaned heading.
+   ========================================================================== */
+html:not(.mfr-assets-approved) [data-asset-source="manufacturer"]{display:none}
+
+/* The "why Pellikal handles it" row is a two-column grid whose right-hand
+   column holds only manufacturer photographs. With them hidden, the text
+   column takes the full width instead of sitting beside an empty half. */
+html:not(.mfr-assets-approved) .grid--2[data-mfr-grid]{grid-template-columns:1fr}
+
+/* ---- Before / after pair on the Window Inserts page ---- */
+.ba-pair{gap:clamp(1rem,2.4vw,1.8rem)}
+.ba-shot{position:relative}
+.ba-tag{position:absolute;top:12px;left:12px;z-index:2;font-size:.66rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;padding:.34rem .7rem;border-radius:999px;color:#fff}
+.ba-tag--before{background:rgba(14,27,64,.88)}
+.ba-tag--after{background:var(--cyan-ink)}

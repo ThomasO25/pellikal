@@ -1,93 +1,106 @@
 # WINDOW-INSERTS-ASSETS.md
 
-Photography on `/window-inserts/` — what is published, where each file came
-from, and what is still missing.
+Imagery on `/window-inserts/` — what is published, where it came from, and the
+permission position.
 
-**Updated:** 10 September 2026
-
----
-
-## Published now
-
-All five are in `assets/window-inserts/`, 4:3, ~1100–1200 px wide, lazy-loaded.
-**Captions have been removed** at the owner's request; each image carries
-descriptive `alt` text only.
-
-| Slot | File | Shows | Ownership |
-|---|---|---|---|
-| `insert-installed` | `casement-finished-room.jpg` | Leaded casement windows in a finished room | ⚠️ Owner-supplied, **unconfirmed** |
-| `frame-closeup` | `existing-window-frame.jpg` | Timber-framed leaded casement — the opening an insert fits | ⚠️ Owner-supplied, **unconfirmed** |
-| `removable-panel` | `insert-panel-removable.jpg` | A labelled insert panel standing clear of the frame | ⚠️ Owner-supplied, **unconfirmed** |
-| `street-facing-room` | `urban-street-facing.jpg` | City window facing a building with fire escapes | ⚠️ Owner-supplied, **unconfirmed** |
-| `historic-windows` | `commercial-arched-windows.jpg` | Tall arched original windows in a period building | ⚠️ Owner-supplied, **unconfirmed** |
-
-### Why every caption was removed
-
-Beyond the owner's preference, this also resolved a real accuracy problem. The
-previous captions all read **"Pellikal project — …"**, but none of these assets
-can be proved to be Pellikal's own work from anything in the repository:
-
-- They arrived as phone screenshots and later as retouched versions
-- None carries camera EXIF (make, model, capture date)
-- Two of the five were low-resolution crops consistent with being taken from a
-  video or a marketing source
-
-`alt` text is now purely descriptive — it says what is visible and claims
-nothing about who did the work.
-
-> **Owner action:** confirm each file is Pellikal's own installation. Once
-> confirmed, "Pellikal project" captions can be reinstated. Until then the
-> neutral wording stands. Never label manufacturer or dealer imagery as ours.
+**Updated:** 10 September 2026 · **Manufacturer assets: APPROVED and live.**
 
 ---
 
-## ❌ Still missing: the installer photo
+## ✅ Permission — approved
 
-The page has **no photo of a person measuring or fitting an insert**, and none
-was invented or substituted.
+```js
+// js/config.js
+WINDOW_INSERT_ASSETS_APPROVED: true,
+```
 
-This matters more than the others: Pellikal's entire value proposition on this
-page is *professional measurement and fitting* rather than reselling a panel. A
-photo of that work is the single strongest image the page could carry.
+**Approved 10 September 2026 by the business owner**, on the stated basis that
+Pellikal is an authorised dealer for the product and uses the manufacturer's
+assets on the same footing as its LLumar material.
 
-**What to shoot:**
+> This is an **owner attestation**, recorded here for the file. No written
+> licence document has been reviewed. If the manufacturer ever objects or the
+> dealer relationship ends, set the flag back to `false` — the six assets
+> disappear cleanly and the page still works on the five owner photographs
+> alone. That is exactly what the flag is for.
 
-- A Pellikal installer measuring an opening with a tape, or pressing a finished
-  insert into a frame
-- Landscape, roughly 1400 × 1050
-- Natural light, level camera, hands and the window both clearly visible
-- Real job, real person — not staged from stock
+The gate still exists and still functions; it is simply switched on. See
+"The gate" below.
 
-Save as `assets/window-inserts/installer-fitting.jpg` and tell me; it takes one
-edit to place it.
+---
 
-**Where it goes when it arrives:** it should **replace or sit alongside the
-`removable-panel` slot** in the "Why have Pellikal handle it" section — the
-part of the page that argues measurement and fitting is the service. A photo of
-a person actually fitting an insert is stronger evidence there than a photo of
-the panel alone.
+## Page order
 
-> **Status: still missing from the repository as of 10 September 2026.** The
-> blue-shirt fitting photograph shown in conversation was never added to the
-> project assets, and the one similar file that was supplied is the styled
-> studio image described below. Nothing has been substituted for it.
+Real product explanation first, then proof, then the science, then the service.
 
-> A previously supplied file (`IMG_2452` / `7F98056A…`, a man fitting an insert
-> at a kitchen window) is **deliberately not used**. It is a styled studio
-> photograph — model, arranged props, even lighting, landscape crop, no camera
-> data — while the genuine job photos are portrait phone shots. It looks like
-> manufacturer marketing material. It may only be published if the owner
-> confirms Pellikal owns it, or that Indow authorises dealer reuse, in which
-> case it must be labelled as a manufacturer image.
+| # | Slot | File | Section | Source |
+|---|---|---|---|---|
+| 1 | `components` | `insert-components.jpg` | **Hero**, beside the H1 | Manufacturer (logo visible) |
+| 2 | `before` | `existing-window-frame.jpg` | Before &amp; after | Pellikal |
+| 3 | `after` | `casement-finished-room.jpg` | Before &amp; after | Pellikal |
+| 4 | `diagram-draft` | `diagram-draft.jpg` | How it works — drafts | Manufacturer |
+| 5 | `diagram-heat` | `diagram-heat.jpg` | How it works — heat | Manufacturer |
+| 6 | `fitting-1` | `fitting-panel-into-frame.jpg` | Measurement &amp; fitting | Manufacturer |
+| 7 | `fitting-2` | `fitting-kitchen-window.jpg` | Measurement &amp; fitting | Manufacturer |
+| 8 | `frame-detail` | `insert-frame-detail.jpg` | Measurement &amp; fitting | Manufacturer (logo visible) |
+| 9 | `removable-panel` | `insert-panel-removable.jpg` | Measurement &amp; fitting | Pellikal |
+| 10 | `street-facing-room` | `urban-street-facing.jpg` | Use cases / FAQ | Pellikal |
+| 11 | `historic-windows` | `commercial-arched-windows.jpg` | Use cases / FAQ | Pellikal |
+
+### The hero image carries the explanation
+`insert-components.jpg` labels the three parts — **silicone tubing, ABS
+carrier, acrylic glazing** — and sits beside the H1. The section immediately
+below expands each one in Pellikal's own words, so the page explains the
+product rather than just showing it.
+
+### Before &amp; after
+Images 2 and 3 are presented as the **same window before and after** an insert
+was fitted — timber frame first, then the fitted result. Labelled with overlay
+Before/After badges rather than captions.
+
+> **Owner-attested pairing.** The before/after relationship was confirmed by
+> the owner. If these turn out to be two different windows rather than one
+> window photographed twice, the section must be relabelled — presenting two
+> different windows as a before/after would be misleading.
+
+---
+
+## The gate (still in place, switched on)
+
+| Value | Behaviour |
+|---|---|
+| `true` *(current)* | All six manufacturer assets render in place |
+| `false` | They are removed entirely. The hero reflows to a single column, the two "how it works" rows drop their diagrams, the fitting row collapses, and no empty box or orphan heading is left |
+
+Hiding remains the CSS default:
+
+```css
+html:not(.mfr-assets-approved) [data-asset-source="manufacturer"]{display:none}
+```
+
+so if the flag is ever turned off the assets stay hidden even with JavaScript
+disabled. When `false`, `js/main.js` also removes the nodes so the files are
+never requested.
+
+---
+
+## Claims discipline — unchanged
+
+- The manufacturer is **not named** in the page copy
+- **No numeric performance figure** appears anywhere — no noise-reduction
+  percentage, no energy-saving percentage, no fit-rate
+- The diagrams are labelled in-page as illustrative, with results depending on
+  the window, frame, insert and conditions
+- Logos inside manufacturer images are **left intact** — never cropped out
 
 ---
 
 ## Rules for anything added later
 
-- Publish only what Pellikal owns or has written permission to use
+- Publish only what Pellikal owns or has permission to use
 - Never caption third-party imagery as our own installation
 - Keep photographs level — decorative containers may tilt, images never do
-- Fill in real alt text describing what is visible; don't stuff keywords
-- Resize to ~1200 px wide and keep under ~300 KB before committing
-- Retouching for exposure and clarity is fine; don't alter how the product
-  itself looks through the glass
+- Real alt text describing what is visible; no keyword stuffing
+- Resize to ~1200 px wide, keep under ~300 KB
+- Retouching for exposure and clarity is fine; never alter how the product
+  itself looks

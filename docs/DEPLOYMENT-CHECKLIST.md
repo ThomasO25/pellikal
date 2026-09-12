@@ -42,6 +42,24 @@ synchronised — commit the generated files.
 
 ---
 
+
+## 3b. Manufacturer imagery on /window-inserts/
+
+Six images on that page are manufacturer material, not Pellikal photography.
+They are controlled by one flag in `js/config.js`.
+
+- [ ] `WINDOW_INSERT_ASSETS_APPROVED` is **`true`** — approved 10 Sep 2026 on
+      the owner's dealer-relationship attestation (recorded in
+      `WINDOW-INSERTS-ASSETS.md`)
+- [ ] If the dealer relationship ends or the manufacturer objects, set it back
+      to `false`; the page degrades cleanly
+- [ ] Load `/window-inserts/` and confirm the page reads correctly in whichever
+      state you are shipping — no empty boxes, no heading with nothing under it
+- [ ] Confirm the five owner-supplied photographs show in **both** states
+
+Hiding is enforced in CSS, so if the flag is ever set back to `false` the
+assets stay hidden even with JavaScript disabled. Full detail: `docs/WINDOW-INSERTS-ASSETS.md`.
+
 ## 4. Tracking — do not change these
 
 - [ ] `GTM-MK2PHWB` present once in `<head>` and once as `<noscript>` per public page

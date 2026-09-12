@@ -34,9 +34,6 @@
   var PROJECTS = CFG.PROJECTS_TABLE || "projects";
   var EDIT = $("#cms-edit"), PREV = $("#cms-prev");
   var draft = {}, saved = {};
-  /* If an admin uploads a project image but leaves/restarts the editor before
-     publishing, keep a cleanup hook so the unused Storage object is removed. */
-  var projectDraftCleanup = null;
 
   /* ---------- little builders ---------- */
   function field(labelText, node, hint) {
@@ -131,14 +128,12 @@
     var status = el("p", "microcopy", ""); status.style.margin = ".4rem 0 0";
     file.addEventListener("change", function () {
       var f = file.files && file.files[0]; if (!f) return;
-      status.textContent = "Uploading\u2026"; file.disabled = true;
+      status.textContent = "Uploading\u2026";
       uploadImage(f).then(function (r) {
         prev.src = r.url; prev.style.display = "block";
         status.textContent = "Uploaded. Press Publish changes to make it live.";
         onPicked(r.url, r.path);
-      }).catch(function (e) {
-        status.textContent = "Upload failed: " + (e.message || "please try again.");
-      }).then(function () { file.disabled = false; });
+      }).catch(function (e) { status.textContent = "Upload failed: " + (e.message || "please try again."); });
     });
     wrap.appendChild(prev); wrap.appendChild(file); wrap.appendChild(status);
     return wrap;
@@ -207,34 +202,11 @@
     listProjects(list, formHost);
   }
   function projectForm(host, existing, onSaved) {
-    /* Starting another project/editor abandons any not-yet-published upload
-       from the previous draft. Remove it before building the next form. */
-    if (projectDraftCleanup) {
-      var oldDraftCleanup = projectDraftCleanup; projectDraftCleanup = null;
-      oldDraftCleanup().then(function (ok) {
-        if (!ok) console.warn("[Pellikal] abandoned project draft image could not be removed.");
-      });
-    }
     clear(host);
     var p = existing || {};
-    /* Track the LAST successfully saved image, not merely the image that was
-       present when this editor first opened. An existing project can be
-       published more than once without reopening the form. */
-    var savedImageUrl = p.image_url || "";
-    var savedImagePath = p.image_path || "";
-    var draftUploadPath = null;
     var d = { title: p.title || "", location: p.location || "", service: p.service || "", description: p.description || "",
               challenge: p.challenge || "", result: p.result || "", image_url: p.image_url || "", image_path: p.image_path || "", alt_text: p.alt_text || "",
               featured: p.featured !== false, sort_order: p.sort_order || 0 };
-
-    function armDraftCleanup() {
-      projectDraftCleanup = function () {
-        var path = draftUploadPath; draftUploadPath = null;
-        if (!path) return Promise.resolve(true);
-        return removeStorage(path);
-      };
-    }
-    armDraftCleanup();
 
     var t = input("p-t", d.title, "Waterfront residence");
     var loc = input("p-l", d.location, "Sag Harbor, NY");
@@ -254,18 +226,11 @@
     host.appendChild(field("Challenge", ch));
     host.appendChild(field("Solution / result", rs));
     host.appendChild(field("Project photo", imagePicker("p-i", d.image_url, function (u, pa) {
-      /* A newly uploaded image is a draft until the DB row saves. If the admin
-         picks another image before publishing, remove the earlier draft now.
-         The original saved image is intentionally kept until AFTER a successful
-         DB update so a failed save can never break the live project. */
-      var previousDraft = draftUploadPath;
-      d.image_url = u; d.image_path = pa; draftUploadPath = pa;
-      if (previousDraft && previousDraft !== pa) {
-        removeStorage(previousDraft).then(function (ok) {
-          if (!ok) alert("The previous draft image could not be removed from storage. It is unused but the project is safe.");
-        });
-      }
-      bar._mark(); prev();
+      /* remember the object we are replacing so it can be cleaned up AFTER the
+         new row saves successfully. Never touch a null path — that means the
+         image is a static repo asset, not a Storage object. */
+      if (d.image_path && d.image_path !== pa) d._replacedPath = d.image_path;
+      d.image_url = u; d.image_path = pa; bar._mark(); prev();
     })));
     host.appendChild(field("Photo description (alt text)", altf,
       "Describe what is visible, in one plain sentence. Screen readers read this aloud, and it helps search. Required when there is a photo."));
@@ -305,29 +270,13 @@
                   alt_text: d.alt_text, featured: d.featured, sort_order: d.sort_order };
       var q = existing ? SB.from(PROJECTS).update(row).eq("id", existing.id) : SB.from(PROJECTS).insert(row);
       return q.then(function (r) {
-        if (r.error) {
-          /* The database did not take ownership of the new upload. Remove that
-             draft object so a failed publish does not leak Storage files. */
-          var failedDraft = draftUploadPath; draftUploadPath = null;
-          return (failedDraft ? removeStorage(failedDraft) : Promise.resolve(true)).then(function (ok) {
-            if (!ok) console.warn("[Pellikal] failed project upload cleanup also failed.");
-            d.image_url = savedImageUrl; d.image_path = savedImagePath; armDraftCleanup(); prev();
-            alert("Couldn't publish: " + r.error.message);
-            return false;
-          });
-        }
-
-        /* The row now owns the new upload. Only after the successful DB save
-           may we delete the old Storage object. Static seeded assets have a
-           null/empty image_path and are therefore never touched. */
-        draftUploadPath = null; projectDraftCleanup = null;
-        var replacedOriginal = savedImagePath && savedImagePath !== d.image_path ? savedImagePath : "";
-        var cleanup = replacedOriginal ? removeStorage(replacedOriginal) : Promise.resolve(true);
+        if (r.error) { alert("Couldn't publish: " + r.error.message); return false; }
+        /* Row saved. Only now remove the Storage object it replaced, so a
+           failed save can never leave the project pointing at a deleted file. */
+        var cleanup = d._replacedPath ? removeStorage(d._replacedPath) : Promise.resolve(true);
         return cleanup.then(function (ok) {
           if (!ok) alert("Saved, but the previous image could not be removed from storage. It is now unused.");
-          savedImageUrl = d.image_url || "";
-          savedImagePath = d.image_path || "";
-          if (existing) armDraftCleanup();
+          d._replacedPath = null;
           onSaved(); if (!existing) projectForm(host, null, onSaved);
           return true;
         });
@@ -383,21 +332,12 @@
       var f = file.files && file.files[0]; if (!f) { msg.textContent = "Choose a photo first."; return; }
       if (!alt.value.trim()) { msg.textContent = "Please add a photo description (alt text) before uploading."; return; }
       msg.textContent = "Uploading\u2026";
-      var uploaded = null;
       uploadImage(f).then(function (r) {
-        uploaded = r;
         return SB.from(CFG.GALLERY_TABLE).insert({ url: r.url, path: r.path, caption: cap.value.trim(), alt_text: alt.value.trim() });
       }).then(function (r) {
         if (r.error) throw r.error;
-        uploaded = null;
         msg.textContent = "Photo published to your gallery."; file.value = ""; cap.value = ""; alt.value = ""; listPhotos(grid);
-      }).catch(function (e) {
-        var cleanup = uploaded && uploaded.path ? removeStorage(uploaded.path) : Promise.resolve(true);
-        cleanup.then(function (ok) {
-          msg.textContent = "Upload failed: " + (e.message || "please try again.") +
-            (ok ? "" : " The unused uploaded file also could not be removed; tell the site administrator.");
-        });
-      });
+      }).catch(function (e) { msg.textContent = "Upload failed: " + (e.message || "please try again."); });
     }));
     EDIT.appendChild(msg);
     var gh = el("h2", null, "Your photos"); gh.style.marginTop = "2rem"; EDIT.appendChild(gh);
@@ -494,17 +434,7 @@
 
   /* ===================== shell ===================== */
   var VIEWS = { home: viewHome, projects: viewProjects, photos: viewPhotos, quotes: viewQuotes };
-  var activeView = null;
   function go(name) {
-    /* Leaving Projects without publishing should not strand a just-uploaded
-       draft image in Storage. Cleanup is best-effort and never blocks nav. */
-    if (activeView === "projects" && name !== "projects" && projectDraftCleanup) {
-      var cleanupDraft = projectDraftCleanup; projectDraftCleanup = null;
-      cleanupDraft().then(function (ok) {
-        if (!ok) console.warn("[Pellikal] abandoned project image could not be removed while leaving Projects.");
-      });
-    }
-    activeView = name;
     $$("#cms-nav button").forEach(function (b) { b.classList.toggle("is-on", b.getAttribute("data-view") === name); });
     (VIEWS[name] || viewHome)();
   }
@@ -615,13 +545,9 @@
     SB.auth.mfa.listFactors()
       .then(function (lf) {
         if (lf.error) throw lf.error;
-        /* listFactors().data.totp contains verified TOTP factors only. The
-           complete factor list (including abandoned/unverified enrollments)
-           is data.all. An empty [] is truthy in JavaScript, so falling back
-           with `totp || all` silently skipped stale factors. */
-        var all = (lf.data && Array.isArray(lf.data.all)) ? lf.data.all : [];
+        var all = (lf.data && (lf.data.totp || lf.data.all)) || [];
         var stale = all.filter(function (f) {
-          return f && f.id && f.factor_type === "totp" && f.status === "unverified";
+          return f && f.id && f.factor_type !== "phone" && f.status && f.status !== "verified";
         });
         if (!stale.length) return null;
         return Promise.all(stale.map(function (f) {

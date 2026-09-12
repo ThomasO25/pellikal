@@ -36,6 +36,23 @@ window.PELLIKAL_CONFIG = {
      a consent banner is added. See tracking.js. */
   CONSENT_DEFAULT_DENIED: false,
 
+  /* ---- Window Inserts: manufacturer-supplied imagery ----
+     Six images on /window-inserts/ are manufacturer / product marketing
+     material rather than Pellikal photography, and two carry a visible
+     manufacturer logo. They stay HIDDEN until Pellikal has documented
+     permission to republish them.
+
+       false -> those images are not rendered at all, and any section left
+                empty collapses cleanly
+       true  -> they are shown
+
+     APPROVED 10 Sep 2026 by the business owner, on the basis that Pellikal is
+     an authorised dealer for the product and uses the manufacturer's assets on
+     the same footing as its LLumar material. See
+     docs/WINDOW-INSERTS-ASSETS.md. The five owner-supplied photographs are
+     never affected by this flag. */
+  WINDOW_INSERT_ASSETS_APPROVED: true,
+
   /* ---- Formspree (contact form) ---- */
   FORMSPREE_ID: "maewnodj",              // e.g. "xdorwabc"  OR  "https://formspree.io/f/xdorwabc"
 
@@ -50,3 +67,14 @@ window.PELLIKAL_CONFIG = {
   TESTIMONIALS_TABLE: "testimonials",
   PROJECTS_TABLE: "projects"
 };
+
+/* Applied here rather than in main.js so approved assets are revealed as early
+   as possible. The default is hidden, so unapproved material can never flash
+   on screen — and it stays hidden even with JavaScript disabled, because the
+   CSS hides it unless this class is present. */
+try {
+  if (window.PELLIKAL_CONFIG.WINDOW_INSERT_ASSETS_APPROVED === true) {
+    document.documentElement.classList.add("mfr-assets-approved");
+  }
+} catch (e) {}
+

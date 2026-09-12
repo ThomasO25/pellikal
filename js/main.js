@@ -128,6 +128,27 @@
   toTop.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" }); });
   window.addEventListener("scroll", function () { if (window.scrollY > 600) toTop.classList.add("is-vis"); else toTop.classList.remove("is-vis"); requestAnimationFrame(revealCheck); }, { passive: true });
 
+
+  /* ---------- Manufacturer-supplied imagery gate ----------
+     CSS already hides these when unapproved (and keeps them hidden with JS
+     off). This additionally REMOVES the nodes so the browser never requests
+     the files, and so nothing unapproved sits in the DOM for a reader, a
+     screen reader, or "view source" to find.
+
+     Tagging covers whole figures, one media column and one whole section, so
+     removal never leaves an empty container or a heading with nothing under
+     it. See docs/WINDOW-INSERTS-ASSETS.md. */
+  (function manufacturerAssetGate() {
+    if (CFG.WINDOW_INSERT_ASSETS_APPROVED === true) return;   // approved: leave everything in place
+    var blocked = $$('[data-asset-source="manufacturer"]');
+    if (!blocked.length) return;
+    blocked.forEach(function (node) { if (node.parentNode) node.parentNode.removeChild(node); });
+    if (window.console && console.info) {
+      console.info("[Pellikal] " + blocked.length + " manufacturer-supplied image block(s) withheld: " +
+                   "set WINDOW_INSERT_ASSETS_APPROVED to true in js/config.js once permission is documented.");
+    }
+  })();
+
   /* ---------- Footer year ---------- */
   var yr = $("#year"); if (yr) yr.textContent = new Date().getFullYear();
 

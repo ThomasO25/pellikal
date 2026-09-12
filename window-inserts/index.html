@@ -63,48 +63,154 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </header>
 <!-- @end -->
 <main id="main">
+
 <!-- ============================================================
-     WINDOW INSERTS — service page.
-     Copy is original. No manufacturer performance figures are
-     published (none authorised). Pellikal does not manufacture
-     inserts; its value is consultation, measurement, selection,
-     ordering and fitting. Image slots are placeholders until the
-     owner supplies authorised assets — see docs/WINDOW-INSERTS-ASSETS.md
+     WINDOW INSERTS
+     Order: WHAT IT IS (components) -> BEFORE/AFTER -> HOW IT WORKS
+            (draft + heat) -> MEASUREMENT & FITTING -> WHERE IT HELPS
+            -> FILM vs INSERTS -> FAQ -> CTA
+
+     Manufacturer-supplied product images and diagrams are used with the
+     owner's confirmed dealer permission and are tagged
+     data-asset-source="manufacturer" (see js/config.js
+     WINDOW_INSERT_ASSETS_APPROVED and docs/WINDOW-INSERTS-ASSETS.md).
+     No numeric performance figure is published anywhere on this page.
      ============================================================ -->
 
+<!-- 1 · HERO + WHAT AN INSERT IS MADE OF -->
 <section class="page-hero">
   <div class="container">
     <nav class="crumbs"><a href="../">Home</a> / <span class="cur">Window Inserts</span></nav>
-    <p class="eyebrow">Window Inserts · Long Island · East End · NYC</p>
-    <h1>Custom Window Inserts for Quieter, More Comfortable Rooms</h1>
-    <p class="page-hero__sub">A quieter, more comfortable room without replacing your windows. A custom-measured interior insert fits inside the existing window opening and adds a sealed second layer — helping reduce outside noise, drafts and temperature transfer, and removable whenever you want.</p>
-    <div class="page-hero__actions"><a class="btn btn--cyan btn--lg" href="../contact/?service=window-inserts">Schedule a Consultation</a><a class="btn btn--ghost btn--lg" href="tel:+15163369586">Call 516-336-9586</a></div>
-  </div>
-</section>
-
-<!-- WHAT IT IS -->
-<section class="section">
-  <div class="container">
     <div class="grid grid--2" style="align-items:center;gap:clamp(1.6rem,4vw,3.4rem)">
       <div>
-        <p class="eyebrow">What a window insert is</p>
-        <h2>An extra layer inside the window you already have</h2>
-        <p class="lead">A window insert is a custom-fit interior panel that sits just inside the existing window frame. It presses into place and seals against the frame, creating an additional layer of air between the insert and your window.</p>
-        <ul class="checks">
-          <li>Made to the exact measurements of each window opening</li>
-          <li>Fits inside the frame — no screws, tracks or adhesives into the original window</li>
-          <li>Removable; the existing window stays exactly as it is</li>
-          <li>Suited to older and historic windows you'd rather keep than replace</li>
-        </ul>
-        <p class="microcopy">Pellikal does not manufacture window inserts. We measure, specify, order and fit them for you.</p>
+        <p class="eyebrow">Window Inserts · Long Island · East End · NYC</p>
+        <h1>Custom Window Inserts for Quieter, More Comfortable Rooms</h1>
+        <p class="page-hero__sub">A quieter, more comfortable room without replacing your windows. A custom-measured interior insert presses into the existing window opening and seals against the frame — adding a layer of still air that helps reduce outside noise, drafts and temperature transfer. Removable whenever you want.</p>
+        <div class="page-hero__actions"><a class="btn btn--cyan btn--lg" href="../contact/?service=window-inserts">Schedule a Consultation</a><a class="btn btn--ghost btn--lg" href="tel:+15163369586">Call 516-336-9586</a></div>
       </div>
-      <figure class="imgslot imgslot--filled" data-slot="insert-installed"><img src="../assets/window-inserts/casement-finished-room.jpg" alt="Leaded casement windows in a finished room, looking out onto a garden" width="1200" height="900" loading="lazy" decoding="async"></figure>
+      <figure class="imgslot imgslot--filled" data-slot="components" data-asset-source="manufacturer">
+        <img src="../assets/window-inserts/insert-components.jpg" alt="Cutaway of a window insert edge, labelled: silicone tubing around the outside, an ABS carrier holding it, and the acrylic glazing panel" width="900" height="1201" loading="eager" fetchpriority="high" decoding="async">
+      </figure>
     </div>
   </div>
 </section>
 
-<!-- WHAT IT HELPS WITH -->
+<!-- 2 · THE THREE PARTS, EXPLAINED -->
 <section class="section section--mist">
+  <div class="container">
+    <div class="section-head center">
+      <p class="eyebrow" style="justify-content:center">What it's made of</p>
+      <h2>Three parts, one tight seal</h2>
+      <p class="lead measure center">There is no frame to screw in and nothing fixed to your window. The insert holds itself in place by compression.</p>
+    </div>
+    <div class="grid grid--3">
+      <div class="card" data-reveal><h3>Silicone tubing</h3><p>A soft compressible edge that runs the whole way around the panel. It squeezes into the opening and seals against the frame — this is what does the sealing, and why the measurements have to be right.</p></div>
+      <div class="card" data-reveal><h3>ABS carrier</h3><p>The rigid channel that grips the glazing and holds the tubing in shape, so the edge keeps its seal instead of collapsing over time.</p></div>
+      <div class="card" data-reveal><h3>Acrylic glazing</h3><p>The clear panel itself — lighter than glass, and what creates the pocket of still air between the insert and your existing window.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · BEFORE / AFTER -->
+<section class="section">
+  <div class="container">
+    <div class="section-head center">
+      <p class="eyebrow" style="justify-content:center">Before &amp; after</p>
+      <h2>The same window, the same view</h2>
+      <p class="lead measure center">An insert sits inside the existing opening. You keep the window, you keep the light, and from outside nothing changes at all.</p>
+    </div>
+    <div class="grid grid--2 ba-pair">
+      <figure class="imgslot imgslot--filled ba-shot" data-slot="before">
+        <span class="ba-tag ba-tag--before">Before</span>
+        <img src="../assets/window-inserts/existing-window-frame.jpg" alt="The original leaded casement window in its stained timber frame, before a window insert was fitted" width="1200" height="900" loading="lazy" decoding="async">
+      </figure>
+      <figure class="imgslot imgslot--filled ba-shot" data-slot="after">
+        <span class="ba-tag ba-tag--after">After</span>
+        <img src="../assets/window-inserts/casement-finished-room.jpg" alt="The same window opening after a custom window insert was fitted inside it, with the view through the glass unchanged" width="1200" height="900" loading="lazy" decoding="async">
+      </figure>
+    </div>
+    <p class="microcopy center" style="max-width:60ch;margin-inline:auto">Pellikal project. The insert is fitted on the room side of the existing window; the original window is not modified.</p>
+  </div>
+</section>
+
+<!-- 4 · HOW IT WORKS — DRAFTS AND HEAT -->
+<section class="section section--mist">
+  <div class="container">
+    <div class="section-head center">
+      <p class="eyebrow" style="justify-content:center">How it works</p>
+      <h2>A sealed layer of still air</h2>
+      <p class="lead measure center">Most of the discomfort near an old window comes from two things: air leaking past the sash, and heat moving straight through the glass. A sealed insert addresses both, because still air is a poor conductor and a sealed edge gives moving air nowhere to get in.</p>
+    </div>
+
+    <div class="grid grid--2" style="gap:clamp(1.6rem,4vw,3rem);align-items:center">
+      <figure class="imgslot imgslot--filled" data-slot="diagram-draft" data-asset-source="manufacturer">
+        <img src="../assets/window-inserts/diagram-draft.jpg" alt="Diagram: cold outside air swirling against a window, stopped at the insert fitted inside the existing window, with a warmer thermometer on the room side" width="851" height="851" loading="lazy" decoding="async">
+      </figure>
+      <div data-reveal>
+        <h3>Stopping the draft</h3>
+        <p>Older sashes and single-pane windows leak air around the edges. That moving air is why a room can feel cold near the window even when the thermostat says otherwise, and why heating runs longer than it should.</p>
+        <p>The insert's compressible edge seals against the frame all the way around, so the leak path is closed off. The draft you feel sitting beside the window is the thing most clients notice first.</p>
+      </div>
+    </div>
+
+    <hr class="rule" style="margin:clamp(2rem,4vw,3rem) 0">
+
+    <div class="grid grid--2" style="gap:clamp(1.6rem,4vw,3rem);align-items:center">
+      <div data-reveal>
+        <h3>Slowing heat transfer</h3>
+        <p>Glass conducts heat readily in both directions — out in winter, in during summer. A single pane has very little to slow it down.</p>
+        <p>Adding a second layer traps a pocket of still air between the insert and your existing glass. Still air conducts heat poorly, so the transfer through the window slows and the temperature near the glass evens out.</p>
+        <p class="microcopy">Diagrams are illustrative of the principle. Actual results depend on the window, the frame, the insert selected and conditions outside.</p>
+      </div>
+      <figure class="imgslot imgslot--filled" data-slot="diagram-heat" data-asset-source="manufacturer">
+        <img src="../assets/window-inserts/diagram-heat.jpg" alt="Diagram: sunlight and heat striking a window, reduced at the insert fitted inside the existing window, with a cooler thermometer on the room side" width="900" height="900" loading="lazy" decoding="async">
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · MEASUREMENT & FITTING -->
+<section class="section section--navy">
+  <div class="container">
+    <div class="section-head center">
+      <p class="eyebrow eyebrow--light" style="justify-content:center">Why have Pellikal handle it</p>
+      <h2>An insert is only as good as its measurements</h2>
+      <p class="lead measure center">Inserts are made to order for one specific opening. Windows in older homes are rarely square, and a panel measured a fraction off either won't seal or won't fit. That's the part people get wrong doing it themselves.</p>
+    </div>
+
+    <div class="grid grid--3" style="margin-bottom:clamp(1.6rem,3vw,2.4rem)">
+      <figure class="imgslot imgslot--filled imgslot--dark" data-slot="fitting-1" data-asset-source="manufacturer">
+        <img src="../assets/window-inserts/fitting-panel-into-frame.jpg" alt="A person pressing a custom window insert into an existing window opening" width="900" height="1201" loading="lazy" decoding="async">
+      </figure>
+      <figure class="imgslot imgslot--filled imgslot--dark" data-slot="fitting-2" data-asset-source="manufacturer">
+        <img src="../assets/window-inserts/fitting-kitchen-window.jpg" alt="A person fitting a window insert into a kitchen window opening above a sink" width="1200" height="900" loading="lazy" decoding="async">
+      </figure>
+      <figure class="imgslot imgslot--filled imgslot--dark" data-slot="frame-detail" data-asset-source="manufacturer">
+        <img src="../assets/window-inserts/insert-frame-detail.jpg" alt="Close-up of an insert seated inside a stained timber window frame, showing the compression seal along the edge" width="1000" height="750" loading="lazy" decoding="async">
+      </figure>
+    </div>
+
+    <div class="grid grid--2" style="align-items:center;gap:clamp(1.6rem,4vw,3rem)">
+      <div data-reveal>
+        <ul class="checks checks--light">
+          <li><b>Consultation</b> — which rooms, which windows, what you're trying to solve</li>
+          <li><b>Professional measurement</b> — each opening measured for a correct, sealed fit</li>
+          <li><b>Product selection</b> — the right insert for noise, drafts or both</li>
+          <li><b>Ordering coordination</b> — we place and track the order</li>
+          <li><b>Fitting</b> — installed, checked and demonstrated so you can remove and refit it yourself</li>
+        </ul>
+        <p class="microcopy">One local company handles the whole process, and you're not left holding a panel that doesn't fit.</p>
+        <p style="margin-top:1.4rem;margin-bottom:0"><a class="btn btn--cyan btn--lg" href="../contact/?service=window-inserts">Schedule a Consultation</a></p>
+      </div>
+      <figure class="imgslot imgslot--filled imgslot--dark" data-slot="removable-panel">
+        <img src="../assets/window-inserts/insert-panel-removable.jpg" alt="A custom-made window insert panel standing clear of the wall on a tiled floor, labelled for its window" width="1200" height="900" loading="lazy" decoding="async">
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · WHAT INSERTS HELP WITH -->
+<section class="section">
   <div class="container">
     <div class="section-head center"><p class="eyebrow" style="justify-content:center">What inserts help with</p><h2>Noise, drafts and comfort</h2><p class="lead measure center">Results depend on the window, the frame, the insert selected and what's happening outside — but these are the problems people come to us with.</p></div>
     <div class="grid grid--3">
@@ -118,34 +224,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>
 
-<!-- WHY PELLIKAL (the measuring is the product) -->
-<section class="section section--navy">
-  <div class="container">
-    <div class="grid grid--2" style="align-items:center;gap:clamp(1.6rem,4vw,3.2rem)">
-      <div data-reveal>
-        <p class="eyebrow eyebrow--light">Why have Pellikal handle it</p>
-        <h2>An insert is only as good as its measurements</h2>
-        <p class="lead">Inserts are made to order for each opening. Windows in older homes are rarely square, and a panel measured a fraction off either won't seal or won't fit. That's the part people get wrong doing it themselves.</p>
-        <ul class="checks checks--light">
-          <li><b>Consultation</b> — which rooms, which windows, what you're trying to solve</li>
-          <li><b>Professional measurement</b> — each opening measured for a correct, sealed fit</li>
-          <li><b>Product selection</b> — the right insert type for noise, drafts or both</li>
-          <li><b>Ordering coordination</b> — we place and track the order</li>
-          <li><b>Fitting</b> — installed, checked and demonstrated so you can remove and refit it yourself</li>
-        </ul>
-        <p class="microcopy">One local company handles the whole process, and you're not left holding a panel that doesn't fit.</p>
-        <p style="margin-top:1.4rem;margin-bottom:0"><a class="btn btn--cyan btn--lg" href="../contact/?service=window-inserts">Schedule a Consultation</a></p>
-      </div>
-      <div data-reveal>
-        <figure class="imgslot imgslot--filled imgslot--dark" data-slot="removable-panel"><img src="../assets/window-inserts/insert-panel-removable.jpg" alt="A custom-made window insert panel, labelled for its window, standing clear of the frame" width="1200" height="900" loading="lazy" decoding="async"></figure>
-        <figure class="imgslot imgslot--filled" data-slot="frame-closeup" style="margin-top:1rem"><img src="../assets/window-inserts/existing-window-frame.jpg" alt="Existing timber-framed leaded casement window, the kind of opening an insert is measured to fit" width="1200" height="900" loading="lazy" decoding="async"></figure>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FILM vs INSERTS -->
-<section class="section">
+<!-- 7 · FILM vs INSERTS -->
+<section class="section section--mist">
   <div class="container">
     <div class="section-head center"><p class="eyebrow" style="justify-content:center">Film or inserts?</p><h2>Two different jobs. Sometimes both.</h2><p class="lead measure center">Window film and window inserts improve the windows you already have in different ways. They don't solve the same problem, and they can be used together.</p></div>
     <div class="grid grid--3">
@@ -157,11 +237,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>
 
-<!-- USE CASE IMAGE + FAQ-LITE -->
-<section class="section section--mist">
+<!-- 8 · USE CASES + FAQ -->
+<section class="section">
   <div class="container">
     <div class="grid grid--2" style="align-items:start;gap:clamp(1.6rem,4vw,3.2rem)">
-      <figure class="imgslot imgslot--filled" data-slot="street-facing-room"><img src="../assets/window-inserts/urban-street-facing.jpg" alt="Interior window looking across to a neighbouring building and fire escapes in a city setting" width="1200" height="900" loading="lazy" decoding="async"></figure>
+      <div>
+        <figure class="imgslot imgslot--filled" data-slot="street-facing-room">
+          <img src="../assets/window-inserts/urban-street-facing.jpg" alt="Interior window looking across to a neighbouring building and fire escapes in a city setting" width="1200" height="900" loading="lazy" decoding="async">
+        </figure>
+        <figure class="imgslot imgslot--filled" data-slot="historic-windows" style="margin-top:1rem">
+          <img src="../assets/window-inserts/commercial-arched-windows.jpg" alt="Tall arched original windows along a meeting room in a period building" width="1200" height="900" loading="lazy" decoding="async">
+        </figure>
+      </div>
       <div>
         <p class="eyebrow">Common questions</p>
         <h2>Before you call</h2>
@@ -173,7 +260,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p>No product does. An insert helps reduce the sound coming through the glass; how much depends on the window, the frame, the wall and the noise itself. We'll set realistic expectations at the consultation.</p>
         <h3>Is it permanent?</h3>
         <p>No. The insert is removable and the original window is not modified.</p>
-        <figure class="imgslot imgslot--filled" data-slot="historic-windows" style="margin-top:1.2rem"><img src="../assets/window-inserts/commercial-arched-windows.jpg" alt="Tall arched original windows along a meeting room in a period building" width="1200" height="900" loading="lazy" decoding="async"></figure>
       </div>
     </div>
   </div>
@@ -185,6 +271,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="cta-band__actions"><a class="btn btn--cyan btn--lg" href="tel:+15163369586">Call 516-336-9586</a><a class="btn btn--outline-light btn--lg" href="../contact/?service=window-inserts">Schedule a Consultation</a></div>
   </div>
 </section>
+
 </main>
 <!-- @partial:footer -->
 <footer class="footer">
