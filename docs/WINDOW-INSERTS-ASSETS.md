@@ -35,11 +35,11 @@ Real product explanation first, then proof, then the science, then the service.
 
 | # | Slot | File | Section | Source |
 |---|---|---|---|---|
-| 1 | `components` | `insert-cutaway-labeled.jpg` | **Hero**, beside the H1, as a capped thumbnail | Manufacturer (logo visible) |
+| 1 | `components` | `insert-cutaway-labeled.png` | **Hero**, beside the H1, as a capped thumbnail | Manufacturer (logo visible) |
 | 2 | `before` | `existing-window-frame.jpg` | Before &amp; after | Pellikal |
 | 3 | `after` | `casement-finished-room.jpg` | Before &amp; after | Pellikal |
-| 4 | `diagram-draft` | `diagram-draft.jpg` | How it works — drafts | Manufacturer |
-| 5 | `diagram-heat` | `diagram-heat.jpg` | How it works — heat | Manufacturer |
+| 4 | `diagram-draft` | `diagram-draft.png` | How it works — drafts | Manufacturer |
+| 5 | `diagram-heat` | `diagram-heat.png` | How it works — heat | Manufacturer |
 | 6 | `fitting-1` | `fitting-panel-into-frame.jpg` | Measurement &amp; fitting | Manufacturer |
 | 7 | `fitting-2` | `fitting-kitchen-window.jpg` | Measurement &amp; fitting | Manufacturer |
 | 8 | `frame-detail` | `insert-frame-detail.jpg` | Measurement &amp; fitting | Manufacturer (logo visible) |
@@ -48,7 +48,7 @@ Real product explanation first, then proof, then the science, then the service.
 | 11 | `historic-windows` | `commercial-arched-windows.jpg` | Use cases / FAQ | Pellikal |
 
 ### The hero image carries the explanation
-`insert-cutaway-labeled.jpg` labels the three parts — **silicone tubing, ABS
+`insert-cutaway-labeled.png` labels the three parts — **silicone tubing, ABS
 carrier, acrylic glazing** — and sits beside the H1. The section immediately
 below expands each one in Pellikal's own words, so the page explains the
 product rather than just showing it.
@@ -129,3 +129,21 @@ one was taken before fitting have all been removed. The section is now
 "Two insert installations", the tags describe each photograph, and the
 microcopy states plainly that this is not a before-and-after of one opening.
 The CSS modifiers were renamed `--one` / `--two` so nobody relabels them.
+
+**Later on 14 Sep 2026:** hero cutaway replaced again with the owner's
+background-removed version, `insert-cutaway-labeled.png` (transparent, 560 px wide,
+256-colour palette, 42 KB). It now floats on the hero background with no card shadow or radius.
+`insert-cutaway-labeled.jpg` (the white-background interim) was removed.
+Section order on the page also changed at the owner's request: *How it works*
+now sits above the lead form, and *Two insert installations* sits below
+*Measurement & fitting*. Backgrounds re-alternated (How it works → white,
+Two installations → mist).
+
+**Diagrams replaced, 14 Sep 2026 (evening):** `diagram-draft.png` and
+`diagram-heat.png` are the owner's background-removed illustrations
+(transparent, 760 px wide, 256-colour palette). They are owner-created
+artwork, not manufacturer material, so the `data-asset-source="manufacturer"`
+attribute was removed from those two figures — they no longer depend on
+`WINDOW_INSERT_ASSETS_APPROVED`. Rendered flat (`.imgslot--flat`: no shadow,
+no radius) like the hero cutaway. The previous `diagram-draft.jpg` /
+`diagram-heat.jpg` are unreferenced and left in place.

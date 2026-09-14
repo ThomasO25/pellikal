@@ -1023,6 +1023,10 @@ html:not(.consent-ready) [data-consent-open]{display:none}
    ========================================================================== */
 .imgslot--thumb{max-width:230px;margin-inline:auto}
 
+/* Transparent artwork (hero cutaway, the two diagrams): no card. A shadow or
+   radius would draw a rectangle around invisible pixels. */
+.imgslot--flat.imgslot--filled img{box-shadow:none;border-radius:0}
+
 .imgslot--sm{max-width:380px;margin-inline:auto}
 
 .imgslot--md{max-width:420px;margin-inline:auto}
