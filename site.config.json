@@ -19,7 +19,17 @@
     "excludeFromTracking": [
       "admin/index.html",
       "local-law-97/index.html"
-    ]
+    ],
+    "_consentComment": "Google Consent Mode v2. build.py stamps these values into the consent block at the top of every tracked page's <head>, ABOVE the GTM snippet, and publishes them to js/consent.js as window.PELLIKAL_CONSENT_SETTINGS. All four optional categories always default to denied - that is not configurable here, by design. See docs/CONSENT-MODE.md.",
+    "consent": {
+      "cookieName": "pellikal_consent",
+      "version": "v2",
+      "rememberDays": 180,
+      "adsDataRedaction": true,
+      "_versionNote": "v2 = granular Analytics/Advertising categories (14 Sep 2026); every v1 all/necessary choice was invalidated and visitors re-asked. Bump again only if what you measure materially changes. Stored format: VERSION:a0|a1:d0|d1:DATE.",
+      "_redactionNote": "true = while ad_storage is denied, Google Ads redacts ad-click identifiers in its cookieless pings. Turned off automatically once a visitor accepts.",
+      "_nameNote": "Letters, digits, _ and - only. The build fails on anything else."
+    }
   },
   "_navComment": "Order here = order in the menu. 'slug' is the folder name; home is \"\".",
   "nav": [
@@ -97,6 +107,49 @@
       "label": "Accessibility"
     }
   ],
+  "_formsComment": "THE quote form, defined once. build.py renders partials/quote-form.html into every <!-- @partial:quote-form:VARIANT --> region, so /contact/, /residential/ and /window-inserts/ share one piece of markup and one submission path. The Formspree endpoint is NOT duplicated here - build.py reads it out of js/config.js, which stays the single place it lives.",
+  "forms": {
+    "successPath": "thankyou",
+    "_successNote": "Where a CONFIRMED successful Formspree response sends the visitor. build.py turns this into the correct relative link for each page's depth. Google Ads counts the lead on that page load.",
+    "serviceOptions": [
+      "Window Inserts / Noise Reduction",
+      "Residential Window Film",
+      "Solar / Heat & Glare",
+      "Privacy",
+      "Security & Safety",
+      "Anti-Graffiti",
+      "Low-E / Energy",
+      "Not sure yet"
+    ],
+    "_serviceNote": "'Residential Window Film' is NEW - the dropdown had no residential option to preselect. See docs/LEAD-FLOW.md. Order is for readability only; the code matches on slug, not position.",
+    "propertyOptions": [
+      "Residential",
+      "Commercial",
+      "Property Management",
+      "Other"
+    ],
+    "_variantNote": "leadSource stays contact_form on all three, so the existing contact_form_submit trigger keeps firing exactly as before. formLocation is the NEW non-PII parameter that tells the three apart in GA4.",
+    "variants": {
+      "contact": {
+        "formLocation": "contact",
+        "service": "",
+        "propertyType": "",
+        "submitLabel": "Request My Free Consultation"
+      },
+      "residential": {
+        "formLocation": "residential",
+        "service": "Residential Window Film",
+        "propertyType": "Residential",
+        "submitLabel": "Request My Free Consultation"
+      },
+      "window_inserts": {
+        "formLocation": "window_inserts",
+        "service": "Window Inserts / Noise Reduction",
+        "propertyType": "",
+        "submitLabel": "Request My Free Consultation"
+      }
+    }
+  },
   "_syncOnlyComment": "Files with no header/footer, but which still contain the phone/email and must stay in sync.",
   "syncOnly": [
     "404.html",
@@ -189,6 +242,14 @@
       "inSitemap": true,
       "priority": "0.3",
       "redirect": true
+    },
+    {
+      "slug": "thankyou",
+      "file": "thankyou/index.html",
+      "inSitemap": false,
+      "priority": "0.0",
+      "redirect": false,
+      "_note": "Lead-confirmation page. Damian's Google Ads conversion fires on this page load, so it MUST keep the GTM container. Kept out of the sitemap and marked noindex because it is a confirmation screen, not SEO content. Deliberately NOT disallowed in robots.txt - blocking the crawl would stop Google ever seeing the noindex. redirect:false because the exact address is /thankyou/ with no .html forwarder."
     },
     {
       "slug": "admin",

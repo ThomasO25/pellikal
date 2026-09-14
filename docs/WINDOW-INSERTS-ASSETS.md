@@ -35,7 +35,7 @@ Real product explanation first, then proof, then the science, then the service.
 
 | # | Slot | File | Section | Source |
 |---|---|---|---|---|
-| 1 | `components` | `insert-components.jpg` | **Hero**, beside the H1 | Manufacturer (logo visible) |
+| 1 | `components` | `insert-cutaway-labeled.jpg` | **Hero**, beside the H1, as a capped thumbnail | Manufacturer (logo visible) |
 | 2 | `before` | `existing-window-frame.jpg` | Before &amp; after | Pellikal |
 | 3 | `after` | `casement-finished-room.jpg` | Before &amp; after | Pellikal |
 | 4 | `diagram-draft` | `diagram-draft.jpg` | How it works — drafts | Manufacturer |
@@ -48,21 +48,18 @@ Real product explanation first, then proof, then the science, then the service.
 | 11 | `historic-windows` | `commercial-arched-windows.jpg` | Use cases / FAQ | Pellikal |
 
 ### The hero image carries the explanation
-`insert-components.jpg` labels the three parts — **silicone tubing, ABS
+`insert-cutaway-labeled.jpg` labels the three parts — **silicone tubing, ABS
 carrier, acrylic glazing** — and sits beside the H1. The section immediately
 below expands each one in Pellikal's own words, so the page explains the
 product rather than just showing it.
 
-### Before &amp; after
-Images 2 and 3 are presented as the **same window before and after** an insert
-was fitted — timber frame first, then the fitted result. Labelled with overlay
-Before/After badges rather than captions.
-
-> **Owner-attested pairing.** The before/after relationship was confirmed by
-> the owner. If these turn out to be two different windows rather than one
-> window photographed twice, the section must be relabelled — presenting two
-> different windows as a before/after would be misleading.
-
+### Two separate installations (NOT a before/after)
+Images 2 and 3 are **two different windows, each already fitted with an
+insert** — confirmed by the owner on 14 Sep 2026. They were originally
+presented as a before/after pair; that was wrong and has been removed from the
+page, the tags, the alt text and the microcopy. Public copy must never imply
+one was taken before fitting. The overlay tags now describe each photograph
+("Leaded casement" / "Finished room").
 ---
 
 ## The gate (still in place, switched on)
@@ -104,3 +101,31 @@ never requested.
 - Resize to ~1200 px wide, keep under ~300 KB
 - Retouching for exposure and clarity is fine; never alter how the product
   itself looks
+
+
+---
+
+## Update — 14 September 2026 (owner feedback)
+
+**Hero image replaced.** `insert-components.jpg` was swapped for
+`insert-cutaway-labeled.jpg`, a cleaner manufacturer render that labels all
+three parts (the previous one cropped the silicone-tubing label out). Sourced
+from the manufacturer's site, trimmed of its white margin and resized to
+640×925 / 59 KB. It carries `data-asset-source="manufacturer"` like the
+others, so `WINDOW_INSERT_ASSETS_APPROVED` still governs it.
+
+`insert-components.jpg` is **no longer referenced** but has been left in the
+repository in case it is wanted again.
+
+**Image sizes reduced page-wide.** Every image block is now capped and centred
+in its column instead of filling it (`.imgslot--thumb` / `--sm` / `--md`,
+stylesheet §18). Desktop rendered widths went from ~560 px to 230 px (hero),
+380 px (diagrams) and 420–430 px (photographs). Shadows softened to match.
+
+**The before/after pair was NOT a before/after.** The owner confirmed the two
+photographs are *two separate installations, both already fitted with inserts*.
+The Before/After tags, the "same window" heading and the alt text that claimed
+one was taken before fitting have all been removed. The section is now
+"Two insert installations", the tags describe each photograph, and the
+microcopy states plainly that this is not a before-and-after of one opening.
+The CSS modifiers were renamed `--one` / `--two` so nobody relabels them.

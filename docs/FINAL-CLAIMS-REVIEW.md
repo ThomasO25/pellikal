@@ -12,7 +12,7 @@ LLumar source) · **O** owner confirmation · **R** removed or rewritten
 
 | Claim | Cat | Note |
 |---|---|---|
-| "Select LLumar® residential solar-control films block more than 99% of the UV rays that contribute to fading" | **M** | Attributed to manufacturer, product-scoped ("select"). Needs data sheet. |
+| "Select LLumar® residential solar-control films block more than 99% of the UV rays that contribute to fading" | **M** | Attributed to manufacturer, product-scoped ("select"). **Source recorded 14 Sep 2026** — official LLumar solar-control page, see CLAIMS-SOURCES.md. |
 | "UV is one contributor — heat, visible light and time also play a part" | **A** | Qualifier that prevents over-claiming |
 | "significantly reduce UV exposure" | **A** | Hedged, non-numeric |
 | ~~"Blocks up to 99% of UV rays that fade hardwood floors…"~~ | **R** | Rewritten — stated as absolute product benefit without attribution |
@@ -103,7 +103,7 @@ LLumar source) · **O** owner confirmation · **R** removed or rewritten
 
 ## Outstanding before launch
 
-1. **M** — LLumar data sheet for the >99% UV statement
+1. ~~**M** — LLumar data sheet for the >99% UV statement~~ **Closed 14 Sep 2026** — official LLumar web source recorded in CLAIMS-SOURCES.md
 2. **M/O** — warranty wording confirmation
 3. **O** — SelectPro dealer status and mark approval
 4. **O** — installation staffing wording

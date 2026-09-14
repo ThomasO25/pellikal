@@ -5,8 +5,8 @@ Every performance/manufacturer claim on the site, with the source required.
 
 | Claim (as published) | Page | Product / category | Source required | Status |
 |---|---|---|---|---|
-| "Select LLumar® residential solar-control films block more than 99% of the UV rays that contribute to fading." | Residential, FAQ | LLumar residential solar-control film | **LLumar technical data sheet for the specific films Pellikal installs** | ⚠️ NEEDS VERIFICATION |
-| "Select LLumar® films block more than 99% of UV rays" | Solutions | LLumar solar-control / ceramic | Same as above | ⚠️ NEEDS VERIFICATION |
+| "Select LLumar® residential solar-control films block more than 99% of the UV rays that contribute to fading." | Residential, FAQ | LLumar residential solar-control film | **Official LLumar source, reviewed 14 Sep 2026:** https://llumar.com/en/residential-window-film/solar-control/ (states solar-control window film blocks more than 99% of UV rays); also https://llumar.com/en/residential-window-film/solar-control/dual-reflective/ | ✅ APPROVED — scoped to select LLumar residential solar-control films only |
+| "Select LLumar® films block more than 99% of UV rays" | Solutions | LLumar solar-control / ceramic | Same official source as above, reviewed 14 Sep 2026 | ✅ APPROVED — "select" scoping must stay; never generalise to all film or to inserts |
 | "helps reduce UV exposure" | Residential, Homepage | General | General industry knowledge; non-numeric, hedged | ✅ APPROVED |
 | "UV is one contributor to fading — heat, visible light and time also play a part" | Homepage, Residential, FAQ | General | Standard conservation guidance; qualifies the claim rather than extending it | ✅ APPROVED |
 | "helps reduce solar heat and glare" | Residential, Homepage | General | Non-numeric, hedged | ✅ APPROVED |
@@ -29,3 +29,13 @@ reduction or film lifespan. Earlier unsourced figures (30%, 10×, 80%, 48%, 42%,
 It must be transcribed from the LLumar technical data sheet for a product
 Pellikal actually installs, attributed to the manufacturer, and hedged where the
 result varies by glass or application.
+
+
+---
+
+**14 Sep 2026 — FAQ aligned.** The visible FAQ answer said "Quality window
+film blocks up to 99% of ultraviolet rays" (any film, "up to") while its own
+JSON-LD and the Residential/Solutions pages said "Select LLumar® … block more
+than 99%". The visible copy now uses the narrower, sourced wording. The claim
+was **narrowed**, not broadened. Rows 8–9 were closed the same day against LLumar's official
+residential solar-control page (recorded in the table above).

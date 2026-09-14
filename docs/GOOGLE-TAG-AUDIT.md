@@ -1,7 +1,7 @@
 # GOOGLE-TAG-AUDIT.md
 
 Every Google tracking instance in the repository.
-**Audited:** 24 August 2026
+**Audited:** 24 August 2026 · **partially superseded 14 September 2026** (Consent Mode v2 added; `/thankyou/` added — see `CONSENT-MODE.md` and `LEAD-FLOW.md`)
 
 ---
 
@@ -9,9 +9,9 @@ Every Google tracking instance in the repository.
 
 | Check | Result |
 |---|---|
-| GTM container installed | ✅ `GTM-MK2PHWB`, one head snippet + one noscript per public page |
+| GTM container installed | ✅ `GTM-MK2PHWB`, one head snippet per public page. **The `<noscript>` iframe was removed 14 Sep 2026** — it bypassed consent for JavaScript-off visitors. `ns` = 0 everywhere is now correct. |
 | Duplicate GTM containers | ✅ **None** |
-| Hard-coded `gtag(` calls | ✅ **Zero** anywhere in the repository |
+| Hard-coded `gtag(` calls | ⚠️ **Superseded 14 Sep 2026.** `gtag()` is now defined and called on every tracked page as the Consent Mode v2 API — see `docs/CONSENT-MODE.md`. What remains zero is GA4 *config* and Ads *conversion* calls in page code. |
 | Hard-coded GA4 (`G-…`) in page code | ✅ **Zero** |
 | Hard-coded Google Ads (`AW-…`) in page code | ✅ **Zero** |
 | Old/wrong GA4 `G-TPD5SKWWVC` active anywhere | ✅ **No** — purged |
@@ -39,6 +39,7 @@ Every Google tracking instance in the repository.
 | `terms/index.html` | 1 | 1 | 0 | 0 | 0 | |
 | `accessibility/index.html` | 1 | 1 | 0 | 0 | 0 | |
 | `404.html` | 1 | 1 | 0 | 0 | 0 | |
+| `thankyou/index.html` | 1 | 1 | 0 | 0 | 0 | Added 14 Sep 2026. Ads lead conversion fires here. |
 | `admin/index.html` | 0 | 0 | 0 | 0 | 0 | **Excluded on purpose** |
 | `local-law-97/index.html` | 0 | 0 | 0 | 0 | 0 | Bare redirect — excluded |
 | Legacy `*.html` redirect stubs (10) | 0 | 0 | 0 | 0 | 0 | Forwarders only; no tracking needed |

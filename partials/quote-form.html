@@ -1,0 +1,57 @@
+<!-- ============================================================
+     THE QUOTE FORM - single source of truth for /contact/,
+     /residential/ and /window-inserts/.
+
+     Edit THIS file, then run:  python3 tools/build.py
+
+     A page asks for it with a variant marker comment reading
+     "@partial:quote-form:residential" followed by an "@end" marker.
+
+     CAUTION: do not write a literal HTML comment opener or closer
+     anywhere inside this heading block. tools/build.py strips this
+     comment by matching up to the first closer it finds, so an extra
+     one here would leak the rest of this text into every page.
+     The build now fails loudly if that happens, but do not rely on it.
+
+     What the build fills in, from site.config.json forms:
+       SERVICE_OPTIONS    the dropdown, with this variant preselected
+       PROPERTY_OPTIONS   same, for property type
+       FORM_LOCATION      residential | window_inserts | contact
+       SUBMIT_LABEL       the button text
+       SUCCESS_URL        relative link to /thankyou/ for this page depth
+       FORMSPREE_ACTION   read out of js/config.js, not duplicated here
+       URL:privacy        relative link to the privacy policy
+
+     ON SUBMISSION
+     js/main.js intercepts submit, posts to Formspree, and only on a
+     CONFIRMED successful HTTP response fires the conversion events and
+     sends the visitor to data-success-url. The plain action attribute
+     is the no-JavaScript fallback and must stay.
+
+     ON PII
+     Nothing typed into these fields ever reaches the dataLayer. The only
+     things tracking sees are the service CATEGORY as a slug and the
+     form_location below. Both are fixed vocabularies, never free text.
+     ============================================================ -->
+<form id="quote-form" class="form" action="{{FORMSPREE_ACTION}}" method="POST" novalidate
+      data-form-location="{{FORM_LOCATION}}" data-success-url="{{SUCCESS_URL}}">
+  <div class="form__msg form__msg--ok" data-msg="ok" role="status">Thanks — your request is in! We'll get back to you shortly. For a faster response, call or text {{PHONE_DISPLAY}}.</div>
+  <div class="form__msg form__msg--err" data-msg="err" role="alert">Sorry, something went wrong sending your message. Please call or text {{PHONE_DISPLAY}} and we'll take care of you.</div>
+  <div class="hp" aria-hidden="true"><label for="company-website">Company website</label><input type="text" id="company-website" name="_gotcha" tabindex="-1" autocomplete="off"></div>
+  <div class="form__row">
+    <div class="field"><label for="first-name">First name <span class="req">*</span></label><input type="text" id="first-name" name="first_name" autocomplete="given-name" required></div>
+    <div class="field"><label for="last-name">Last name <span class="req">*</span></label><input type="text" id="last-name" name="last_name" autocomplete="family-name" required></div>
+  </div>
+  <div class="form__row">
+    <div class="field"><label for="email">Email <span class="req">*</span></label><input type="email" id="email" name="email" autocomplete="email" required></div>
+    <div class="field"><label for="phone">Phone <span class="req">*</span></label><input type="tel" id="phone" name="phone" autocomplete="tel" required></div>
+  </div>
+  <div class="form__row">
+    <div class="field"><label for="property-type">Property type <span class="req">*</span></label><select id="property-type" name="property_type" required>{{PROPERTY_OPTIONS}}</select></div>
+    <div class="field"><label for="service">Service interested in <span class="req">*</span></label><select id="service" name="service" required>{{SERVICE_OPTIONS}}</select></div>
+  </div>
+  <div class="field"><label for="location">Project location (town / borough)</label><input type="text" id="location" name="location" placeholder="e.g. Garden City, Brooklyn, Huntington" autocomplete="address-level2"></div>
+  <div class="field"><label for="message">Tell us about your project</label><textarea id="message" name="message" placeholder="How many windows, what you're trying to solve, timing, etc."></textarea></div>
+  <button type="submit" class="btn btn--cyan btn--lg btn--block">{{SUBMIT_LABEL}}</button>
+  <p class="form__legal">By submitting this form you agree that Pellikal may contact you about your enquiry. We will not add you to any marketing list. See our <a href="{{URL:privacy}}">Privacy Policy</a>.</p>
+</form>

@@ -106,17 +106,25 @@
   function ensureLightbox() {
     if (lb) return lb;
     lb = el("div", "lightbox"); lb.setAttribute("role", "dialog"); lb.setAttribute("aria-modal", "true"); lb.setAttribute("aria-label", "Gallery image");
-    var close = el("button", "lightbox__close"); close.setAttribute("aria-label", "Close"); close.textContent = "\u00D7";
+    var close = el("button", "lightbox__close"); close.type = "button"; close.setAttribute("aria-label", "Close"); close.textContent = "\u00D7";
     var img = document.createElement("img"); img.alt = "";
     lb.appendChild(close); lb.appendChild(img); document.body.appendChild(lb);
     function hide() { lb.classList.remove("is-open"); if (lastFocus) try { lastFocus.focus(); } catch (e) {} }
     lb.addEventListener("click", function (e) { if (e.target === lb || e.target === close) hide(); });
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && lb.classList.contains("is-open")) hide(); });
+    document.addEventListener("keydown", function (e) {
+      if (!lb.classList.contains("is-open")) return;
+      if (e.key === "Escape") { hide(); return; }
+      /* The close button is the only focusable control: keep Tab on it so
+         focus cannot wander into the page underneath the modal. */
+      if (e.key === "Tab") { e.preventDefault(); close.focus(); }
+    });
     return lb;
   }
+  /* Opens from the tile's <button>, so Enter/Space work as well as a click. */
   document.addEventListener("click", function (e) {
-    var img = e.target.closest(".gallery .tile img"); if (!img) return;
-    lastFocus = document.activeElement;
+    var btn = e.target.closest(".gallery .tile .tile__open"); if (!btn) return;
+    var img = btn.querySelector("img"); if (!img) return;
+    lastFocus = btn;
     var box = ensureLightbox(); var i = box.querySelector("img"); i.src = img.src; i.alt = img.alt || ""; box.classList.add("is-open");
     box.querySelector(".lightbox__close").focus();
   });
@@ -154,14 +162,26 @@
 
   /* ---------- Contact form (Formspree) — never fakes success ---------- */
   /* /contact/?service=window-inserts pre-selects the dropdown so a visitor
-     arriving from the Window Inserts page doesn't have to hunt for it. */
+     arriving from the Window Inserts page doesn't have to hunt for it.
+
+     Matched by SLUG, not by substring. The old substring match compared
+     the first word only, so adding "Residential Window Film" to the list
+     would have made ?service=window-inserts select it instead — both
+     labels contain "window". Slugs make the match exact regardless of
+     what is added to the dropdown or in what order.
+
+     A build-time preselection (the landing pages) is overridden by an
+     explicit ?service= in the URL, which is the more specific intent. */
   (function prefillService() {
     var sel = $("#service"); if (!sel) return;
     var q = (location.search.match(/[?&]service=([^&]+)/) || [])[1];
     if (!q) return;
     q = decodeURIComponent(q).toLowerCase().replace(/-/g, " ");
+    if (!window.PELLIKAL_SERVICE_SLUG) return;
+    var wanted = window.PELLIKAL_SERVICE_SLUG(q);
+    if (!wanted || wanted === "not_sure") return;
     for (var i = 0; i < sel.options.length; i++) {
-      if (sel.options[i].text.toLowerCase().indexOf(q.split(" ")[0]) > -1) { sel.selectedIndex = i; break; }
+      if (window.PELLIKAL_SERVICE_SLUG(sel.options[i].text) === wanted) { sel.selectedIndex = i; break; }
     }
   })();
 
@@ -176,6 +196,30 @@
     function fmsg(elm, text) { if (okMsg) okMsg.style.display = "none"; if (errMsg) errMsg.style.display = "none"; if (elm) { if (text != null) elm.textContent = text; elm.style.display = "block"; elm.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" }); } }
 
     if (isPlaceholder) console.warn("[Pellikal] Formspree is not configured. Set FORMSPREE_ID in js/config.js — until then the contact form will NOT send; visitors are asked to call/text/email.");
+
+    /* ---------------------------------------------------------
+       SUCCESS REDIRECT  →  /thankyou/
+       Reached from exactly one place: inside the r.ok branch below,
+       after Formspree has confirmed the submission. A validation
+       failure, a network error, a Formspree rejection or a bot trip
+       all return early and the visitor stays on this page with their
+       typed details intact.
+
+       The redirect waits for the measurement calls rather than racing
+       them. PELLIKAL_TRACK_LEAD attaches GTM's eventCallback to the
+       final event, so we leave as soon as the tags report done. The
+       timer is the backstop for when the container is blocked and that
+       callback never comes — the visitor still gets their confirmation.
+
+       Nothing about the submission is put in the URL.
+    --------------------------------------------------------- */
+    var thanksUrl = form.getAttribute("data-success-url") || "/thankyou/";
+    var redirected = false;
+    function goToThanks() {
+      if (redirected) return;
+      redirected = true;
+      window.location.assign(thanksUrl);
+    }
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -193,6 +237,9 @@
       var svcEl = form.querySelector('[name="service"], [name="goal"]');
       var leadService = window.PELLIKAL_SERVICE_SLUG ? window.PELLIKAL_SERVICE_SLUG(svcEl ? svcEl.value : "") : "";
       var leadPageType = document.body.getAttribute("data-page-type") || "";
+      /* Which of the three embedded forms this is. Set at build time from
+         site.config.json — a fixed word, never anything the visitor typed. */
+      var leadLocation = form.getAttribute("data-form-location") || "";
 
       var btn = form.querySelector('button[type="submit"]'), label = btn.textContent;
       btn.textContent = "Sending\u2026"; btn.disabled = true;
@@ -205,7 +252,14 @@
                and a rejected or failed submission fires nothing.
                No personal data is passed; see js/tracking.js. */
             if (window.PELLIKAL_TRACK_LEAD) {
-              window.PELLIKAL_TRACK_LEAD(form.id === "home-form" ? "homepage_form" : "contact_form", leadService, leadPageType);
+              /* Backstop: if GTM is blocked its eventCallback never fires,
+                 so leave anyway shortly after. Whichever comes first wins;
+                 goToThanks is guarded so it can only run once. */
+              setTimeout(goToThanks, 1400);
+              window.PELLIKAL_TRACK_LEAD(form.id === "home-form" ? "homepage_form" : "contact_form",
+                                         leadService, leadPageType, leadLocation, goToThanks);
+            } else {
+              goToThanks();
             }
           } else return r.json().then(function (d) { throw new Error((d && d.errors && d.errors[0] && d.errors[0].message) || "send failed"); });
         })
@@ -234,9 +288,19 @@
         res.data.forEach(function (row) {
           var url = safeUrl(row.url); if (!url) return;
           var cap = (row.caption || row.category || "").toString();
+          /* alt_text is the field the admin is REQUIRED to fill in — it is the
+             first choice. Caption is the fallback. There is deliberately no
+             invented fallback such as "Window film project by Pellikal": an
+             alt that asserts ownership nobody verified is worse than none. */
+          var alt = (row.alt_text || cap || "").toString();
           var tile = el("div", "tile");
-          var img = document.createElement("img"); img.loading = "lazy"; img.src = url; img.alt = cap || "Window film project by Pellikal";
-          tile.appendChild(img); if (cap) tile.appendChild(el("div", "tile__cap", cap)); g.appendChild(tile);
+          /* A real button, so keyboard users can open the same image the
+             mouse can. The img inside is presentational to the button. */
+          var open = el("button", "tile__open"); open.type = "button";
+          open.setAttribute("aria-label", alt ? "View larger: " + alt : "View larger image");
+          var img = document.createElement("img"); img.loading = "lazy"; img.decoding = "async"; img.src = url; img.alt = alt;
+          open.appendChild(img); tile.appendChild(open);
+          if (cap) tile.appendChild(el("div", "tile__cap", cap)); g.appendChild(tile);
         });
       }).catch(galleryPlaceholders);
   }
@@ -298,7 +362,7 @@
           var art = el("article", "proj");
           var media = el("div", "proj__media");
           var url = safeUrl(p.image_url);
-          if (url) { var im = document.createElement("img"); im.src = url; im.loading = "lazy"; im.decoding = "async"; im.alt = p.alt_text || ((p.title ? p.title + " \u2014 " : "") + "Pellikal window film project"); media.appendChild(im); }
+          if (url) { var im = document.createElement("img"); im.src = url; im.loading = "lazy"; im.decoding = "async"; im.alt = p.alt_text || p.title || ""; media.appendChild(im); }
           art.appendChild(media);
           var body = el("div", "proj__body");
           body.appendChild(el("h3", null, p.title || "Project"));

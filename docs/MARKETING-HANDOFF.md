@@ -85,11 +85,13 @@ enquiry that genuinely reached the business.
 
 | Event | Conversion action | Notes |
 |---|---|---|
-| `generate_lead` | **Submit lead form** | Primary. Count: One |
+| **`/thankyou/` page view** | **Submit lead form** | **THE Primary Ads lead conversion. Count: One.** |
+| `generate_lead` | — | **GA4 reporting only. Do NOT also make this a Primary Ads conversion** — one submission would count twice. |
 | `click_to_call` | **Phone call lead** | Count: One |
 | `click_to_text` | Contact | Optional |
 | `click_to_email` | Contact | Optional |
 | `contact_form_submit` / `homepage_form_submit` | — | Diagnostics only; don't double-count with `generate_lead` |
+| `window_insert_lead` | Secondary at most | GA4 reporting, or a Secondary Ads signal. Never a second Primary lead. |
 | `view_contact_page` | ❌ **Never a conversion** | Intent/audience signal only. Counting it will wildly inflate conversions. |
 
 The account already contains historical actions (Submit lead form, Phone call
@@ -127,8 +129,15 @@ dataLayer. Events record only that an action happened and roughly where.
 GitHub Pages, and states call tracking is not currently active. Update it if
 that changes.
 
-No cookie banner ships. Add one only if the business targets jurisdictions
-requiring prior consent; Consent Mode is best configured in GTM.
+**SUPERSEDED 14 Sep 2026.** ~~No cookie banner ships.~~ Google Consent Mode v2
+now ships **in the website**: all four optional categories default to denied in
+the `<head>` above the GTM snippet, and a banner lets the visitor choose Accept
+All or Necessary Only. Do not add a second consent tool in GTM, and do not
+remove the defaults from the pages. See `CONSENT-MODE.md`.
+
+Consent Mode does **not** automatically gate custom tags you add in GTM
+(Clarity, chat, pixels). Each one needs its own consent check, or the banner
+becomes a promise the site does not keep.
 
 ---
 
@@ -168,5 +177,8 @@ requiring prior consent; Consent Mode is best configured in GTM.
 7. **Admin → Events → Mark as key event** for `generate_lead`.
 8. Confirm **one** `page_view` per page load. Two means a duplicate GA4 tag in
    GTM — there is none in the site code.
-9. Import `generate_lead` into Google Ads, or build a native Ads conversion tag
-   in GTM. **Not both for the same action.**
+9. **Do not import `generate_lead` into Google Ads, and do not build an Ads
+   conversion tag for it.** It is GA4 reporting only — it is what tells you
+   *which* service and *which* form produced the lead. The single Primary
+   Google Ads lead conversion is the **`/thankyou/` page view**. Configuring
+   both would count one submission twice.

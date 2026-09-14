@@ -136,12 +136,14 @@ Suggested mapping:
 
 | Website event | Google Ads conversion | Notes |
 |---|---|---|
-| `generate_lead` | **Submit lead form** | The primary conversion |
+| **`/thankyou/` page view** | **Submit lead form** | **THE primary conversion.** Count: One |
+| `generate_lead` | — | **GA4 reporting only — not a second Primary Ads conversion** |
 | `click_to_call` | **Phone call lead** | If you want call clicks counted |
 | `click_to_text` | Contact | Optional |
 | `click_to_email` | Contact | Optional |
 | `homepage_form_submit` | — | Diagnostic only; don't double-count with `generate_lead` |
 | `contact_form_submit` | — | Diagnostic only |
+| `window_insert_lead` | Secondary at most | Never a second Primary lead |
 | `view_contact_page` | **Never** | Intent signal / audience only. Counting it as a lead will badly inflate conversions. |
 
 The existing Google Ads account contains historical conversion actions (Submit
@@ -190,9 +192,11 @@ are in use, that Google Ads measurement is being configured, and that call
 tracking is **not** currently active. It also states plainly that personal
 information is never sent to analytics or advertising systems.
 
-The site ships **no cookie banner**. Add one only if the business begins
-targeting jurisdictions that require prior consent — Consent Mode is best
-configured inside GTM.
+**SUPERSEDED 14 Sep 2026.** ~~The site ships no cookie banner.~~ Consent Mode
+v2 ships in the website itself — defaults denied before GTM loads, plus a
+banner offering Accept All / Necessary Only, and a reopen control in the
+footer and the privacy policy. Configure nothing equivalent in GTM; do gate any
+custom GTM tag with its own consent check. See `CONSENT-MODE.md`.
 
 ---
 

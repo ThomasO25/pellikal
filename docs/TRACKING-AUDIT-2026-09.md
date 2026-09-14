@@ -62,7 +62,7 @@ is needed; fix the source of the malformed link.
 | Internal links with `//` | ✅ none |
 | Canonicals | ✅ all trailing-slash form |
 | Sitemap | ✅ trailing-slash form, 11 URLs, includes `/window-inserts/` |
-| Thank-you page | **None.** Success is shown inline; the conversion fires on Formspree's HTTP success. A reload or direct visit cannot fake a lead. |
+| Thank-you page | ~~**None.** Success is shown inline.~~ **SUPERSEDED 14 Sep 2026.** `/thankyou/` now exists. A confirmed Formspree success fires the dataLayer events and then redirects there, and that page view is the single Google Ads lead conversion. Nothing fires on a failed submission, and no submitted data is carried to the page. See `LEAD-FLOW.md`. |
 
 ---
 

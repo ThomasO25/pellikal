@@ -29,7 +29,16 @@
 
   var configured = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && String(CFG.SUPABASE_URL).indexOf("http") === 0 && window.supabase);
   var SB = null;
-  if (configured) { try { SB = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, { auth: { persistSession: storageOK(), autoRefreshToken: storageOK() } }); } catch (e) { configured = false; } }
+  /* SESSION-ONLY AUTH (14 Sep 2026). The admin session — including the
+     refresh token — lives in sessionStorage, not localStorage. It dies when
+     the tab or browser is closed, so a signed-in session cannot be picked
+     up later from a shared or stolen device. The cost is signing in (and
+     entering the TOTP code) once per browser session, which is proportionate
+     for an occasional-use CMS. Do not switch this back to localStorage for
+     convenience without recording the decision in docs/SECURITY.md. */
+  function sessionStore() { try { sessionStorage.setItem("__t", "1"); sessionStorage.removeItem("__t"); return window.sessionStorage; } catch (e) { return null; } }
+  var store = sessionStore();
+  if (configured) { try { SB = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, { auth: { persistSession: !!store, autoRefreshToken: !!store, storage: store || undefined } }); } catch (e) { configured = false; } }
 
   var PROJECTS = CFG.PROJECTS_TABLE || "projects";
   var EDIT = $("#cms-edit"), PREV = $("#cms-prev");

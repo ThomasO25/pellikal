@@ -1,23 +1,23 @@
 /* =============================================================
    PELLIKAL — tracking.js
-   Google Tag Manager loader + website event layer.
+   The website's dataLayer EVENT LAYER. Not the GTM loader.
 
    WHAT THIS FILE DOES
-   - Loads ONE Google Tag Manager container (the only Google tag on
-     the site). GA4, Google Ads conversions and any remarketing tags
-     are then configured by the marketing specialist inside GTM.
-   - Pushes a small, consistent set of events to window.dataLayer.
+   - Pushes a small, consistent set of events to window.dataLayer:
+     view_contact_page, click_to_call/text/email, contact_form_submit,
+     homepage_form_submit, generate_lead, window_insert_lead.
 
    WHAT THIS FILE DOES NOT DO
-   - It does not contain a real GTM ID, GA4 ID, Google Ads ID or any
-     conversion label. Placeholders only — see js/config.js.
+   - It does not load Google Tag Manager. The container (ID from
+     site.config.json) and the Consent Mode v2 defaults are generated
+     inline into each page's <head> by tools/build.py, defaults first.
+     There is intentionally no GTM <noscript> iframe.
+   - It contains no GA4 ID, Google Ads ID or conversion label. Those are
+     configured inside the live GTM container.
    - It never sends personally identifiable information. No names,
      emails, phone numbers, addresses or message text are ever pushed
      to the dataLayer.
-
-   NOTHING LOADS until a real container ID replaces the placeholder in
-   js/config.js. Until then the site is completely untracked.
-   See MARKETING-TRACKING.md.
+   See docs/MARKETING-TRACKING.md, docs/LEAD-FLOW.md, docs/CONSENT-MODE.md.
    ============================================================= */
 (function () {
   "use strict";
@@ -89,7 +89,7 @@
   /* ---------------------------------------------------------
      CONTACT PAGE VIEW
      Signals intent, NOT a lead. Never configure this as a Google Ads
-     conversion — use generate_lead for that.
+     conversion. The Primary Ads lead conversion is the /thankyou/ page view.
   --------------------------------------------------------- */
   function markContactView() {
     if (isContactPage()) push("view_contact_page");
@@ -105,28 +105,64 @@
 
      lead_source values: "homepage_form" | "contact_form"
   --------------------------------------------------------- */
-  /* leadSource: "homepage_form" | "contact_form"
-     service:    a short CATEGORY chosen from the form's dropdown — e.g.
-                 "window_inserts", "solar_heat_glare", "privacy". It is never
-                 free text and never identifies the customer.
-     pageType:   which page the form was on, e.g. "window_insert_landing". */
-  window.PELLIKAL_TRACK_LEAD = function (leadSource, service, pageType) {
+  /* leadSource:   "homepage_form" | "contact_form"
+     service:      a short CATEGORY chosen from the form's dropdown — e.g.
+                   "window_inserts", "residential_film", "privacy". It is never
+                   free text and never identifies the customer.
+     pageType:     which page the form was on, e.g. "window_insert_landing".
+     formLocation: NEW — which of the three embedded forms was used:
+                   "contact" | "residential" | "window_inserts". A fixed
+                   vocabulary, set at build time, never typed by a visitor.
+     onComplete:   optional. Called once GTM reports it has finished handling
+                   the final event, or after eventTimeout, whichever comes
+                   first. Used by js/main.js to hold the redirect to
+                   /thankyou/ until the measurement calls have gone out.
+
+     NOTE FOR THE ADS SPECIALIST: none of these is a Google Ads conversion.
+     The site fires dataLayer events only. The single Ads lead conversion is
+     the /thankyou/ page view, configured inside GTM. */
+  window.PELLIKAL_TRACK_LEAD = function (leadSource, service, pageType, formLocation, onComplete) {
     var src = leadSource === "homepage_form" ? "homepage_form" : "contact_form";
     var params = { lead_source: src };
     if (service) params.service = service;
     if (pageType) params.page_type = pageType;
-    push(src === "homepage_form" ? "homepage_form_submit" : "contact_form_submit");
-    push("generate_lead", params);
-    /* Additional event so the Window Inserts campaign can be optimised on its
-       own conversion, separate from general film leads. Existing triggers on
+    if (formLocation) params.form_location = formLocation;
+
+    /* Built as a list so the completion callback can be attached to
+       whichever push turns out to be last. */
+    var queue = [[src === "homepage_form" ? "homepage_form_submit" : "contact_form_submit", null],
+                 ["generate_lead", params]];
+    /* Additional event so Window Inserts leads can be segmented from general
+       film leads in GA4 reporting, and used as a Secondary Ads signal if the
+       specialist wants one. It is NOT another Primary lead conversion — the
+       single Primary is the /thankyou/ page view. Existing triggers on
        generate_lead keep working unchanged. */
-    if (service === "window_inserts") push("window_insert_lead", { lead_source: src });
+    if (service === "window_inserts") queue.push(["window_insert_lead", { lead_source: src }]);
+
+    for (var i = 0; i < queue.length; i++) {
+      var name = queue[i][0];
+      var payload = queue[i][1];
+      if (i === queue.length - 1 && typeof onComplete === "function") {
+        payload = payload ? JSON.parse(JSON.stringify(payload)) : {};
+        /* GTM calls eventCallback once every tag for this event has run.
+           eventTimeout caps the wait. Neither key is sent on to GA4.
+           js/main.js keeps its own timer too, because eventCallback never
+           fires at all if the container is blocked. */
+        payload.eventCallback = onComplete;
+        payload.eventTimeout = 1200;
+      }
+      push(name, payload);
+    }
   };
 
-  /* Turn the dropdown's human label into a safe, stable category slug. */
+  /* Turn the dropdown's human label into a safe, stable category slug.
+     ORDER MATTERS. "insert" is tested first because "Window Inserts /
+     Noise Reduction" and "Residential Window Film" both contain "window";
+     testing inserts first keeps the existing window_inserts slug intact. */
   window.PELLIKAL_SERVICE_SLUG = function (label) {
     label = String(label || "").toLowerCase();
     if (label.indexOf("insert") > -1) return "window_inserts";
+    if (label.indexOf("residential") > -1) return "residential_film";
     if (label.indexOf("solar") > -1 || label.indexOf("heat") > -1) return "solar_heat_glare";
     if (label.indexOf("privacy") > -1) return "privacy";
     if (label.indexOf("security") > -1) return "security_safety";

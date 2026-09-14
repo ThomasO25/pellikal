@@ -26,6 +26,10 @@
      13. Admin ................ styles used only by /admin/
      14. Utilities ............ .is-* helpers, reveal animations
      15. Responsive ........... @media rules (narrowest last)
+     16. Consent banner ....... the cookie/tracking choice bar
+     17. Lead form / thanks ... embedded landing-page form, /thankyou/
+     18. Insert image scale .. capped image blocks on /window-inserts/
+     19. Consent v2 .......... three-choice banner, dialog, switches, tile button
 
    CONVENTIONS
      • Block__element--modifier naming, e.g. .card__title, .btn--cyan
@@ -873,9 +877,269 @@ html:not(.mfr-assets-approved) [data-asset-source="manufacturer"]{display:none}
    column takes the full width instead of sitting beside an empty half. */
 html:not(.mfr-assets-approved) .grid--2[data-mfr-grid]{grid-template-columns:1fr}
 
-/* ---- Before / after pair on the Window Inserts page ---- */
+/* ---- Paired example installations on the Window Inserts page ----
+   NOT a before/after. Both photographs show inserts already fitted, in two
+   different openings. The modifiers are --one/--two for exactly that reason:
+   do not relabel them Before/After. ---- */
 .ba-pair{gap:clamp(1rem,2.4vw,1.8rem)}
 .ba-shot{position:relative}
 .ba-tag{position:absolute;top:12px;left:12px;z-index:2;font-size:.66rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;padding:.34rem .7rem;border-radius:999px;color:#fff}
-.ba-tag--before{background:rgba(14,27,64,.88)}
-.ba-tag--after{background:var(--cyan-ink)}
+.ba-tag--one{background:rgba(14,27,64,.88)}
+.ba-tag--two{background:var(--cyan-ink)}
+
+/* ==========================================================================
+   16. CONSENT BANNER  —  Google Consent Mode v2 (see docs/CONSENT-MODE.md)
+   ==========================================================================
+
+   Deliberately built from the tokens already in :root — the navy plate of
+   the footer and .callbox, the cyan of the primary button, Mulish, the
+   pill button geometry. It should read as the site's own footer speaking,
+   not as a third-party cookie widget dropped on top.
+
+   EQUAL PROMINENCE IS A REQUIREMENT, NOT A STYLE CHOICE.
+   Both buttons inherit .btn, so their padding, font size, weight and hit
+   area are identical by construction. One is cyan and one is white; they
+   differ in hue only. Do not make "Necessary Only" a faint outline, do
+   not shrink it, and do not add a close X to the first-run banner — a
+   dismissal that silently means "accept" is the dark pattern this whole
+   file exists to avoid.
+
+   STACKING: above the sticky mobile call bar (800) and the back-to-top
+   button (790), below the lightbox (2500) and the skip link (2000).
+   ========================================================================== */
+.consent{position:fixed;left:0;right:0;bottom:0;z-index:1200;background:var(--navy);border-top:1px solid var(--cyan);box-shadow:0 -18px 44px rgba(14,27,64,.22)}
+
+.consent__inner{display:flex;align-items:center;gap:clamp(1rem,3vw,2.5rem);padding-block:1rem}
+
+.consent__copy{flex:1 1 auto;min-width:0}
+
+/* Under 80 characters a line, per the site's body-copy convention. */
+.consent__text{margin:0;color:var(--on-dark);font-size:.9rem;line-height:1.6;max-width:68ch}
+
+.consent__now{margin:.4rem 0 0;color:var(--cyan);font-size:.82rem;font-weight:700}
+
+.consent__link{display:inline-block;margin-top:.35rem;color:var(--on-dark-mut);font-size:.82rem;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+
+.consent__link:hover{color:#fff}
+
+.consent__actions{display:flex;align-items:center;gap:.7rem;flex:0 0 auto}
+
+/* min-height keeps both targets at the 44px minimum on touch screens. */
+.consent__btn{font-size:.9rem;padding:.7rem 1.35rem;min-height:44px}
+
+.consent__btn--alt{--bg:#fff;--fg:var(--navy)}
+
+.consent__btn--alt:hover{background:var(--mist)}
+
+.consent__close{flex:0 0 auto;background:none;border:none;color:var(--on-dark-mut);font-family:var(--f);font-size:.82rem;font-weight:700;padding:.6rem;min-height:44px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+.consent__close:hover{color:#fff}
+
+/* One short entrance, and only on the element that just appeared. */
+.consent{animation:consent-in .18s var(--ease) both}
+
+@keyframes consent-in{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+/* ---- Keeping the page clear of it ----
+   --consent-h is measured and set by js/consent.js, because the height
+   depends on how the copy wraps at the current width. */
+html.consent-open body{padding-bottom:var(--consent-h,0px)}
+
+html.consent-open .to-top{bottom:calc(74px + var(--consent-h,0px))}
+
+@media (min-width:861px){html.consent-open .to-top{bottom:calc(22px + var(--consent-h,0px))}}
+
+/* ---- Reopen controls ----
+   Hidden until js/consent.js is alive, so nobody is ever shown a
+   preferences button that does nothing. Same fail-safe direction as the
+   manufacturer-imagery gate above. */
+html:not(.consent-ready) [data-consent-open]{display:none}
+
+.footer__prefs{background:none;border:none;padding:0;color:var(--on-dark-mut);font-family:var(--f);font-size:inherit;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+.footer__prefs:hover{color:#fff}
+
+/* ---- Responsive ----
+   861px and below the sticky call bar owns the bottom 56px, so the
+   banner sits on top of it rather than over it. */
+@media (max-width:860px){
+  .consent{bottom:56px}
+  html.consent-open body{padding-bottom:calc(56px + var(--consent-h,0px))}
+}
+
+@media (max-width:767px){
+  .consent__inner{flex-direction:column;align-items:stretch;gap:.85rem;padding-block:.9rem}
+  .consent__text{font-size:.86rem}
+  .consent__actions{flex-direction:column;align-items:stretch;gap:.55rem}
+  .consent__btn{width:100%}
+  .consent__close{align-self:center}
+}
+
+@media (prefers-reduced-motion:reduce){.consent{animation:none}}
+
+/* ==========================================================================
+   17. LEAD FORM ON LANDING PAGES + THANK-YOU PAGE
+   ==========================================================================
+   The embedded form reuses .quote-wrap (so it inherits the existing
+   two-column-to-one-column behaviour) and .form. Only the supporting
+   column and the confirmation page need anything new.
+   ========================================================================== */
+.leadform__aside{align-self:start}
+
+.leadform__aside .checks{margin-bottom:1.4rem}
+
+.leadform__call{border-top:1px solid var(--line);padding-top:1.2rem}
+
+.leadform__or{font-size:.9rem;color:var(--muted);margin:0 0 .7rem}
+
+/* The legal line under the submit button, previously an inline style. */
+.form__legal{font-size:.86rem;color:var(--muted);margin:.9rem 0 0;text-align:center}
+
+/* ---- /thankyou/ ---- */
+.thanks__inner{max-width:640px;text-align:center;padding-block:clamp(2rem,6vw,4rem)}
+
+.thanks__mark{width:64px;height:64px;color:var(--cyan);margin-bottom:1.2rem}
+
+.thanks__note{color:var(--muted);font-size:.95rem}
+
+.thanks__actions{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:1.6rem}
+
+@media (max-width:520px){.thanks__actions .btn{width:100%}}
+
+/* An inline control that reads as a link — used in the privacy policy to
+   reopen the tracking-preferences banner mid-sentence. */
+.link-btn{background:none;border:none;padding:0;font:inherit;color:var(--cyan-ink);text-decoration:underline;cursor:pointer}
+.link-btn:hover{color:var(--navy)}
+
+/* ==========================================================================
+   18. WINDOW INSERTS — IMAGE SCALE
+   ==========================================================================
+   Owner feedback, 14 Sep 2026: the photographs were dominating the page.
+   On this page the copy sells and the images corroborate, so every image
+   block is capped and centred in its column rather than filling it.
+
+   .imgslot--filled img is width:100% by design — these caps constrain the
+   FIGURE, which keeps the images responsive and avoids fighting that rule.
+   ========================================================================== */
+.imgslot--thumb{max-width:230px;margin-inline:auto}
+
+.imgslot--sm{max-width:380px;margin-inline:auto}
+
+.imgslot--md{max-width:420px;margin-inline:auto}
+
+/* Softer than the page default: a small image under a 56px shadow reads as
+   a sticker rather than a photograph. */
+.imgslot--filled img{box-shadow:0 12px 30px rgba(14,27,64,.13)}
+
+.imgslot--dark.imgslot--filled img{box-shadow:0 12px 30px rgba(0,0,0,.3)}
+
+/* Hero: the headline, sub and CTA lead; the cutaway sits beside them as a
+   supporting thumbnail. Not .grid--2, so it carries its own collapse. */
+.inserthero{grid-template-columns:minmax(0,1.7fr) minmax(0,.75fr)}
+
+.insert-fitrow{max-width:880px;margin-inline:auto}
+
+/* The two example installations are meant to be compared, so cap the ROW
+   and let each fill its column rather than floating apart in wide ones. */
+.ba-pair{max-width:900px;margin-inline:auto}
+
+.ba-pair .imgslot--md{max-width:none}
+
+/* Below 860 every grid here collapses to one column, so an uncapped figure
+   stretches to the full container — 707px on a tablet, which is the exact
+   thing the caps above exist to prevent. min() keeps them full-bleed on a
+   phone and capped on a tablet. */
+@media (max-width:860px){
+  .inserthero{grid-template-columns:1fr}
+  .imgslot--thumb{max-width:190px}
+  .imgslot--sm,.imgslot--md{max-width:min(100%,420px)}
+  .ba-pair .imgslot--md{max-width:min(100%,420px)}
+  .insert-fitrow .imgslot{max-width:min(100%,420px);margin-inline:auto}
+}
+
+/* ==========================================================================
+   19. CONSENT v2 — three-choice banner, preferences dialog, switches
+   ==========================================================================
+   Accept and Reject share .consent__btn geometry (same padding, weight and
+   44px minimum) and differ in hue only. Manage Preferences is a navigation
+   action, not a consent decision, so it may sit lighter — but it is the
+   same size and the same hit area.
+   ========================================================================== */
+.consent__btn--manage{--bg:transparent;--fg:#fff;border-color:rgba(255,255,255,.8)}
+
+.consent__btn--manage:hover{background:rgba(255,255,255,.12);border-color:#fff}
+
+@media (max-width:1100px) and (min-width:768px){
+  .consent__inner{flex-direction:column;align-items:stretch}
+  .consent__actions{justify-content:flex-start;flex-wrap:wrap}
+}
+
+/* ---- Dialog ---- */
+.consent-overlay{position:fixed;inset:0;z-index:2600;background:rgba(10,20,48,.6);display:flex;align-items:center;justify-content:center;padding:1rem}
+
+.consent-dialog{background:var(--paper);color:var(--text);border-radius:var(--radius);width:min(560px,100%);max-height:calc(100vh - 2rem);overflow:auto;padding:clamp(1.2rem,3vw,1.8rem);box-shadow:var(--shadow-md)}
+
+.consent-dialog__head{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.4rem}
+
+.consent-dialog__title{margin:0;font-size:1.35rem}
+
+.consent-dialog__title:focus{outline:none}
+
+.consent-dialog__close{background:none;border:none;font-size:1.8rem;line-height:1;width:44px;height:44px;border-radius:50%;color:var(--muted);cursor:pointer}
+
+.consent-dialog__close:hover{background:var(--mist);color:var(--ink)}
+
+.consent-dialog__intro{font-size:.92rem;color:var(--muted);margin:0 0 1.1rem}
+
+.consent__cat{border-top:1px solid var(--line);padding:.95rem 0}
+
+.consent__cat-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+
+.consent__cat-desc{margin:.4rem 0 0;font-size:.86rem;color:var(--muted);line-height:1.55}
+
+.consent__always{font-size:.78rem;font-weight:800;letter-spacing:.04em;color:var(--cyan-ink)}
+
+/* Switch: a native checkbox, visually hidden but still focusable, with a
+   drawn track. The label is the click/tap target: 44px tall. */
+.consent__switch{display:inline-flex;align-items:center;gap:.75rem;cursor:pointer;min-height:44px;font-weight:800;color:var(--ink);position:relative}
+
+.consent__switch input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+
+.consent__track{width:46px;height:26px;border-radius:999px;background:var(--gray);position:relative;flex:0 0 auto;transition:background .15s var(--ease)}
+
+.consent__track::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .15s var(--ease)}
+
+.consent__switch input:checked+.consent__track{background:var(--cyan-ink)}
+
+.consent__switch input:checked+.consent__track::after{transform:translateX(20px)}
+
+.consent__switch input:focus-visible+.consent__track{outline:3px solid var(--cyan);outline-offset:2px}
+
+.consent__switch input:disabled+.consent__track{background:var(--cyan-ink);opacity:.55;cursor:default}
+
+.consent__cat--locked .consent__switch{cursor:default}
+
+.consent-dialog .consent__link{color:var(--cyan-ink);margin:.4rem 0 1rem;display:inline-block}
+
+/* Sticky, so Reject is never scrolled out of view while Accept is not:
+   on a phone the category text scrolls, the three choices do not. */
+.consent-dialog__actions{position:sticky;bottom:calc(-1 * clamp(1.2rem,3vw,1.8rem));background:var(--paper);display:flex;gap:.6rem;flex-wrap:wrap;border-top:1px solid var(--line);padding:1rem 0 clamp(1.2rem,3vw,1.8rem);margin-bottom:calc(-1 * clamp(1.2rem,3vw,1.8rem))}
+
+.consent-dialog__actions .btn{font-size:.9rem;padding:.7rem 1.2rem;min-height:44px;white-space:normal;line-height:1.2}
+
+html.consent-dialog-open{overflow:hidden}
+
+@media (max-width:520px){
+  .consent-dialog__actions{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+  .consent-dialog__actions .btn:first-child{grid-column:1 / -1}
+  .consent-dialog__intro,.consent__cat-desc{font-size:.84rem}
+}
+
+@media (prefers-reduced-motion:reduce){.consent__track,.consent__track::after{transition:none}}
+
+/* ---- Gallery tile button (keyboard-operable lightbox) ---- */
+.tile__open{display:block;width:100%;padding:0;margin:0;border:none;background:none;cursor:zoom-in;border-radius:inherit}
+
+.tile__open img{display:block;width:100%;height:100%;object-fit:cover}
+
+.tile__open:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}

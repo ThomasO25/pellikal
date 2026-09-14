@@ -39,6 +39,8 @@ commercial/index.html   Commercial
 solutions/index.html    Solutions
 local-law-97/index.html Redirect only → /commercial/ (see docs/LOCAL-LAW-REMOVAL.md)
 privacy/index.html      Privacy policy
+thankyou/index.html     Lead confirmation. Google Ads counts the lead on
+                        this page load. noindex, not in the sitemap.
 admin/index.html        Staff content manager (unlinked, not indexed)
 404.html                Shown for a bad URL
 
@@ -48,6 +50,8 @@ commercial.html         (same) … one for each page above
 partials/
   header.html           The site header + menu, shared by every page
   footer.html           The footer + sticky mobile call bar
+  quote-form.html       ⭐ THE quote form. One copy, used by /contact/,
+                        /residential/ and /window-inserts/.
 
 tools/
   build.py              Copies partials + config into every page
@@ -61,7 +65,9 @@ css/
 js/
   config.js             Formspree ID, Supabase keys, Google Tag Manager ID
   main.js               Site behaviour: menu, form, gallery, animations
-  tracking.js           Google Tag Manager loader + analytics events
+  tracking.js           Website dataLayer event layer (NOT the GTM loader — see below)
+  consent.js            Cookie/tracking consent (Consent Mode v2, granular)
+  vendor/               Supabase JS, pinned copy — see docs/FINAL-SECURITY-AUDIT.md
   admin.js              Powers /admin/ only
 
 assets/images/          Photos, logos, favicons
@@ -146,9 +152,16 @@ Open that page's `index.html` and change the text inside `<main>`. No build.
    `site.config.json`
 4. Run `python3 tools/build.py`
 
-**Turn on Google Analytics / Ads**
-`js/config.js` → set `GTM_CONTAINER_ID`, and replace `GTM-XXXXXXX` in the
-`<noscript>` block on each page. See `docs/MARKETING-TRACKING.md`.
+**How tracking is wired (current architecture)**
+- The GTM container ID lives in `site.config.json` → `analytics.gtmContainerId`.
+- `tools/build.py` stamps the Consent Mode v2 defaults **and then** the GTM
+  head snippet into every tracked public page, in that order.
+- There is intentionally **no GTM `<noscript>` iframe**: the consent mechanism
+  needs JavaScript, and the privacy-safe design does not load the container
+  for visitors who could never be asked. See `docs/CONSENT-MODE.md`.
+- `js/tracking.js` only supplies the website's dataLayer events.
+- GA4 and Google Ads tags are configured inside the live GTM container — never
+  hard-coded here. See `docs/MARKETING-TRACKING.md` and `docs/LEAD-FLOW.md`.
 
 ---
 
@@ -197,3 +210,8 @@ written into the HTML; Supabase only replaces it when it responds.
 | `docs/LOCAL-LAW-REMOVAL.md` | What was removed and how the old URL redirects |
 | `docs/WINDOW-INSERTS-ASSETS.md` | Insert photography: what's used, what's still needed |
 | `docs/FINAL-CLAIMS-REVIEW.md` | Every marketing claim, categorised |
+| `docs/CONSENT-MODE.md` | Consent Mode v2: defaults, verifying, resetting |
+| `docs/LEAD-FLOW.md` | Ad → landing form → `/thankyou/` → Ads conversion |
+| `docs/FINAL-SECURITY-AUDIT.md` | What was verified, where, and what still needs a live test |
+| `docs/OWNER-LEGAL-REVIEW.md` | Facts and decisions only the owner / a lawyer can supply |
+| `docs/COOKIE-TRACKING-INVENTORY.md` | Every cookie and tracking technology, by category |

@@ -166,10 +166,11 @@ prepared and are not yet active** — which is true today.
       and change the date at the top
 - [ ] If call tracking with number replacement is introduced, confirm that
       section reflects it
-- [ ] Ask your specialist whether a consent banner is needed for the regions
-      you target. The site is consent-ready (`CONSENT_DEFAULT_DENIED` in
-      `js/config.js`) but deliberately ships **without** a banner, since
-      displaying one while nothing is tracking would be misleading.
+- [ ] **SUPERSEDED 14 Sep 2026.** The consent banner now ships. Everything
+      optional defaults to denied before GTM loads, and visitors choose Accept
+      All or Necessary Only. The old `CONSENT_DEFAULT_DENIED` flag in
+      `js/config.js` has been removed — it never did anything. Read
+      `docs/CONSENT-MODE.md` before changing any of it.
 
 ---
 
