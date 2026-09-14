@@ -1034,8 +1034,11 @@ html:not(.consent-ready) [data-consent-open]{display:none}
 .imgslot--dark.imgslot--filled img{box-shadow:0 12px 30px rgba(0,0,0,.3)}
 
 /* Hero: the headline, sub and CTA lead; the cutaway sits beside them as a
-   supporting thumbnail. Not .grid--2, so it carries its own collapse. */
-.inserthero{grid-template-columns:minmax(0,1.7fr) minmax(0,.75fr)}
+   supporting thumbnail — ON THE RIGHT AT EVERY WIDTH. It never collapses
+   under the buttons; on small screens the image column shrinks instead.
+   (An earlier version collapsed to one column under 860px, which put the
+   cutaway as a full-width row beneath the CTAs. Owner feedback 14 Sep.) */
+.inserthero{grid-template-columns:minmax(0,1.7fr) minmax(150px,.75fr);align-items:center;gap:clamp(1.4rem,4vw,3.4rem)}
 
 .insert-fitrow{max-width:880px;margin-inline:auto}
 
@@ -1050,8 +1053,10 @@ html:not(.consent-ready) [data-consent-open]{display:none}
    thing the caps above exist to prevent. min() keeps them full-bleed on a
    phone and capped on a tablet. */
 @media (max-width:860px){
-  .inserthero{grid-template-columns:1fr}
-  .imgslot--thumb{max-width:190px}
+  /* Two columns still. The image column is a fixed clamp, so the text keeps
+     the rest; the gap drops to ~10-16px so the paragraph is not starved. */
+  .inserthero{grid-template-columns:minmax(0,1fr) clamp(95px,24vw,160px);gap:clamp(.65rem,2.5vw,1rem)}
+  .inserthero .imgslot--thumb{width:100%;max-width:100%;margin:0;justify-self:end}
   .imgslot--sm,.imgslot--md{max-width:min(100%,420px)}
   .ba-pair .imgslot--md{max-width:min(100%,420px)}
   .insert-fitrow .imgslot{max-width:min(100%,420px);margin-inline:auto}
@@ -1136,6 +1141,23 @@ html.consent-dialog-open{overflow:hidden}
 }
 
 @media (prefers-reduced-motion:reduce){.consent__track,.consent__track::after{transition:none}}
+
+/* Phones: the headline shares the row with the image column, so it gets a
+   little less room than a full-width H1. Scale it with the viewport and let
+   the browser hyphenate as a last resort rather than overflow. At 375px
+   "Comfortable" fit the column with 0px to spare — that is too close. */
+@media (max-width:430px){
+  .inserthero h1{font-size:clamp(1.6rem,8vw,2.1rem);hyphens:auto;-webkit-hyphens:auto}
+  /* The CTAs are nowrap pills sized for a full-width column. Here they share
+     the row with the image, so let them wrap and fill the text column. */
+  .inserthero .page-hero__actions{flex-direction:column;align-items:stretch}
+  .inserthero .page-hero__actions .btn{white-space:normal;text-align:center;line-height:1.25;padding-inline:1rem}
+}
+
+/* 320-359px: the image column narrows to 84px so the headline keeps ~200px. */
+@media (max-width:359px){
+  .inserthero{grid-template-columns:minmax(0,1fr) 84px;gap:.6rem}
+}
 
 /* ---- Gallery tile button (keyboard-operable lightbox) ---- */
 .tile__open{display:block;width:100%;padding:0;margin:0;border:none;background:none;cursor:zoom-in;border-radius:inherit}
