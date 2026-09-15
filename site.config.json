@@ -150,6 +150,19 @@
       }
     }
   },
+  "_windowInsertsComment": "Manufacturer performance claims for /window-inserts/ (the three stats cards; the tested-dBA band was removed 15 Sep at the owner's request - no exact decibel figures on the page). ENABLED 15 Sep 2026 at the owner's request for a real decibel figure. The figures are Indow's, for its Acoustic Grade product, and are attributed to Indow on the page. If the product sold is NOT Indow Acoustic Grade, set enabled:false and rebuild - one line. enabled=false renders qualitative cards and no band. The wording is fixed in tools/build.py -> insert_claims(); the figures are the manufacturer's own published numbers and are attributed to it, never stated as a Pellikal guarantee.",
+  "windowInserts": {
+    "manufacturerClaims": {
+      "enabled": true,
+      "manufacturer": "Indow",
+      "grade": "Acoustic Grade",
+      "sources": [
+        "https://indowwindows.com/products/indow-window-inserts",
+        "https://indowwindows.com/products/acoustic-window-inserts",
+        "https://indowwindows.com/solutions/noise-performance"
+      ]
+    }
+  },
   "_syncOnlyComment": "Files with no header/footer, but which still contain the phone/email and must stay in sync.",
   "syncOnly": [
     "404.html",

@@ -19,6 +19,8 @@ They are not a substitute for attorney review.
 | 3 | **Warranty language.** The Terms now say warranties are the *manufacturer's* — film manufacturer for film, insert manufacturer for inserts — and that Pellikal installs but does not manufacture. Confirm this is accurate for every product sold, and provide the actual warranty terms/limits if any are to be quoted. | No warranty coverage was invented. |
 | 4 | **Data retention.** How long are enquiry emails and Formspree submissions kept? The policy says "as long as needed to respond and to maintain normal business records". Replace with a real period if you have one. | Truthful but vague. |
 
+| 4b | **Insert manufacturer and grade.** Confirm the inserts are made by Indow and whether the noise-reduction product quoted is Acoustic Grade. **Now live (15 Sep) at the owner's request.** The page names Indow and attributes the 70% / 20% / 99% and dBA figures to it. Please keep one written line on file confirming the product is Indow Acoustic Grade; if it is not, set `windowInserts.manufacturerClaims.enabled` to false and rebuild. | Publishing manufacturer test data implicitly claims the product. |
+
 ## DECISIONS — owner
 
 | # | Question | Default in the code today |

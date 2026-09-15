@@ -417,6 +417,39 @@ def quote_form(cfg, variant, depth):
     return out
 
 
+def insert_claims(cfg):
+    """The three cards in the /window-inserts/ "Quieter rooms" section.
+
+    Two variants, chosen by site.config.json -> windowInserts.manufacturerClaims:
+
+    enabled = false  -> qualitative cards. True of any sealed insert; names no
+                        manufacturer; carries no figures.
+    enabled = true   -> the manufacturer's PUBLISHED figures, attributed to the
+                        manufacturer in every sentence ("Indow reports…",
+                        "designed to…"), never phrased as a Pellikal promise.
+                        Noise stays the headline; energy is second.
+
+    Flip to true only after the owner has confirmed, in writing, that the
+    product sold is the named manufacturer's named grade. The figures are
+    theirs and only apply to their product.
+    """
+    mc = (cfg.get("windowInserts") or {}).get("manufacturerClaims") or {}
+    if not mc.get("enabled"):
+        return (
+            '<div class="card" data-reveal><h3>Quieter</h3><p>Helps reduce the traffic, sirens and street noise coming through the window &mdash; the reason most people call. In Manhattan, Brooklyn and Queens the window is often the thinnest thing between you and the street.</p></div>\n'
+            '<div class="card" data-reveal><h3>More comfortable</h3><p>The same sealed layer cuts drafts and slows temperature transfer through the glass &mdash; a second benefit you feel in winter and in summer.</p></div>\n'
+            '<div class="card" data-reveal><h3>Made for your window</h3><p>Custom-measured for each opening, pressed into place, removable without tools. The original window is not modified.</p></div>'
+        )
+    m = mc.get("manufacturer", "the manufacturer")
+    g = mc.get("grade", "")
+    return (
+        '<div class="card" data-reveal><h3>Up to 70% noise reduction</h3><p>' + m + ' ' + g + ' inserts are designed to reduce outside noise by up to 70%. In Manhattan, Brooklyn and Queens the window is often the thinnest thing between you and the street; how much a room gains depends on its windows and the other paths sound takes in.</p></div>\n'
+        '<div class="card" data-reveal><h3>Average 20% energy savings</h3><p>' + m + ' reports average energy savings of 20% with its window inserts &mdash; fewer drafts and less heat moving through the glass, a second benefit you feel in winter and in summer.</p></div>\n'
+        '<div class="card" data-reveal><h3>Over 99% perfect fit rate</h3><p>' + m + ' reports a perfect-fit rate of over 99% for its custom-measured inserts, with its Snug Fit compression tubing sealing against the frame. Pellikal measures, supplies and installs; the original window is not modified.</p></div>\n'
+        '<p class="microcopy" style="grid-column:1/-1;margin:.2rem 0 0">Figures published by ' + m + ' for its inserts; the noise figure applies to ' + g + '. Not a guarantee of results in your room.</p>'
+    )
+
+
 QUOTE_FORM_MARKER = re.compile(
     r"<!-- @partial:quote-form:([a-z_]+) -->.*?<!-- @end -->", re.S
 )
@@ -557,6 +590,9 @@ def main():
         html, has_sb = apply_supabase_script(html, depth, force=(path == "admin/index.html"))
         if has_sb:
             supabase_pages.append(path)
+
+        # Window Inserts performance cards (only that page carries the marker).
+        html, _ = apply_partial(html, "insert-claims", insert_claims(cfg))
 
         # The shared quote form, wherever a page asks for it.
         html, form_variants = apply_quote_forms(html, cfg, depth)

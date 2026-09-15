@@ -30,6 +30,7 @@
      17. Lead form / thanks ... embedded landing-page form, /thankyou/
      18. Insert image scale .. capped image blocks on /window-inserts/
      19. Consent v2 .......... three-choice banner, dialog, switches, tile button
+     20. Quieter rooms ....... noise section on /window-inserts/
 
    CONVENTIONS
      • Block__element--modifier naming, e.g. .card__title, .btn--cyan
@@ -1169,3 +1170,47 @@ html.consent-dialog-open{overflow:hidden}
 .tile__open img{display:block;width:100%;height:100%;object-fit:cover}
 
 .tile__open:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+
+
+/* ==========================================================================
+   20. WINDOW INSERTS — QUIETER ROOMS (primary selling point, on navy)
+   ==========================================================================
+   Copy left, street-noise visual right. The visual <figure> ships EMPTY and
+   is hidden until the owner's image is added, at which point the row becomes
+   two columns automatically. No :has() needed — flex does it.
+   ========================================================================== */
+.noise__row{display:flex;align-items:center;gap:clamp(1.4rem,4vw,3rem);margin-top:.4rem}
+
+/* Three across while the visual slot is empty; stacked beside the image once
+   .noise__row--visual is added along with the <img>. */
+.noise__points{flex:1 1 0;display:grid;gap:.9rem;min-width:0;grid-template-columns:repeat(3,minmax(0,1fr))}
+
+.noise__row--visual .noise__points{grid-template-columns:1fr}
+
+.noise__points .card{padding:1.1rem 1.25rem}
+
+.noise__points .card h3{margin-bottom:.3rem}
+
+.noise__points .card p{margin:0}
+
+/* The illustration is a transparent PNG drawn for a dark background: it sits
+   straight on the section navy, no plate, no shadow. */
+.noise__visual{flex:0 0 clamp(240px,34%,400px);max-width:400px}
+
+.noise__visual img{border-radius:0}
+
+.noise__visual:empty{display:none}
+
+.noise__callout{max-width:68ch;margin:1.6rem auto 0;padding:.95rem 1.2rem;border-left:3px solid var(--cyan);background:rgba(21,188,212,.08);border-radius:0 12px 12px 0;color:var(--on-dark);line-height:1.6}
+
+.noise__callout strong{color:#fff}
+
+@media (max-width:860px){
+  .noise__row{flex-direction:column;align-items:stretch}
+  .noise__points{grid-template-columns:1fr}
+  .noise__visual{flex:0 0 auto;max-width:min(100%,340px);margin-inline:auto}
+}
+
+
+/* "Get a Free Quote" in the hero jumps here; clear the sticky header. */
+#quote{scroll-margin-top:90px}

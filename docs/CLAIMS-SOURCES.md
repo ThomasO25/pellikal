@@ -39,3 +39,18 @@ JSON-LD and the Residential/Solutions pages said "Select LLumar® … block more
 than 99%". The visible copy now uses the narrower, sourced wording. The claim
 was **narrowed**, not broadened. Rows 8–9 were closed the same day against LLumar's official
 residential solar-control page (recorded in the table above).
+
+
+---
+
+## Window inserts — noise claims (added 14 Sep 2026)
+
+| Claim | Where | Basis | Status |
+|---|---|---|---|
+| "helps reduce the outside noise coming through the window" / "you can still get quieter" (double-pane) / "quieter, not silent" | /window-inserts/ hero, Quieter rooms section, FAQ | General principle: an added sealed layer plus an air gap reduces sound transmission through the glass and closes the leak paths around the sash. No figures used. Every instance is qualified ("helps", "depends on the window"). | ✅ Qualitative only — publishable |
+| "no window product makes a room soundproof" / sound also enters through walls, doors, ceilings, vents | same | Consistent with the manufacturer disclaimer below and with the existing FAQ | ✅ |
+| **Up to 70% noise reduction · Average 20% energy savings · Over 99% perfect fit rate · "with its Snug Fit compression tubing"** | **LIVE — enabled 15 Sep 2026** (`site.config.json` → `windowInserts.manufacturerClaims.enabled`) | Indow official product pages, verified by the reviewer 14 Sep 2026: https://indowwindows.com/products/indow-window-inserts · https://indowwindows.com/products/acoustic-window-inserts | ✅ **Enabled 15 Sep 2026 at the owner's request** for a real decibel figure on the page. Note: the owner asked for the figures having been told they are Indow's Acoustic Grade numbers; a separate written sentence "we sell Indow Acoustic Grade" is still worth keeping on file. Every figure is attributed to Indow; never a Pellikal guarantee; never "our patented". Revert = `enabled: false` + rebuild. |
+| **Up to 18.9 dBA / ~70% (Acoustic Grade over operable single-pane)** and **about 10–12 dBA / ~50% (Acoustic Grade over operable double-pane)** | **REMOVED from the page 15 Sep 2026 (owner: no exact decibel figures)** | Indow official sources (recorded, not fetched from this sandbox): https://indowwindows.com/window-soundproofing-for-noise · https://indowwindows.com/solutions/noise-performance · https://indowwindows.com/noise-disclaimer | ⏸ Not on the page. Recorded here in case they are ever wanted; the owner has chosen general noise wording over exact dB. |
+
+Never apply Acoustic Grade figures to Standard Grade. Never convert dBA into
+"X times quieter". Keep single-pane vs double-pane figures separate.

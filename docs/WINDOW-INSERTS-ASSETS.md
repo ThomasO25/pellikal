@@ -147,3 +147,27 @@ attribute was removed from those two figures — they no longer depend on
 `WINDOW_INSERT_ASSETS_APPROVED`. Rendered flat (`.imgslot--flat`: no shadow,
 no radius) like the hero cutaway. The previous `diagram-draft.jpg` /
 `diagram-heat.jpg` are unreferenced and left in place.
+
+
+## Noise visual — WIRED 14 Sep 2026 (evening)
+
+`noise-ambulance.png` — the owner's illustration of an ambulance outside a
+window with most of the sound bouncing off the insert — is in place (replaced
+15 Sep, twice — final version is the owner's navy-background artwork with its
+baked-in blue keyed out to transparency, edge-corrected so nothing fringes):
+transparent, 760×625, 256-colour palette, 83 KB, sitting directly on the
+section navy with no plate, rendered flat, owner artwork (no
+`data-asset-source`). The row carries `noise__row--visual` so the three cards
+stack beside it. The slot mechanism below is kept for reference / replacement:
+
+1. Save it as `assets/window-inserts/noise-ambulance.png` (transparent
+   background, trimmed, ~760 px wide, 256-colour palette — same treatment as
+   the diagrams; `docs/FINAL-SECURITY-AUDIT.md` has the Pillow one-liner).
+2. Inside the figure add
+   `<img src="../assets/window-inserts/noise-ambulance.png" alt="…" width="W" height="H" loading="lazy" decoding="async">`
+   with a real alt describing the scene (e.g. "Illustration: an ambulance with
+   its siren on outside a window, the noise reduced inside by a window insert").
+3. Do **not** add `data-asset-source="manufacturer"` — it is owner artwork.
+4. Add the class `noise__row--visual` to the `.noise__row` div so the three
+   cards stack beside the image instead of running three across.
+5. Rebuild.
