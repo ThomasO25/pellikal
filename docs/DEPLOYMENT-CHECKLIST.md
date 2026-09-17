@@ -203,7 +203,8 @@ switches; change one; Save; navigate and reload: state persists.
 required field blank: stays put. (To simulate failure: DevTools → Network →
 block `formspree.io` → submit → error shown, no redirect, text kept.)
 
-**G. Tracking** — in Preview, `generate_lead` fires *before* the redirect with
+**G. Tracking** — run the 12-step procedure in `CONVERSION-DEBUG.md` and compare
+against its expected sequence. In Preview, `generate_lead` fires *before* the redirect with
 the right `service` slug and `form_location`; nothing typed appears in the
 dataLayer; on `/thankyou/` the Ads Form Fill tag fires **exactly once**.
 

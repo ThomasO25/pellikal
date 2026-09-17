@@ -95,11 +95,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <a class="logo" href="../" aria-label="Pellikal — home"><svg class="logo__icon" viewBox="0 0 48 48" fill="none" aria-hidden="true"><g stroke="#15BCD4" stroke-width="1.7" stroke-linejoin="round"><path d="M26 8H42L38 40H22Z" fill="#AABCD6"/><path d="M34.4 8 31 40M24.5 24H41"/><path d="M18 12H34L30 44H14Z" fill="#5F7496"/><path d="M26.4 12 23 44M16.5 28H33"/></g></svg><span class="logo__word">PELLIKAL</span></a>
     <nav class="nav" aria-label="Primary">
       <button class="nav__toggle" id="navToggle" aria-expanded="false" aria-controls="navMenu"><span class="bars" aria-hidden="true"></span>Menu</button>
-      <ul class="nav__menu" id="navMenu"><li><a href="../">Home</a></li><li><a href="../residential/">Residential</a></li><li><a href="../commercial/">Commercial</a></li><li><a href="../window-inserts/">Window Inserts</a></li><li><a href="../solutions/">Solutions</a></li><li><a href="../about/">About</a></li><li><a href="../faq/">FAQ</a></li><li class="nav__cta"><a class="btn btn--cyan btn--block" href="../contact/">Free Consultation</a></li></ul>
+      <ul class="nav__menu" id="navMenu"><li><a href="../">Home</a></li><li><a href="../residential/">Residential</a></li><li><a href="../commercial/">Commercial</a></li><li><a href="../window-inserts/">Window Inserts</a></li><li><a href="../solutions/">Solutions</a></li><li><a href="../about/">About</a></li><li><a href="../faq/">FAQ</a></li><li class="nav__cta"><a class="btn btn--cyan btn--block" href="#quote" data-quote-cta="menu">Get a Free Quote</a></li></ul>
     </nav>
     <div class="header__cta">
       <a class="btn btn--ghost header__phone" href="tel:+15163369586">516-336-9586</a>
-      <a class="btn btn--cyan" href="../contact/">Schedule a Consultation</a>
+      <a class="btn btn--cyan" href="#quote" data-quote-cta="header">Get a Free Quote</a>
     </div>
   </div>
 </header>
@@ -114,7 +114,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <p class="page-hero__sub">For the fastest response, call or text <a href="tel:+15163369586" style="color:var(--cyan-ink);text-decoration:none;font-weight:800">516-336-9586</a>. Prefer to write it out? Share a few details and our experts will guide you to the perfect window film.</p>
     </div>
   </section>
-  <section class="section"><div class="container"><div class="quote-wrap">
+  <section class="section"><div class="container"><div class="quote-wrap" id="quote">
     <aside class="callbox" data-reveal>
       <p class="eyebrow eyebrow--light">Fastest option</p><h2>Call or text us</h2><p>Talk to a real person about your project and get a quicker answer — most quotes start with a short conversation.</p>
       <a class="callbox__phone" href="tel:+15163369586">516-336-9586</a>
@@ -132,6 +132,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <div class="form__msg form__msg--ok" data-msg="ok" role="status">Thanks — your request is in! We'll get back to you shortly. For a faster response, call or text 516-336-9586.</div>
   <div class="form__msg form__msg--err" data-msg="err" role="alert">Sorry, something went wrong sending your message. Please call or text 516-336-9586 and we'll take care of you.</div>
   <div class="hp" aria-hidden="true"><label for="company-website">Company website</label><input type="text" id="company-website" name="_gotcha" tabindex="-1" autocomplete="off"></div>
+  <input type="hidden" name="_next" value="https://www.pellikal.com/thankyou/">
   <div class="form__row">
     <div class="field"><label for="first-name">First name <span class="req">*</span></label><input type="text" id="first-name" name="first_name" autocomplete="given-name" required></div>
     <div class="field"><label for="last-name">Last name <span class="req">*</span></label><input type="text" id="last-name" name="last_name" autocomplete="family-name" required></div>
@@ -164,7 +165,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <p>Premium window film and custom window-performance solutions across Long Island, the East End and New York City. Part of the LLumar&reg; SelectPro&trade; dealer network.</p>
       </div>
       <div><h4>Services</h4><ul><li><a href="../solutions/">All Film Solutions</a></li><li><a href="../residential/">Residential Film</a></li><li><a href="../commercial/">Commercial Film</a></li><li><a href="../window-inserts/">Window Inserts</a></li></ul></div>
-      <div><h4>Company</h4><ul><li><a href="../about/">About</a></li><li><a href="../faq/">FAQ</a></li><li><a href="../contact/">Schedule a Consultation</a></li><li><a href="../privacy/">Privacy Policy</a></li><li><a href="../terms/">Terms of Use</a></li><li><a href="../accessibility/">Accessibility</a></li></ul></div>
+      <div><h4>Company</h4><ul><li><a href="../about/">About</a></li><li><a href="../faq/">FAQ</a></li><li><a href="../contact/">Get a Free Quote</a></li><li><a href="../privacy/">Privacy Policy</a></li><li><a href="../terms/">Terms of Use</a></li><li><a href="../accessibility/">Accessibility</a></li></ul></div>
       <div class="footer__contact"><h4>Contact</h4><ul>
         <li><a href="tel:+15163369586"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>516-336-9586</a></li>
         <li><a href="sms:+15163369586"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Text us</a></li>
@@ -186,6 +187,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <div class="mobile-bar" aria-label="Quick contact">
   <a class="mobile-bar__call" href="tel:+15163369586"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call</a>
   <a class="mobile-bar__text" href="sms:+15163369586"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Text</a>
+  <a class="mobile-bar__quote" href="#quote" data-quote-cta="mobile_bar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Get Quote</a>
 </div>
 <!-- @end -->
 <script src="../js/config.js"></script>

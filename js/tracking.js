@@ -5,7 +5,9 @@
    WHAT THIS FILE DOES
    - Pushes a small, consistent set of events to window.dataLayer:
      view_contact_page, click_to_call/text/email, contact_form_submit,
-     homepage_form_submit, generate_lead, window_insert_lead.
+     homepage_form_submit, generate_lead, window_insert_lead, plus the
+     funnel diagnostics quote_cta_click / quote_form_view /
+     quote_form_start / quote_form_error.
 
    WHAT THIS FILE DOES NOT DO
    - It does not load Google Tag Manager. The container (ID from
@@ -105,6 +107,28 @@
 
      lead_source values: "homepage_form" | "contact_form"
   --------------------------------------------------------- */
+  /* ---------------------------------------------------------
+     FUNNEL DIAGNOSTICS — secondary events, never conversions.
+       quote_cta_click   a "Get a Free Quote" control was used
+                         (cta_location: header | hero | mobile_bar | cta_band)
+       quote_form_view   a quote form scrolled into view (once per page)
+       quote_form_start  a visitor began filling a quote form (once per page)
+       quote_form_error  a submission was blocked or failed
+                         (error_type: validation | contact_required | provider | network)
+     Only the allow-listed parameters below are ever forwarded, so nothing
+     typed into a form can leak into analytics by accident. Together with
+     generate_lead these let GTM show where paid visitors drop off:
+     100 clicks -> 28 quote_cta_click -> 16 quote_form_start -> N leads.
+  --------------------------------------------------------- */
+  var SAFE_PARAMS = { cta_location: 1, form_location: 1, error_type: 1, page_type: 1 };
+  window.PELLIKAL_TRACK_EVENT = function (name, params) {
+    var clean = {};
+    for (var k in (params || {})) {
+      if (SAFE_PARAMS[k] && typeof params[k] === "string" && params[k].length <= 40) clean[k] = params[k];
+    }
+    push(name, clean);
+  };
+
   /* leadSource:   "homepage_form" | "contact_form"
      service:      a short CATEGORY chosen from the form's dropdown — e.g.
                    "window_inserts", "residential_film", "privacy". It is never
@@ -162,6 +186,7 @@
   window.PELLIKAL_SERVICE_SLUG = function (label) {
     label = String(label || "").toLowerCase();
     if (label.indexOf("insert") > -1) return "window_inserts";
+    if (label.indexOf("commercial") > -1) return "commercial_film";
     if (label.indexOf("residential") > -1) return "residential_film";
     if (label.indexOf("solar") > -1 || label.indexOf("heat") > -1) return "solar_heat_glare";
     if (label.indexOf("privacy") > -1) return "privacy";

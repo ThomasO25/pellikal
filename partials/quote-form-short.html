@@ -1,0 +1,33 @@
+<!-- ============================================================
+     THE SHORT QUOTE FORM - the paid-traffic variant.
+     Same Formspree endpoint, same js/main.js handler, same success path
+     and the same events as the full form in quote-form.html. Only the
+     fields differ: first name, phone, email, optional town/ZIP.
+     Everything the page already knows (service, property type) travels
+     as hidden fields so the lead arrives complete without asking.
+
+     Rules of the road (same as quote-form.html): no comment openers or
+     closers inside this heading block, no personal data in tracking.
+     Placeholders: FORMSPREE_ACTION, FORM_LOCATION, SUCCESS_URL,
+     PROPERTY_TYPE, SERVICE, FORM_VARIANT, SUBMIT_LABEL, PHONE_DISPLAY,
+     PHONE_LINK, URL:privacy
+     ============================================================ -->
+<form id="quote-form" class="form form--short" action="{{FORMSPREE_ACTION}}" method="POST" novalidate
+      data-form-location="{{FORM_LOCATION}}" data-form-layout="short" data-success-url="{{SUCCESS_URL}}">
+  <div class="form__msg form__msg--ok" data-msg="ok" role="status">Thanks — your request is in! We'll get back to you shortly. For a faster response, call or text {{PHONE_DISPLAY}}.</div>
+  <div class="form__msg form__msg--err" data-msg="err" role="alert">Sorry, something went wrong sending your message. Please call or text {{PHONE_DISPLAY}} and we'll take care of you.</div>
+  <div class="hp" aria-hidden="true"><label for="company-website">Company website</label><input type="text" id="company-website" name="_gotcha" tabindex="-1" autocomplete="off"></div>
+  <input type="hidden" name="_next" value="{{SITE_THANKYOU}}">
+  <input type="hidden" name="property_type" value="{{PROPERTY_TYPE}}">
+  <input type="hidden" name="service" value="{{SERVICE}}">
+  <input type="hidden" name="form_variant" value="{{FORM_VARIANT}}">
+  <div class="field"><label for="first-name">First name <span class="req">*</span></label><input type="text" id="first-name" name="first_name" autocomplete="given-name" required></div>
+  <div class="form__row">
+    <div class="field"><label for="phone">Phone</label><input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" aria-describedby="contact-hint"></div>
+    <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" aria-describedby="contact-hint"></div>
+  </div>
+  <p class="form__hint" id="contact-hint">Phone or email &mdash; whichever you'd rather we use.</p>
+  <div class="field"><label for="location">Town / ZIP <span class="opt">(optional)</span></label><input type="text" id="location" name="location" autocomplete="postal-code" placeholder="e.g. Garden City or 11530"></div>
+  <button type="submit" class="btn btn--cyan btn--lg btn--block">{{SUBMIT_LABEL}}</button>
+  <p class="form__legal">Free. No pressure. We'll follow up personally about your project and won't add you to any marketing list. See our <a href="{{URL:privacy}}">Privacy Policy</a>.</p>
+</form>

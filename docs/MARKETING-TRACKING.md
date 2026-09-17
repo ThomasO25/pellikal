@@ -237,3 +237,17 @@ custom GTM tag with its own consent check. See `CONSENT-MODE.md`.
 8. Confirm **page views are not doubled** — one `page_view` per page load. If
    you see two, a duplicate GA4 tag exists somewhere in GTM (there is none in
    the site code).
+
+
+---
+
+## Added 17 Sep 2026 — funnel diagnostics and short forms
+
+New secondary events (do **not** make any of them an Ads conversion):
+`quote_cta_click` (`cta_location`), `quote_form_view`, `quote_form_start`,
+`quote_form_error` (`error_type`). All carry `form_location` where relevant.
+`form_location` now also takes `homepage` and `commercial`; `service` now
+also takes `commercial_film`. Register `cta_location` and `error_type` as
+event-scoped custom dimensions in GA4 if you want them in reports.
+`homepage_form_submit` fires again — the homepage has a form. Full detail in
+`LEAD-FLOW.md`.

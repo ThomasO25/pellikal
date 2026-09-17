@@ -95,11 +95,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <a class="logo" href="./" aria-label="Pellikal — home"><svg class="logo__icon" viewBox="0 0 48 48" fill="none" aria-hidden="true"><g stroke="#15BCD4" stroke-width="1.7" stroke-linejoin="round"><path d="M26 8H42L38 40H22Z" fill="#AABCD6"/><path d="M34.4 8 31 40M24.5 24H41"/><path d="M18 12H34L30 44H14Z" fill="#5F7496"/><path d="M26.4 12 23 44M16.5 28H33"/></g></svg><span class="logo__word">PELLIKAL</span></a>
     <nav class="nav" aria-label="Primary">
       <button class="nav__toggle" id="navToggle" aria-expanded="false" aria-controls="navMenu"><span class="bars" aria-hidden="true"></span>Menu</button>
-      <ul class="nav__menu" id="navMenu"><li><a href="./" aria-current="page">Home</a></li><li><a href="residential/">Residential</a></li><li><a href="commercial/">Commercial</a></li><li><a href="window-inserts/">Window Inserts</a></li><li><a href="solutions/">Solutions</a></li><li><a href="about/">About</a></li><li><a href="faq/">FAQ</a></li><li class="nav__cta"><a class="btn btn--cyan btn--block" href="contact/">Free Consultation</a></li></ul>
+      <ul class="nav__menu" id="navMenu"><li><a href="./" aria-current="page">Home</a></li><li><a href="residential/">Residential</a></li><li><a href="commercial/">Commercial</a></li><li><a href="window-inserts/">Window Inserts</a></li><li><a href="solutions/">Solutions</a></li><li><a href="about/">About</a></li><li><a href="faq/">FAQ</a></li><li class="nav__cta"><a class="btn btn--cyan btn--block" href="#quote" data-quote-cta="menu">Get a Free Quote</a></li></ul>
     </nav>
     <div class="header__cta">
       <a class="btn btn--ghost header__phone" href="tel:+15163369586">516-336-9586</a>
-      <a class="btn btn--cyan" href="contact/">Schedule a Consultation</a>
+      <a class="btn btn--cyan" href="#quote" data-quote-cta="header">Get a Free Quote</a>
     </div>
   </div>
 </header>
@@ -121,7 +121,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <h1 data-content="hero_headline"><span class="cy">Protect What</span> You've Built.</h1>
       <p class="hero__sub" data-content="hero_subtitle">Premium LLumar<sup>&reg;</sup> window film for East End, Hamptons and Long Island homes. Help protect the artwork, flooring and furnishings you've invested in — reducing UV exposure, solar heat and glare while keeping your natural light and your views.</p>
       <div class="hero__actions">
-        <a class="btn btn--cyan btn--lg" href="contact/">Schedule a Consultation</a>
+        <a class="btn btn--cyan btn--lg" href="#quote" data-quote-cta="hero">Get a Free Quote</a>
         <a class="btn btn--ghost btn--lg" href="tel:+15163369586">Call 516-336-9586</a>
       </div>
       <ul class="trustbar">
@@ -315,7 +315,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
      genuine reviews through Website Manager. Never a fabricated quote,
      invented rating, or unearned "preferred installer" style claim.
 ------------------------------------------------------------- -->
-<section class="section">
+<!-- Reviews: hidden until published testimonials arrive from the CMS
+     (js/main.js reveals it). No placeholder is shown to the public. -->
+<section class="section" id="reviews" hidden>
   <div class="container">
     <div class="section-head center"><p class="eyebrow" style="justify-content:center">In our clients' words</p><h2>What our clients say</h2></div>
     <div class="quotes" id="quotes">
@@ -328,16 +330,42 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </section>
 
 <!-- ---------- 9 · FINAL CTA ---------- -->
-<section class="cta-band">
-  <div class="container cta-band__inner">
-    <div>
-      <p class="eyebrow eyebrow--light">Private consultation</p>
-      <h2 data-content="cta_headline">Let's protect your home.</h2>
-      <p data-content="cta_text">Tell us about your property and what you're protecting. We'll follow up personally — no pressure, no obligation.</p>
-    </div>
-    <div class="cta-band__actions">
-      <a class="btn btn--cyan btn--lg" href="tel:+15163369586">Call 516-336-9586</a>
-      <a class="btn btn--outline-light btn--lg" href="contact/">Schedule a Consultation</a>
+<section class="section section--mist leadform" id="quote">
+  <div class="container">
+    <div class="quote-wrap">
+      <div class="leadform__aside" data-reveal>
+        <p class="eyebrow">Free &amp; no-pressure</p>
+        <h2 data-content="cta_headline">Let's protect your home.</h2>
+        <p class="lead" data-content="cta_text">Tell us about your property and what you're protecting. We'll follow up personally — no pressure, no obligation.</p>
+        <ul class="checks"><li>Free consultation</li><li>LLumar&reg; SelectPro&trade; dealer network</li><li>Serving Long Island, the East End &amp; NYC</li></ul>
+        <div class="leadform__call">
+          <p class="leadform__or">Not sure what you need? <a href="sms:+15163369586">Text us a photo of your windows</a>.</p>
+          <a class="btn btn--navy" href="tel:+15163369586">Call or Text 516-336-9586</a>
+        </div>
+      </div>
+      <div data-reveal>
+        <!-- @partial:quote-form:homepage -->
+<form id="quote-form" class="form form--short" action="https://formspree.io/f/maewnodj" method="POST" novalidate
+      data-form-location="homepage" data-form-layout="short" data-success-url="thankyou/">
+  <div class="form__msg form__msg--ok" data-msg="ok" role="status">Thanks — your request is in! We'll get back to you shortly. For a faster response, call or text 516-336-9586.</div>
+  <div class="form__msg form__msg--err" data-msg="err" role="alert">Sorry, something went wrong sending your message. Please call or text 516-336-9586 and we'll take care of you.</div>
+  <div class="hp" aria-hidden="true"><label for="company-website">Company website</label><input type="text" id="company-website" name="_gotcha" tabindex="-1" autocomplete="off"></div>
+  <input type="hidden" name="_next" value="https://www.pellikal.com/thankyou/">
+  <input type="hidden" name="property_type" value="">
+  <input type="hidden" name="service" value="">
+  <input type="hidden" name="form_variant" value="homepage_short_quote">
+  <div class="field"><label for="first-name">First name <span class="req">*</span></label><input type="text" id="first-name" name="first_name" autocomplete="given-name" required></div>
+  <div class="form__row">
+    <div class="field"><label for="phone">Phone</label><input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" aria-describedby="contact-hint"></div>
+    <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" aria-describedby="contact-hint"></div>
+  </div>
+  <p class="form__hint" id="contact-hint">Phone or email &mdash; whichever you'd rather we use.</p>
+  <div class="field"><label for="location">Town / ZIP <span class="opt">(optional)</span></label><input type="text" id="location" name="location" autocomplete="postal-code" placeholder="e.g. Garden City or 11530"></div>
+  <button type="submit" class="btn btn--cyan btn--lg btn--block">Get My Free Quote</button>
+  <p class="form__legal">Free. No pressure. We'll follow up personally about your project and won't add you to any marketing list. See our <a href="privacy/">Privacy Policy</a>.</p>
+</form>
+<!-- @end -->
+      </div>
     </div>
   </div>
 </section>
@@ -352,7 +380,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <p>Premium window film and custom window-performance solutions across Long Island, the East End and New York City. Part of the LLumar&reg; SelectPro&trade; dealer network.</p>
       </div>
       <div><h4>Services</h4><ul><li><a href="solutions/">All Film Solutions</a></li><li><a href="residential/">Residential Film</a></li><li><a href="commercial/">Commercial Film</a></li><li><a href="window-inserts/">Window Inserts</a></li></ul></div>
-      <div><h4>Company</h4><ul><li><a href="about/">About</a></li><li><a href="faq/">FAQ</a></li><li><a href="contact/">Schedule a Consultation</a></li><li><a href="privacy/">Privacy Policy</a></li><li><a href="terms/">Terms of Use</a></li><li><a href="accessibility/">Accessibility</a></li></ul></div>
+      <div><h4>Company</h4><ul><li><a href="about/">About</a></li><li><a href="faq/">FAQ</a></li><li><a href="contact/">Get a Free Quote</a></li><li><a href="privacy/">Privacy Policy</a></li><li><a href="terms/">Terms of Use</a></li><li><a href="accessibility/">Accessibility</a></li></ul></div>
       <div class="footer__contact"><h4>Contact</h4><ul>
         <li><a href="tel:+15163369586"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>516-336-9586</a></li>
         <li><a href="sms:+15163369586"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Text us</a></li>
@@ -374,6 +402,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <div class="mobile-bar" aria-label="Quick contact">
   <a class="mobile-bar__call" href="tel:+15163369586"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call</a>
   <a class="mobile-bar__text" href="sms:+15163369586"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Text</a>
+  <a class="mobile-bar__quote" href="#quote" data-quote-cta="mobile_bar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Get Quote</a>
 </div>
 <!-- @end -->
 <script src="js/vendor/supabase-js-2.116.0.js"></script>

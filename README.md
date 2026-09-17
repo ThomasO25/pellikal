@@ -50,8 +50,9 @@ commercial.html         (same) … one for each page above
 partials/
   header.html           The site header + menu, shared by every page
   footer.html           The footer + sticky mobile call bar
-  quote-form.html       ⭐ THE quote form. One copy, used by /contact/,
-                        /residential/ and /window-inserts/.
+  quote-form.html       ⭐ THE full quote form (/contact/).
+  quote-form-short.html ⭐ THE short quote form (home, residential, commercial,
+                        window inserts). Variants in site.config.json -> forms.
 
 tools/
   build.py              Copies partials + config into every page

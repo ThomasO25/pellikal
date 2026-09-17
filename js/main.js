@@ -161,6 +161,12 @@
   var yr = $("#year"); if (yr) yr.textContent = new Date().getFullYear();
 
   /* ---------- Contact form (Formspree) — never fakes success ---------- */
+  /* "Get a Free Quote" controls carry data-quote-cta="header|hero|mobile_bar|cta_band". */
+  document.addEventListener("click", function (e) {
+    var cta = e.target.closest && e.target.closest("[data-quote-cta]");
+    if (cta && window.PELLIKAL_TRACK_EVENT) window.PELLIKAL_TRACK_EVENT("quote_cta_click", { cta_location: cta.getAttribute("data-quote-cta") });
+  });
+
   /* /contact/?service=window-inserts pre-selects the dropdown so a visitor
      arriving from the Window Inserts page doesn't have to hunt for it.
 
@@ -215,17 +221,79 @@
     --------------------------------------------------------- */
     var thanksUrl = form.getAttribute("data-success-url") || "/thankyou/";
     var redirected = false;
+
+    /* CLICK-ID FORWARDING. Google Ads lands the visitor on ?gclid=… (or
+       gbraid/wbraid on iOS). With ad_storage denied — the site's default —
+       the Conversion Linker cannot write its cookie, and a JavaScript
+       redirect is not decorated by Google's URL passthrough. So without
+       this, the conversion tag on /thankyou/ would have no click ID to
+       attribute the lead to, for every visitor who did not press Accept.
+       These are Google's own click identifiers, already in the landing
+       URL; nothing the visitor typed is carried. */
+    function withClickIds(url) {
+      var keep = ["gclid", "gbraid", "wbraid", "gclsrc"], out = [];
+      var q = window.location.search.replace(/^\?/, "").split("&");
+      for (var i = 0; i < q.length; i++) {
+        var kv = q[i].split("="); if (kv.length !== 2) continue;
+        if (keep.indexOf(kv[0]) > -1 && /^[A-Za-z0-9_.-]{1,200}$/.test(kv[1])) out.push(kv[0] + "=" + kv[1]);
+      }
+      return out.length ? url + (url.indexOf("?") > -1 ? "&" : "?") + out.join("&") : url;
+    }
+
     function goToThanks() {
       if (redirected) return;
       redirected = true;
-      window.location.assign(thanksUrl);
+      window.location.assign(withClickIds(thanksUrl));
     }
+
+    /* Back-button / bfcache: the page comes back with its JavaScript state
+       intact, so a second, genuinely new submission must be allowed to
+       redirect again. */
+    window.addEventListener("pageshow", function (e) { if (e.persisted) { redirected = false; } });
+
+    /* Funnel diagnostics (secondary, not conversions): the form coming into
+       view, and the first keystroke. Each fires once per page. */
+    (function funnel() {
+      var loc = form.getAttribute("data-form-location") || "";
+      var seen = false, started = false;
+      function viewed() { if (seen) return; seen = true; if (window.PELLIKAL_TRACK_EVENT) window.PELLIKAL_TRACK_EVENT("quote_form_view", { form_location: loc }); }
+      if ("IntersectionObserver" in window) {
+        var io = new IntersectionObserver(function (entries) { entries.forEach(function (en) { if (en.isIntersecting) { viewed(); io.disconnect(); } }); }, { threshold: 0.35 });
+        io.observe(form);
+      } else { viewed(); }
+      form.addEventListener("input", function () {
+        if (started) return; started = true;
+        if (window.PELLIKAL_TRACK_EVENT) window.PELLIKAL_TRACK_EVENT("quote_form_start", { form_location: loc });
+      });
+    })();
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+      var leadLocation = form.getAttribute("data-form-location") || "";
       if (form.querySelector('[name="_gotcha"]').value) { return; } // bot: drop silently
       $$("input[type=text], input[type=email], input[type=tel], textarea", form).forEach(function (f) { f.value = f.value.trim(); });
-      if (!form.checkValidity()) { form.reportValidity(); return; }
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        if (window.PELLIKAL_TRACK_EVENT) window.PELLIKAL_TRACK_EVENT("quote_form_error", { error_type: "validation", form_location: leadLocation });
+        return;
+      }
+      /* Short form: phone OR email, not both. HTML5 can't express "one of",
+         so it's done here, with a real message and aria-invalid on both
+         fields — never a colour-only hint. */
+      if (form.getAttribute("data-form-layout") === "short") {
+        var phoneEl = form.querySelector('[name="phone"]'), emailEl = form.querySelector('[name="email"]');
+        var hasPhone = phoneEl && phoneEl.value.trim().length >= 7, hasEmail = emailEl && emailEl.value.trim().length > 3;
+        if (!hasPhone && !hasEmail) {
+          if (phoneEl) phoneEl.setAttribute("aria-invalid", "true");
+          if (emailEl) emailEl.setAttribute("aria-invalid", "true");
+          fmsg(errMsg, "Please add a phone number or an email address so we can reach you.");
+          if (phoneEl) phoneEl.focus();
+          if (window.PELLIKAL_TRACK_EVENT) window.PELLIKAL_TRACK_EVENT("quote_form_error", { error_type: "contact_required", form_location: leadLocation });
+          return;
+        }
+        if (phoneEl) phoneEl.removeAttribute("aria-invalid");
+        if (emailEl) emailEl.removeAttribute("aria-invalid");
+      }
 
       if (!endpoint) { // not configured — be honest, keep their message
         fmsg(errMsg, "The online form isn\u2019t connected yet \u2014 please call or text 516-336-9586, or email info@pellikal.com, and we\u2019ll get right back to you. (Your details were not sent.)");
@@ -237,11 +305,8 @@
       var svcEl = form.querySelector('[name="service"], [name="goal"]');
       var leadService = window.PELLIKAL_SERVICE_SLUG ? window.PELLIKAL_SERVICE_SLUG(svcEl ? svcEl.value : "") : "";
       var leadPageType = document.body.getAttribute("data-page-type") || "";
-      /* Which of the three embedded forms this is. Set at build time from
-         site.config.json — a fixed word, never anything the visitor typed. */
-      var leadLocation = form.getAttribute("data-form-location") || "";
-
       var btn = form.querySelector('button[type="submit"]'), label = btn.textContent;
+      if (btn.disabled) return;                       // a second click while sending
       btn.textContent = "Sending\u2026"; btn.disabled = true;
       fetch(endpoint, { method: "POST", body: new FormData(form), headers: { Accept: "application/json" } })
         .then(function (r) {
@@ -256,14 +321,17 @@
                  so leave anyway shortly after. Whichever comes first wins;
                  goToThanks is guarded so it can only run once. */
               setTimeout(goToThanks, 1400);
-              window.PELLIKAL_TRACK_LEAD(form.id === "home-form" ? "homepage_form" : "contact_form",
+              window.PELLIKAL_TRACK_LEAD((form.id === "home-form" || leadLocation === "homepage") ? "homepage_form" : "contact_form",
                                          leadService, leadPageType, leadLocation, goToThanks);
             } else {
               goToThanks();
             }
           } else return r.json().then(function (d) { throw new Error((d && d.errors && d.errors[0] && d.errors[0].message) || "send failed"); });
         })
-        .catch(function () { fmsg(errMsg, "Sorry \u2014 something went wrong, so your message wasn\u2019t sent. Your details are still here; please try again or call/text 516-336-9586."); })
+        .catch(function (err) {
+          fmsg(errMsg, "Sorry \u2014 something went wrong, so your message wasn\u2019t sent. Your details are still here; please try again or call/text 516-336-9586.");
+          if (window.PELLIKAL_TRACK_EVENT) window.PELLIKAL_TRACK_EVENT("quote_form_error", { error_type: (err && err.message === "send failed") || (err && /rejected|error/i.test(err.message || "")) ? "provider" : "network", form_location: leadLocation });
+        })
         .finally(function () { btn.textContent = label; btn.disabled = false; });
     });
   }
@@ -314,15 +382,16 @@
   }
   function loadTestimonials() {
     var wrap = $("#quotes"); if (!wrap) return;
-    /* PROGRESSIVE ENHANCEMENT: the page already contains a meaningful static
-       fallback. We only ever REPLACE it once real testimonials come back.
-       If Supabase is unconfigured, slow, blocked, failing or simply empty,
-       we leave the existing HTML untouched so the section is never blank. */
+    var reviewSection = wrap.closest("section");
+    /* The section ships HIDDEN. It is revealed only once real, published
+       testimonials come back from the CMS. An "our reviews area is empty"
+       notice was public before; a visitor should never see that. */
     if (!configured) return;
     SB.from(CFG.TESTIMONIALS_TABLE).select("*").eq("is_published", true).order("sort_order", { ascending: true }).order("created_at", { ascending: false }).limit(6)
       .then(function (res) {
-        if (res.error || !res.data || !res.data.length) return;   // keep static fallback
+        if (res.error || !res.data || !res.data.length) return;   // section stays hidden
         clear(wrap);
+        if (reviewSection) reviewSection.hidden = false;           // real reviews: show it
         res.data.forEach(function (t) {
           var fig = el("figure", "quote");
           fig.appendChild(el("div", "quote__mark", "\u201C"));

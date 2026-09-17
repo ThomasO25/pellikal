@@ -96,8 +96,8 @@ def render(template, cfg, depth, active_slug):
         for item in cfg["nav"]
     )
     nav += (
-        '<li class="nav__cta"><a class="btn btn--cyan btn--block" href="{}">'
-        "Free Consultation</a></li>".format(url_for("contact", depth))
+        '<li class="nav__cta"><a class="btn btn--cyan btn--block" href="{{QUOTE_HREF}}" data-quote-cta="menu">'
+        "Get a Free Quote</a></li>"
     )
 
     def links(key):
@@ -385,14 +385,22 @@ def quote_form(cfg, variant, depth):
             "-> forms.variants".format(variant)
         )
     v = variants[variant]
-    tpl = strip_comment(read("partials/quote-form.html"))
+    short = v.get("layout", "full") == "short"
+    tpl = strip_comment(read("partials/quote-form-short.html" if short else "partials/quote-form.html"))
     out = tpl
     out = out.replace("{{SERVICE_OPTIONS}}", options_html(forms.get("serviceOptions", []), v.get("service", "")))
     out = out.replace("{{PROPERTY_OPTIONS}}", options_html(forms.get("propertyOptions", []), v.get("propertyType", "")))
+    # short layout: what the page already knows travels as hidden fields
+    out = out.replace("{{PROPERTY_TYPE}}", v.get("propertyType", "").replace("&", "&amp;").replace('"', "&quot;"))
+    out = out.replace("{{SERVICE}}", v.get("service", "").replace("&", "&amp;").replace('"', "&quot;"))
+    out = out.replace("{{FORM_VARIANT}}", v.get("formVariant", variant + "_" + ("short" if short else "full")))
     out = out.replace("{{FORM_LOCATION}}", v.get("formLocation", variant))
     out = out.replace("{{SUBMIT_LABEL}}", v.get("submitLabel", "Send"))
     out = out.replace("{{SUCCESS_URL}}", url_for(forms.get("successPath", "thankyou"), depth))
     out = out.replace("{{FORMSPREE_ACTION}}", formspree_action())
+    # No-JavaScript fallback: Formspree redirects here after a plain POST.
+    # (Ignored for the fetch() path, which navigates itself.)
+    out = out.replace("{{SITE_THANKYOU}}", cfg["business"]["domain"].rstrip("/") + "/" + forms.get("successPath", "thankyou").strip("/") + "/")
     # {{PHONE_DISPLAY}} and {{URL:privacy}} are handled by render()
     out = render(out, cfg, depth, None)
 
@@ -599,6 +607,10 @@ def main():
         if form_variants:
             forms_built.append((path, form_variants))
 
+        # Header / mobile-bar quote buttons jump to this page's own form when
+        # it has one, otherwise go to the contact page.
+        html = html.replace("{{QUOTE_HREF}}", "#quote" if 'id="quote"' in html else url_for("contact", depth))
+
         html = sync_contact_details(html, cfg)
 
         if not ok_h:
@@ -637,6 +649,7 @@ def main():
                 text, _ = apply_partial(text, "gtm-body", gtm_body(cfg))
             text, ok_c = apply_consent_script(text, depth_of(extra), extra_tracked)
             text, _ = apply_supabase_script(text, depth_of(extra))
+            text = text.replace("{{QUOTE_HREF}}", url_for("contact", depth_of(extra)))
             if not ok_c:
                 warnings.append(
                     "{}: tracked page, but no js/tracking.js tag to anchor "

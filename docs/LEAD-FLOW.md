@@ -34,11 +34,23 @@ renders it into any page carrying a variant marker:
 <!-- @partial:quote-form:residential -->   ...generated...   <!-- @end -->
 ```
 
-| Page | Variant | Service preselected | Property type |
-|---|---|---|---|
-| `/contact/` | `contact` | none (visitor chooses) | none |
-| `/residential/` | `residential` | Residential Window Film | Residential |
-| `/window-inserts/` | `window_inserts` | Window Inserts / Noise Reduction | none |
+| Page | Variant | Layout | Service (hidden on short) | Property type | Event on success |
+|---|---|---|---|---|---|
+| `/` | `homepage` | **short** | — | — | `homepage_form_submit` → `generate_lead` |
+| `/residential/` | `residential` | **short** | Residential Window Film | Residential | `contact_form_submit` → `generate_lead` |
+| `/commercial/` | `commercial` | **short** | Commercial Window Film | Commercial | `contact_form_submit` → `generate_lead` |
+| `/window-inserts/` | `window_inserts` | **short** | Window Inserts / Noise Reduction | — | `contact_form_submit` → `generate_lead` → `window_insert_lead` |
+| `/contact/` | `contact` | full | visitor chooses | visitor chooses | `contact_form_submit` → `generate_lead` |
+
+**Short layout (17 Sep 2026, paid-traffic conversion pass)** —
+`partials/quote-form-short.html`: first name (required), phone, email,
+town/ZIP (optional). **Phone OR email is required, not both** — enforced in
+`js/main.js` with a real message and `aria-invalid` on both fields. What the
+page already knows travels as hidden fields (`service`, `property_type`,
+`form_variant`), so the Formspree email still arrives complete and the
+tracking slug still comes from `[name="service"]`. Same endpoint, same
+handler, same `/thankyou/`, same events. `?service=` prefill only applies to
+the full form's dropdown.
 
 Defined in `site.config.json` → `forms.variants`. Edit the markup once, run
 `python3 tools/build.py`, and all three follow. The build prints which pages
@@ -85,10 +97,22 @@ after Formspree confirms:
 1. validate (`checkValidity`), bot honeypot check
 2. `POST` to Formspree
 3. **only if `r.ok`** → reset form, show success, fire the events
-4. navigate to `data-success-url` (`../thankyou/`, written at build time)
+4. navigate to `data-success-url` (`../thankyou/`, written at build time),
+   **forwarding `gclid` / `gbraid` / `wbraid` / `gclsrc`** from the landing
+   URL so the Ads conversion tag on `/thankyou/` can attribute the lead even
+   when `ad_storage` is denied and no Conversion Linker cookie exists (a
+   JavaScript redirect is not decorated by Google's URL passthrough — this
+   does that job by hand). Nothing the visitor typed is carried.
 
 Anything else — invalid fields, HTTP 422, network failure — shows the error,
 keeps everything the visitor typed, and **stays on the page**.
+
+Back button / bfcache: `pageshow` with `persisted` resets the redirect guard,
+so a second, genuinely new submission redirects again. JavaScript off: the
+plain POST reaches Formspree, whose `_next` field sends the visitor to
+`https://www.pellikal.com/thankyou/` (no events can fire in that case —
+there is no JavaScript to fire them). Repeatable Tag Assistant procedure and
+the expected sequence: `CONVERSION-DEBUG.md`.
 
 The redirect does not race the measurement calls. `PELLIKAL_TRACK_LEAD`
 attaches GTM's `eventCallback` to the last event, so the page leaves as soon as
@@ -110,7 +134,7 @@ redirect is guarded so it can only happen once.
 | `window_insert_lead` | unchanged |
 
 **New parameter on `generate_lead` only:** `form_location`, one of
-`contact` · `residential` · `window_inserts`. A fixed vocabulary set at build
+`homepage` · `contact` · `residential` · `commercial` · `window_inserts`. A fixed vocabulary set at build
 time — never anything a visitor typed. Existing parameters (`lead_source`,
 `service`, `page_type`) are untouched.
 
@@ -118,10 +142,28 @@ time — never anything a visitor typed. Existing parameters (`lead_source`,
 trigger on `contact_form_submit` keeps working exactly as before. Use
 `form_location` to tell them apart.
 
-> **Note on `homepage_form_submit`:** there is no form on the homepage and
-> there never was one in this repository — no element with `id="home-form"`
-> exists. The branch is preserved but unreachable. Worth knowing before anyone
-> builds a report on it.
+> **`homepage_form_submit` is live again (17 Sep 2026):** the homepage now
+> carries the short form (`form_location=homepage`), and `js/main.js` maps
+> that location to `lead_source=homepage_form`.
+
+### Funnel diagnostics (secondary — never conversions)
+
+| Event | When | Parameter |
+|---|---|---|
+| `quote_cta_click` | any "Get a Free Quote" control | `cta_location`: header · menu · hero · mobile_bar · cta_band |
+| `quote_form_view` | a quote form scrolls ≥35% into view, once per page | `form_location` |
+| `quote_form_start` | first keystroke in a quote form, once per page | `form_location` |
+| `quote_form_error` | submission blocked or failed | `error_type`: validation · contact_required · provider · network |
+
+`click_to_call` / `click_to_text` already cover phone and text taps. Every
+parameter passes an allow-list in `js/tracking.js` (`PELLIKAL_TRACK_EVENT`),
+so nothing typed into a form can reach analytics. With these, GTM can show
+*100 clicks → N quote_cta_click → N quote_form_start → N generate_lead* and
+say whether the page, the form or the traffic is the problem.
+
+**Double-submit guard:** the submit button is disabled the instant a send
+starts and a second click while it is disabled returns immediately; the
+redirect is guarded to fire once. Verified: two clicks → one `generate_lead`.
 
 ### No PII
 

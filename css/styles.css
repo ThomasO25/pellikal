@@ -31,6 +31,7 @@
      18. Insert image scale .. capped image blocks on /window-inserts/
      19. Consent v2 .......... three-choice banner, dialog, switches, tile button
      20. Quieter rooms ....... noise section on /window-inserts/
+     21. Conversion .......... trust strip, short form, steps, 3-button mobile bar
 
    CONVENTIONS
      • Block__element--modifier naming, e.g. .card__title, .btn--cyan
@@ -466,7 +467,7 @@ a.tag:hover{border-color:var(--cyan);color:var(--cyan-ink)}
 
 
 /* Mobile bar */
-.mobile-bar{position:fixed;left:0;right:0;bottom:0;z-index:800;display:none;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.12)}
+.mobile-bar{position:fixed;left:0;right:0;bottom:0;z-index:800;display:none;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(255,255,255,.12);padding-bottom:env(safe-area-inset-bottom,0px)}
 
 .mobile-bar a{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.9rem;font-weight:800;text-decoration:none}
 
@@ -475,6 +476,8 @@ a.tag:hover{border-color:var(--cyan);color:var(--cyan-ink)}
 .mobile-bar__call{background:var(--cyan);color:var(--navy)}
 
 .mobile-bar__text{background:var(--navy);color:#fff}
+
+.mobile-bar__quote{background:#fff;color:var(--navy)}
 
 
 /* Forms */
@@ -619,7 +622,7 @@ pre.sql{background:var(--navy-3);color:#cfe0ef;border-radius:var(--radius-sm);pa
   .split,.stats,.promo,.cta-band__inner,.quote-wrap,.quotes{grid-template-columns:1fr}
   .stat{border-right:0;border-bottom:1px solid rgba(255,255,255,.1)}.stat:last-child{border-bottom:0}
   .callbox{position:static}.gallery{grid-template-columns:1fr 1fr}.footer__top{grid-template-columns:1fr 1fr}
-  .mobile-bar{display:grid}body{padding-bottom:56px}
+  .mobile-bar{display:grid}body{padding-bottom:calc(56px + env(safe-area-inset-bottom,0px))}
   .split__media{min-height:240px}
 }
 
@@ -964,8 +967,8 @@ html:not(.consent-ready) [data-consent-open]{display:none}
    861px and below the sticky call bar owns the bottom 56px, so the
    banner sits on top of it rather than over it. */
 @media (max-width:860px){
-  .consent{bottom:56px}
-  html.consent-open body{padding-bottom:calc(56px + var(--consent-h,0px))}
+  .consent{bottom:calc(56px + env(safe-area-inset-bottom,0px))}
+  html.consent-open body{padding-bottom:calc(56px + env(safe-area-inset-bottom,0px) + var(--consent-h,0px))}
 }
 
 @media (max-width:767px){
@@ -1214,3 +1217,37 @@ html.consent-dialog-open{overflow:hidden}
 
 /* "Get a Free Quote" in the hero jumps here; clear the sticky header. */
 #quote{scroll-margin-top:90px}
+
+
+/* ==========================================================================
+   21. PAID-TRAFFIC CONVERSION — trust strip, short form, steps, mobile bar
+   ========================================================================== */
+/* Hero trust strip reuses the existing .trustbar component (see §7). */
+
+/* Short form */
+.form--short .form__hint{margin:-.3rem 0 .9rem;font-size:.84rem;color:var(--muted)}
+
+.form--short .opt{font-weight:600;color:var(--muted);font-size:.85em}
+
+.form--short [aria-invalid="true"]{border-color:#C0392B;box-shadow:0 0 0 3px rgba(192,57,43,.15)}
+
+.leadform__or a{color:var(--cyan-ink);font-weight:800}
+
+/* Three steps */
+.steps{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem;counter-reset:step}
+
+.steps li{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem 1.4rem 1.3rem;position:relative}
+
+.steps__n{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;font-weight:900;margin-bottom:.8rem}
+
+.steps h3{margin:0 0 .4rem;font-size:1.08rem}
+
+.steps p{margin:0;color:var(--muted);font-size:.95rem}
+
+@media (max-width:860px){
+  .steps{grid-template-columns:1fr}
+}
+
+@media (max-width:430px){
+  .mobile-bar a{padding:.85rem .4rem;font-size:.92rem;gap:.35rem}
+}

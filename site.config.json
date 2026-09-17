@@ -92,7 +92,7 @@
     },
     {
       "slug": "contact",
-      "label": "Schedule a Consultation"
+      "label": "Get a Free Quote"
     },
     {
       "slug": "privacy",
@@ -128,25 +128,46 @@
       "Property Management",
       "Other"
     ],
-    "_variantNote": "leadSource stays contact_form on all three, so the existing contact_form_submit trigger keeps firing exactly as before. formLocation is the NEW non-PII parameter that tells the three apart in GA4.",
+    "_variantNote": "layout: short = paid-traffic form (first name, phone OR email, optional town/ZIP; service + property type travel as hidden fields). full = the detailed contact form. formLocation is the non-PII parameter that tells them apart in GA4; the homepage variant fires homepage_form_submit, every other one contact_form_submit.",
     "variants": {
       "contact": {
+        "layout": "full",
         "formLocation": "contact",
         "service": "",
         "propertyType": "",
         "submitLabel": "Request My Free Consultation"
       },
+      "homepage": {
+        "layout": "short",
+        "formLocation": "homepage",
+        "service": "",
+        "propertyType": "",
+        "formVariant": "homepage_short_quote",
+        "submitLabel": "Get My Free Quote"
+      },
       "residential": {
+        "layout": "short",
         "formLocation": "residential",
         "service": "Residential Window Film",
         "propertyType": "Residential",
-        "submitLabel": "Request My Free Consultation"
+        "formVariant": "residential_short_quote",
+        "submitLabel": "Get My Free Quote"
+      },
+      "commercial": {
+        "layout": "short",
+        "formLocation": "commercial",
+        "service": "Commercial Window Film",
+        "propertyType": "Commercial",
+        "formVariant": "commercial_short_quote",
+        "submitLabel": "Get My Free Quote"
       },
       "window_inserts": {
+        "layout": "short",
         "formLocation": "window_inserts",
         "service": "Window Inserts / Noise Reduction",
         "propertyType": "",
-        "submitLabel": "Request My Free Consultation"
+        "formVariant": "window_inserts_short_quote",
+        "submitLabel": "Get My Free Quote"
       }
     }
   },

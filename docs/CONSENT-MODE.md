@@ -215,6 +215,32 @@ stays denied. The failure direction is always *less* tracking.
 
 ---
 
+## What deny-by-default does to Google Ads measurement (US traffic)
+
+Nothing here is legally required for Nassau/Suffolk/NYC visitors; deny-by-
+default is a privacy choice. It has a measurement cost worth knowing:
+
+- Every visitor who has not pressed **Accept All** (or switched Advertising
+  on) is measured with `ad_storage: denied`. The Conversion Linker cannot
+  write `_gcl_aw`; the Ads conversion tag on `/thankyou/` sends a
+  **cookieless** ping. Google can still attribute it if the click ID is in
+  the page URL — which is why `js/main.js` forwards `gclid`/`gbraid`/`wbraid`
+  through the redirect (added 17 Sep 2026). Before that, a rejecting
+  visitor's lead could reach `/thankyou/` with no click ID at all.
+- What remains cookieless is subject to Google's consent-mode modelling,
+  which needs volume to kick in. At Pellikal's lead counts, expect reported
+  Ads conversions to lag actual leads unless visitors accept.
+- GA4 with `analytics_storage: denied` sends cookieless pings only: sessions
+  and users are modelled, events still arrive. `generate_lead` still counts.
+
+Options if reported conversions stay far below real leads: (a) keep this
+setup and rely on click-ID forwarding plus the Formspree inbox as the source
+of truth; (b) an owner/legal decision to default `ad_storage` and
+`analytics_storage` to **granted** for non-EEA traffic (Consent Mode's
+"advanced" pattern), with the banner then acting as an opt-out — that
+changes `consent_head()` in `tools/build.py` and the privacy policy wording,
+and is not something to do quietly.
+
 ## Why there is no GTM `<noscript>` iframe
 
 Google's standard install adds `<noscript><iframe src=".../ns.html?id=…">` so
