@@ -223,13 +223,18 @@
     var redirected = false;
 
     /* CLICK-ID FORWARDING. Google Ads lands the visitor on ?gclid=… (or
-       gbraid/wbraid on iOS). With ad_storage denied — the site's default —
-       the Conversion Linker cannot write its cookie, and a JavaScript
-       redirect is not decorated by Google's URL passthrough. So without
-       this, the conversion tag on /thankyou/ would have no click ID to
-       attribute the lead to, for every visitor who did not press Accept.
-       These are Google's own click identifiers, already in the landing
-       URL; nothing the visitor typed is carried. */
+       gbraid/wbraid on iOS). A JavaScript redirect is not decorated by
+       Google's URL passthrough, so without this the identifier would be
+       dropped at the moment of navigation — and Google warns that redirects
+       which lose the GCLID break attribution. Forwarding keeps it across
+       internal navigation for measurement continuity. It is not the
+       conversion mechanism: the Google Ads lead conversion fires on the
+       generate_lead event BEFORE this redirect, and Consent Mode plus
+       ads_data_redaction still govern whether Google may use advertising
+       identifiers at all when advertising consent is denied. Forwarding
+       neither overrides that state nor guarantees attribution. These are
+       Google's own click identifiers, already in the landing URL; nothing
+       the visitor typed is carried. */
     function withClickIds(url) {
       var keep = ["gclid", "gbraid", "wbraid", "gclsrc"], out = [];
       var q = window.location.search.replace(/^\?/, "").split("&");
@@ -282,13 +287,23 @@
          fields — never a colour-only hint. */
       if (form.getAttribute("data-form-layout") === "short") {
         var phoneEl = form.querySelector('[name="phone"]'), emailEl = form.querySelector('[name="email"]');
-        var hasPhone = phoneEl && phoneEl.value.trim().length >= 7, hasEmail = emailEl && emailEl.value.trim().length > 3;
+        /* Phone is judged on its digits only — "(516) 336-9586", "516 336 9586"
+           and "+1 516-336-9586" all pass; "abcdefg" does not. The value the
+           visitor typed is sent exactly as typed; the digit count is only
+           used to decide. Email is judged by the browser (type="email"). */
+        var phoneTyped = !!(phoneEl && phoneEl.value.trim());
+        var phoneDigits = phoneTyped ? phoneEl.value.replace(/\D/g, "").length : 0;
+        var hasPhone = phoneDigits >= 10 && phoneDigits <= 15;
+        var hasEmail = !!(emailEl && emailEl.value.trim() && emailEl.checkValidity());
         if (!hasPhone && !hasEmail) {
+          var why = phoneTyped ? "phone_invalid" : "contact_required";
           if (phoneEl) phoneEl.setAttribute("aria-invalid", "true");
-          if (emailEl) emailEl.setAttribute("aria-invalid", "true");
-          fmsg(errMsg, "Please add a phone number or an email address so we can reach you.");
+          if (emailEl && !phoneTyped) emailEl.setAttribute("aria-invalid", "true");
+          fmsg(errMsg, phoneTyped
+            ? "That phone number doesn\u2019t look complete \u2014 please check it, or add an email address instead."
+            : "Please add a phone number or an email address so we can reach you.");
           if (phoneEl) phoneEl.focus();
-          if (window.PELLIKAL_TRACK_EVENT) window.PELLIKAL_TRACK_EVENT("quote_form_error", { error_type: "contact_required", form_location: leadLocation });
+          if (window.PELLIKAL_TRACK_EVENT) window.PELLIKAL_TRACK_EVENT("quote_form_error", { error_type: why, form_location: leadLocation });
           return;
         }
         if (phoneEl) phoneEl.removeAttribute("aria-invalid");

@@ -15,11 +15,16 @@ Google Ad
   → visitor submits
   → Formspree returns a CONFIRMED success
   → dataLayer events fire
-  → /thankyou/ loads
-  → Google Ads records ONE lead conversion on that page view
+  → Google Ads records ONE lead conversion, triggered by the generate_lead event
+  → /thankyou/ loads (the visitor's confirmation — not a second conversion)
 ```
 
-Nothing is counted until Formspree actually confirms. A click on Submit is not
+Nothing is counted until Formspree actually confirms. `generate_lead` is the
+authoritative signal precisely because it exists only after a 2xx from
+Formspree; a page view can be reached by a refresh, a Back/Forward revisit,
+a bookmark or a mistyped link, and none of those is a lead. The redirect
+waits for GTM's `eventCallback`, so the Ads tag finishes before the page
+changes (1.4 s backstop if GTM is blocked). A click on Submit is not
 a lead, and a failed or rejected submission never redirects and never fires an
 event.
 
@@ -99,10 +104,13 @@ after Formspree confirms:
 3. **only if `r.ok`** → reset form, show success, fire the events
 4. navigate to `data-success-url` (`../thankyou/`, written at build time),
    **forwarding `gclid` / `gbraid` / `wbraid` / `gclsrc`** from the landing
-   URL so the Ads conversion tag on `/thankyou/` can attribute the lead even
-   when `ad_storage` is denied and no Conversion Linker cookie exists (a
-   JavaScript redirect is not decorated by Google's URL passthrough — this
-   does that job by hand). Nothing the visitor typed is carried.
+   URL so internal navigation never drops an ad-click identifier (Google
+   warns that redirects which lose the GCLID break attribution, and a
+   JavaScript redirect is not decorated by Google's URL passthrough). This
+   is measurement continuity, not a bypass: with advertising consent denied,
+   Consent Mode and `ads_data_redaction` still govern what Google sends and
+   uses, and attribution may remain cookieless/modelled. Nothing the visitor
+   typed is carried.
 
 Anything else — invalid fields, HTTP 422, network failure — shows the error,
 keeps everything the visitor typed, and **stays on the page**.
@@ -153,7 +161,7 @@ trigger on `contact_form_submit` keeps working exactly as before. Use
 | `quote_cta_click` | any "Get a Free Quote" control | `cta_location`: header · menu · hero · mobile_bar · cta_band |
 | `quote_form_view` | a quote form scrolls ≥35% into view, once per page | `form_location` |
 | `quote_form_start` | first keystroke in a quote form, once per page | `form_location` |
-| `quote_form_error` | submission blocked or failed | `error_type`: validation · contact_required · provider · network |
+| `quote_form_error` | submission blocked or failed | `error_type`: validation · contact_required · phone_invalid · provider · network |
 
 `click_to_call` / `click_to_text` already cover phone and text taps. Every
 parameter passes an allow-list in `js/tracking.js` (`PELLIKAL_TRACK_EVENT`),
@@ -183,8 +191,8 @@ those for the submitted values. The only things measured are the service
 | Robots | `noindex, follow` |
 | Sitemap | excluded (`inSitemap: false`) |
 | `robots.txt` | **deliberately not disallowed** |
-| GTM | `GTM-MK2PHWB`, once, the standard public-page install |
-| Extra tags | none — no second GA4 config, no Ads conversion in the page |
+| GTM | `GTM-MK2PHWB`, once, the standard public-page install (GA4 page view + Conversion Linker) |
+| Extra tags | none — no second GA4 config, no Ads conversion in the page. **This page view is not a conversion trigger.** |
 | Consent | same state as the rest of the site |
 | Legacy `.html` forwarder | none (`redirect: false`) |
 
@@ -206,14 +214,16 @@ None of the below is in the repository, and none of it was verified here.
 - [ ] **Inspect the existing "Google Ads Conversion - Form Fill → Thank You
       Page View" trigger.** There is a good chance it already points at
       `/thankyou/` and simply lost its page when the site was rebuilt.
-- [ ] Confirm the trigger is **Page Path equals `/thankyou/`** (or an exact URL
-      match on the full address).
+- [ ] **Re-point the Ads lead conversion tag to a Custom Event trigger, event
+      name exactly `generate_lead`.** The existing "Thank You Page View"
+      trigger must then be removed from that tag (or the tag duplicated and
+      the page-view version paused) — one Primary path only.
 - [ ] Set the Ads conversion action: **Goal** Submit lead form ·
       **Optimization** Primary · **Count** One.
-- [ ] **Check nothing else is already firing an Ads conversion on
-      `generate_lead`.** If a tag exists there, one lead would count twice.
-      The website fires dataLayer events only; the single Ads conversion must
-      be the `/thankyou/` page view.
+- [ ] **Check that no Ads conversion still fires on the `/thankyou/` page
+      view.** With `generate_lead` as the trigger, a page-view conversion
+      would count the same lead twice, and would count refreshes and
+      revisits as leads.
 - [ ] Leave `generate_lead` as a GA4 event for reporting — it is what tells you
       *which* service and *which* form produced the lead.
 - [ ] **GTM Variables → New → Data Layer Variable**, name `DLV - form_location`,

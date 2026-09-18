@@ -39,7 +39,7 @@ Every Google tracking instance in the repository.
 | `terms/index.html` | 1 | 1 | 0 | 0 | 0 | |
 | `accessibility/index.html` | 1 | 1 | 0 | 0 | 0 | |
 | `404.html` | 1 | 1 | 0 | 0 | 0 | |
-| `thankyou/index.html` | 1 | 1 | 0 | 0 | 0 | Added 14 Sep 2026. Ads lead conversion fires here. |
+| `thankyou/index.html` | 1 | 1 | 0 | 0 | 0 | Added 14 Sep 2026. Confirmation page; the Ads conversion fires on `generate_lead`, not here. |
 | `admin/index.html` | 0 | 0 | 0 | 0 | 0 | **Excluded on purpose** |
 | `local-law-97/index.html` | 0 | 0 | 0 | 0 | 0 | Bare redirect — excluded |
 | Legacy `*.html` redirect stubs (10) | 0 | 0 | 0 | 0 | 0 | Forwarders only; no tracking needed |

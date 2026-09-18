@@ -63,8 +63,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
      still pass value. It is deliberately NOT blocked in robots.txt —
      blocking the crawl would stop Google ever reading this noindex.
      It is also kept out of sitemap.xml (site.config.json -> inSitemap).
-     The GTM container above must stay: Damian's Google Ads lead
-     conversion fires on this page load. -->
+     The GTM container above stays so GA4 sees the confirmation page view
+     and the Conversion Linker runs. The Google Ads lead conversion itself
+     fires on the generate_lead event on the form page, before the redirect.
+     This page view is NOT a second conversion. -->
 <meta name="robots" content="noindex, follow">
 <meta name="theme-color" content="#0E1B40">
 <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">

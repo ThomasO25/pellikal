@@ -79,9 +79,9 @@ on the live URL after deployment.
 ## REQUIRES LIVE GTM TEST
 
 See `DEPLOYMENT-CHECKLIST.md` §4d — the manual hard gates. In particular:
-Clarity paused or gated; the two legacy GA4 tags paused; the Ads Form Fill
-tag on `Page Path equals /thankyou/`, firing once; `generate_lead` **not** a
-second Primary; `DLV - form_location` wired; no unknown tag bypassing consent.
+Clarity paused or gated; the two legacy GA4 tags paused; the Ads lead
+conversion tag on Custom Event `generate_lead`, firing once; the `/thankyou/`
+page view **not** a second Primary; `DLV - form_location` wired; no unknown tag bypassing consent.
 
 ## REQUIRES LIVE FORMSPREE TEST
 

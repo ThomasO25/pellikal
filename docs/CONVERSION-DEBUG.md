@@ -8,8 +8,9 @@ should see. **17 September 2026.**
 1. The visitor submits a quote form. `submit` is intercepted; the form is
    **never** posted the normal way while JavaScript is running.
 2. Honeypot check → HTML5 validation (`checkValidity`) → short-form rule
-   (phone **or** email). Any failure: stays on the page, `quote_form_error`
-   fires, **nothing else does.**
+   (phone **or** email; a typed phone must carry 10–15 digits). Any
+   failure: stays on the page, `quote_form_error` fires with `error_type`
+   validation · contact_required · phone_invalid, **nothing else does.**
 3. `fetch(POST)` to the Formspree endpoint (`FORMSPREE_ID` in `js/config.js`)
    with `Accept: application/json`. The button is disabled for the duration;
    a second click returns immediately.
@@ -17,7 +18,10 @@ should see. **17 September 2026.**
    `homepage_form_submit`) → `generate_lead` → `window_insert_lead` when the
    service is inserts. GTM's `eventCallback` is attached to the last event.
 5. Navigate to `/thankyou/`, carrying any `gclid`/`gbraid`/`wbraid`/`gclsrc`
-   from the landing URL. The redirect fires when GTM reports the tags done,
+   from the landing URL so internal navigation never drops an ad-click
+   identifier. This is continuity, not attribution magic: with advertising
+   consent denied, Consent Mode and `ads_data_redaction` still decide what
+   Google may send or use. The redirect fires when GTM reports the tags done,
    or after 1.4 s if GTM never answers (blocked). It is guarded to run once.
 6. A non-2xx response or a network failure: error message, details kept,
    `quote_form_error` with `error_type` provider/network, **no lead event, no
@@ -37,14 +41,17 @@ should see. **17 September 2026.**
 6. Add a phone number → submit.
 7. Network tab: one `POST formspree.io/f/…` with status **200**.
 8. Tag Assistant: `contact_form_submit` then **exactly one `generate_lead`**.
-9. The browser lands on `/thankyou/?gclid=test123`. The `Google Ads
-   Conversion - Form Fill` tag fires on that page view.
+9. Tag Assistant: the Google Ads lead conversion tag fires **on the
+   `generate_lead` event, on the Residential page, before the redirect**
+   (the site holds the redirect until GTM reports the tag done). Then the
+   browser lands on `/thankyou/?gclid=test123` — a page view, not a
+   conversion.
 10. Open `generate_lead` in Tag Assistant: parameters are `lead_source`,
     `service`, `form_location` only — no name, phone, email, town.
 11. Refresh `/thankyou/`, press Back, press Forward: `generate_lead` count
-    stays at **1**. (The thank-you **page view** repeats — which is why the
-    Ads conversion is **Count: One** and the GA4 key event must be
-    `generate_lead`, not the page view.)
+    stays at **1** and the Ads tag does **not** fire again. (The thank-you
+    **page view** repeats — which is exactly why nothing may be triggered by
+    it.)
 12. In the email inbox: one Formspree message with `form_variant`,
     `service`, `property_type` filled in.
 
@@ -68,10 +75,11 @@ Recorded from a real run (Chromium, Formspree stubbed with a 200) on
  9. event: quote_form_error {error_type:contact_required, form_location:residential}
 10. event: contact_form_submit {}
 11. event: generate_lead {lead_source:contact_form, service:residential_film, form_location:residential}
-    → navigation to /thankyou/?gclid=…
+    ← Google Ads lead conversion tag fires HERE (Custom Event trigger)
+    → navigation to /thankyou/?gclid=… once GTM reports done (or after 1.4 s)
 12. gtag(consent, default, {…denied…})                 ← new page, same defaults
 13. gtag(set, ads_data_redaction, true)
-14. GTM bootstrap {gtm.start, event:'gtm.js'}          ← Ads Form Fill tag fires on this page view
+14. GTM bootstrap {gtm.start, event:'gtm.js'}          ← page view only; no conversion here
 ```
 
 If `generate_lead` appears before a 200 from Formspree, or appears twice,

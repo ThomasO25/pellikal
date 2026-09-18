@@ -85,8 +85,8 @@ enquiry that genuinely reached the business.
 
 | Event | Conversion action | Notes |
 |---|---|---|
-| **`/thankyou/` page view** | **Submit lead form** | **THE Primary Ads lead conversion. Count: One.** |
-| `generate_lead` | — | **GA4 reporting only. Do NOT also make this a Primary Ads conversion** — one submission would count twice. |
+| **`generate_lead`** (GTM Custom Event) | **Submit lead form** | **THE Primary Ads lead conversion. Count: One.** Exists only after Formspree returns 2xx. |
+| `/thankyou/` page view | — | Visitor confirmation only. **Must NOT be a second Primary** — refreshes and revisits would count as leads. |
 | `click_to_call` | **Phone call lead** | Count: One |
 | `click_to_text` | Contact | Optional |
 | `click_to_email` | Contact | Optional |
@@ -177,8 +177,7 @@ becomes a promise the site does not keep.
 7. **Admin → Events → Mark as key event** for `generate_lead`.
 8. Confirm **one** `page_view` per page load. Two means a duplicate GA4 tag in
    GTM — there is none in the site code.
-9. **Do not import `generate_lead` into Google Ads, and do not build an Ads
-   conversion tag for it.** It is GA4 reporting only — it is what tells you
-   *which* service and *which* form produced the lead. The single Primary
-   Google Ads lead conversion is the **`/thankyou/` page view**. Configuring
-   both would count one submission twice.
+9. **Trigger the Google Ads lead conversion tag on the Custom Event
+   `generate_lead`** (Count: One) and make sure nothing fires a conversion on
+   the `/thankyou/` page view. One Primary path only; `generate_lead` also
+   tells you *which* service and *which* form produced the lead.

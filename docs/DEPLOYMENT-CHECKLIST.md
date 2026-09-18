@@ -110,7 +110,7 @@ assets stay hidden even with JavaScript disabled. Full detail: `docs/WINDOW-INSE
 - [ ] A confirmed success lands on `/thankyou/`
 - [ ] `/thankyou/` is `noindex, follow`, carries GTM once, is out of the sitemap
 - [ ] `/thankyou/` is **not** disallowed in `robots.txt`
-- [ ] Exactly one Google Ads conversion exists for one lead
+- [ ] Exactly one Google Ads conversion exists for one lead — the `generate_lead` event, not the `/thankyou/` page view
 
 ---
 
@@ -169,9 +169,14 @@ Do every one of these in the GTM container **before** pushing the site.
 - [ ] `DLV - form_location` exists (Data Layer Variable, name `form_location`,
       Version 2) and is passed as `form_location` on the custom-events tag
 - [ ] `form_location` registered as an event-scoped custom dimension in GA4
-- [ ] `Google Ads Conversion - Form Fill` fires on **Page Path equals `/thankyou/`**
-- [ ] It fires **ONCE** per successful lead (Count: One in Ads)
-- [ ] `generate_lead` is **NOT** imported/configured as another Primary Ads conversion
+- [ ] The Google Ads lead conversion tag is triggered by **Custom Event, event
+      name exactly `generate_lead`** — using the existing Submit-lead-form
+      conversion action, **Count: One**
+- [ ] The old **Thank You Page View** trigger is **removed** from that tag (or
+      that tag is paused): `/thankyou/` must not be a second Primary
+- [ ] It fires **ONCE** per successful lead — verify with the 12-step
+      procedure in `CONVERSION-DEBUG.md` (refresh/back/forward on `/thankyou/`
+      must not re-fire it)
 - [ ] `window_insert_lead` is reporting / Secondary at most
 - [ ] **No unknown pixel, chat, session-replay or A/B tag** exists that is not
       gated on consent — read every tag in the container

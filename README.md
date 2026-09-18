@@ -39,8 +39,9 @@ commercial/index.html   Commercial
 solutions/index.html    Solutions
 local-law-97/index.html Redirect only → /commercial/ (see docs/LOCAL-LAW-REMOVAL.md)
 privacy/index.html      Privacy policy
-thankyou/index.html     Lead confirmation. Google Ads counts the lead on
-                        this page load. noindex, not in the sitemap.
+thankyou/index.html     Lead confirmation after a successful submit.
+                        noindex, not in the sitemap. (The Ads conversion
+                        fires on generate_lead, not on this page view.)
 admin/index.html        Staff content manager (unlinked, not indexed)
 404.html                Shown for a bad URL
 
@@ -212,7 +213,7 @@ written into the HTML; Supabase only replaces it when it responds.
 | `docs/WINDOW-INSERTS-ASSETS.md` | Insert photography: what's used, what's still needed |
 | `docs/FINAL-CLAIMS-REVIEW.md` | Every marketing claim, categorised |
 | `docs/CONSENT-MODE.md` | Consent Mode v2: defaults, verifying, resetting |
-| `docs/LEAD-FLOW.md` | Ad → landing form → `/thankyou/` → Ads conversion |
+| `docs/LEAD-FLOW.md` | Ad → landing form → confirmed Formspree success → `generate_lead` / Google Ads conversion → `/thankyou/` |
 | `docs/FINAL-SECURITY-AUDIT.md` | What was verified, where, and what still needs a live test |
 | `docs/OWNER-LEGAL-REVIEW.md` | Facts and decisions only the owner / a lawyer can supply |
 | `docs/COOKIE-TRACKING-INVENTORY.md` | Every cookie and tracking technology, by category |

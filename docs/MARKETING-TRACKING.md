@@ -136,8 +136,8 @@ Suggested mapping:
 
 | Website event | Google Ads conversion | Notes |
 |---|---|---|
-| **`/thankyou/` page view** | **Submit lead form** | **THE primary conversion.** Count: One |
-| `generate_lead` | — | **GA4 reporting only — not a second Primary Ads conversion** |
+| **`generate_lead`** (Custom Event) | **Submit lead form** | **THE primary conversion.** Count: One. Fires only after Formspree returns 2xx |
+| `/thankyou/` page view | — | Confirmation page only — **not** a conversion trigger |
 | `click_to_call` | **Phone call lead** | If you want call clicks counted |
 | `click_to_text` | Contact | Optional |
 | `click_to_email` | Contact | Optional |

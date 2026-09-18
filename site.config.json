@@ -110,7 +110,7 @@
   "_formsComment": "THE quote form, defined once. build.py renders partials/quote-form.html into every <!-- @partial:quote-form:VARIANT --> region, so /contact/, /residential/ and /window-inserts/ share one piece of markup and one submission path. The Formspree endpoint is NOT duplicated here - build.py reads it out of js/config.js, which stays the single place it lives.",
   "forms": {
     "successPath": "thankyou",
-    "_successNote": "Where a CONFIRMED successful Formspree response sends the visitor. build.py turns this into the correct relative link for each page's depth. Google Ads counts the lead on that page load.",
+    "_successNote": "Where a CONFIRMED successful Formspree response sends the visitor. build.py turns this into the correct relative link for each page's depth. The Google Ads conversion fires on the generate_lead event before the redirect; this page is the visitor's confirmation, not a second conversion.",
     "serviceOptions": [
       "Window Inserts / Noise Reduction",
       "Residential Window Film",
@@ -283,7 +283,7 @@
       "inSitemap": false,
       "priority": "0.0",
       "redirect": false,
-      "_note": "Lead-confirmation page. Damian's Google Ads conversion fires on this page load, so it MUST keep the GTM container. Kept out of the sitemap and marked noindex because it is a confirmation screen, not SEO content. Deliberately NOT disallowed in robots.txt - blocking the crawl would stop Google ever seeing the noindex. redirect:false because the exact address is /thankyou/ with no .html forwarder."
+      "_note": "Lead-confirmation page. Keeps the GTM container for GA4's page view and the Conversion Linker; the Ads lead conversion fires on generate_lead before the redirect, NOT on this page view. Kept out of the sitemap and marked noindex because it is a confirmation screen, not SEO content. Deliberately NOT disallowed in robots.txt - blocking the crawl would stop Google ever seeing the noindex. redirect:false because the exact address is /thankyou/ with no .html forwarder."
     },
     {
       "slug": "admin",

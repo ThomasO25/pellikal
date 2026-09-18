@@ -222,11 +222,14 @@ default is a privacy choice. It has a measurement cost worth knowing:
 
 - Every visitor who has not pressed **Accept All** (or switched Advertising
   on) is measured with `ad_storage: denied`. The Conversion Linker cannot
-  write `_gcl_aw`; the Ads conversion tag on `/thankyou/` sends a
-  **cookieless** ping. Google can still attribute it if the click ID is in
-  the page URL — which is why `js/main.js` forwards `gclid`/`gbraid`/`wbraid`
-  through the redirect (added 17 Sep 2026). Before that, a rejecting
-  visitor's lead could reach `/thankyou/` with no click ID at all.
+  write `_gcl_aw`; the Ads conversion tag (fired on `generate_lead`) sends
+  a **cookieless** ping, and with `ads_data_redaction: true` Google redacts
+  ad-click identifiers from what it sends in that state. `js/main.js`
+  forwards `gclid`/`gbraid`/`wbraid` through the redirect (17 Sep 2026) so
+  internal navigation never *drops* the identifier — Google warns that
+  redirects losing the GCLID break attribution — but this does not override
+  the consent state and does not make denied-consent traffic deterministic.
+  Expect restricted/modelled measurement for visitors who reject.
 - What remains cookieless is subject to Google's consent-mode modelling,
   which needs volume to kick in. At Pellikal's lead counts, expect reported
   Ads conversions to lag actual leads unless visitors accept.

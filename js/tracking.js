@@ -91,7 +91,7 @@
   /* ---------------------------------------------------------
      CONTACT PAGE VIEW
      Signals intent, NOT a lead. Never configure this as a Google Ads
-     conversion. The Primary Ads lead conversion is the /thankyou/ page view.
+     conversion. The Primary Ads lead conversion is generate_lead (GTM Custom Event).
   --------------------------------------------------------- */
   function markContactView() {
     if (isContactPage()) push("view_contact_page");
@@ -114,7 +114,7 @@
        quote_form_view   a quote form scrolled into view (once per page)
        quote_form_start  a visitor began filling a quote form (once per page)
        quote_form_error  a submission was blocked or failed
-                         (error_type: validation | contact_required | provider | network)
+                         (error_type: validation | contact_required | phone_invalid | provider | network)
      Only the allow-listed parameters below are ever forwarded, so nothing
      typed into a form can leak into analytics by accident. Together with
      generate_lead these let GTM show where paid visitors drop off:
@@ -142,9 +142,12 @@
                    first. Used by js/main.js to hold the redirect to
                    /thankyou/ until the measurement calls have gone out.
 
-     NOTE FOR THE ADS SPECIALIST: none of these is a Google Ads conversion.
-     The site fires dataLayer events only. The single Ads lead conversion is
-     the /thankyou/ page view, configured inside GTM. */
+     NOTE FOR THE ADS SPECIALIST: the site fires dataLayer events only. The
+     single Google Ads lead conversion is a GTM tag triggered by the Custom
+     Event generate_lead — which exists only after Formspree has returned a
+     2xx. The /thankyou/ page is the visitor's confirmation, not a second
+     conversion. The eventCallback below holds the redirect until that tag
+     has fired. */
   window.PELLIKAL_TRACK_LEAD = function (leadSource, service, pageType, formLocation, onComplete) {
     var src = leadSource === "homepage_form" ? "homepage_form" : "contact_form";
     var params = { lead_source: src };
@@ -159,7 +162,7 @@
     /* Additional event so Window Inserts leads can be segmented from general
        film leads in GA4 reporting, and used as a Secondary Ads signal if the
        specialist wants one. It is NOT another Primary lead conversion — the
-       single Primary is the /thankyou/ page view. Existing triggers on
+       single Primary is generate_lead. Existing triggers on
        generate_lead keep working unchanged. */
     if (service === "window_inserts") queue.push(["window_insert_lead", { lead_source: src }]);
 
