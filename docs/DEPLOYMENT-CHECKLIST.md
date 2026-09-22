@@ -130,6 +130,16 @@ assets stay hidden even with JavaScript disabled. Full detail: `docs/WINDOW-INSE
 
 ---
 
+## 6b. Homepage repositioning (22 Sep 2026)
+
+- [ ] Run `supabase/migrations/0003_homepage_hero_repositioning.sql` on the
+      live project (or set the hero headline/subtitle in `/admin/`) — otherwise
+      the CMS puts the old Hamptons headline back at runtime
+- [ ] With JavaScript on, the homepage H1 reads *Professional Window Film for
+      Long Island & NYC*
+- [ ] Search Console → URL Inspection → `https://www.pellikal.com/` →
+      Request Indexing; sitemap still submitted
+
 ## 7. Verify live
 
 - [ ] `https://www.pellikal.com/` loads over HTTPS

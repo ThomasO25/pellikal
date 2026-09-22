@@ -60,6 +60,8 @@ tools/
 
 supabase/
   migrations/0001_pellikal_cms.sql   ⭐ the ONE authoritative database schema
+  migrations/0003_…hero_repositioning ⚠️ run on the live project after deploying
+                                       the Sep-2026 homepage copy (see docs/SEO-SEARCH-RESULT.md)
 
 css/
   styles.css            All styling. Contents list at the top of the file.
@@ -217,3 +219,4 @@ written into the HTML; Supabase only replaces it when it responds.
 | `docs/FINAL-SECURITY-AUDIT.md` | What was verified, where, and what still needs a live test |
 | `docs/OWNER-LEGAL-REVIEW.md` | Facts and decisions only the owner / a lawyer can supply |
 | `docs/COOKIE-TRACKING-INVENTORY.md` | Every cookie and tracking technology, by category |
+| `docs/SEO-SEARCH-RESULT.md` | Homepage search-result positioning, the CMS caveat, Search Console steps |

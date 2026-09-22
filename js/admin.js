@@ -163,7 +163,7 @@
       });
     });
 
-    var h = input("f-hh", draft.hero_headline || "Protect What You've Built.");
+    var h = input("f-hh", draft.hero_headline || "Professional Window Film for Long Island & NYC");
     var s = textarea("f-hs", draft.hero_subtitle || "");
     var sp = textarea("f-sp", draft.selectpro_text || "");
     var ch = input("f-ch", draft.cta_headline || "Let's protect your home.");
@@ -183,8 +183,8 @@
       var img = safeUrl(draft.hero_image);
       if (img) { var i = document.createElement("img"); i.src = img; i.alt = ""; i.style.cssText = "width:100%;border-radius:12px;margin-bottom:1rem;display:block"; PREV.appendChild(i); }
       PREV.appendChild(el("p", "eyebrow", "The Hamptons \u00B7 East End \u00B7 Long Island"));
-      var t = el("h1", null, draft.hero_headline || "Protect What You've Built."); t.style.cssText = "font-size:1.85rem;margin:.2rem 0 .6rem"; PREV.appendChild(t);
-      PREV.appendChild(el("p", "lead", draft.hero_subtitle || "Premium window film for East End, Hamptons and Long Island homes."));
+      var t = el("h1", null, draft.hero_headline || "Professional Window Film for Long Island & NYC"); t.style.cssText = "font-size:1.85rem;margin:.2rem 0 .6rem"; PREV.appendChild(t);
+      PREV.appendChild(el("p", "lead", draft.hero_subtitle || "Residential and commercial window film, professionally installed to help reduce heat, glare and UV while improving comfort and privacy."));
       var row = el("div"); row.style.cssText = "display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 1.4rem";
       row.appendChild(el("span", "btn btn--cyan", "Schedule a Consultation"));
       row.appendChild(el("span", "btn btn--ghost", "Call 516-336-9586")); PREV.appendChild(row);
