@@ -167,27 +167,29 @@
     if (cta && window.PELLIKAL_TRACK_EVENT) window.PELLIKAL_TRACK_EVENT("quote_cta_click", { cta_location: cta.getAttribute("data-quote-cta") });
   });
 
-  /* /contact/?service=window-inserts pre-selects the dropdown so a visitor
-     arriving from the Window Inserts page doesn't have to hunt for it.
+  /* /contact/?service=window-inserts (an older CTA / ad landing URL) still
+     categorises the lead: there is no dropdown any more, so it fills the
+     form's HIDDEN service field instead. Only a form whose service the page
+     left blank (/contact/, the homepage) takes it — the landing pages fix
+     their own service at build time and ignore the URL.
 
-     Matched by SLUG, not by substring. The old substring match compared
-     the first word only, so adding "Residential Window Film" to the list
-     would have made ?service=window-inserts select it instead — both
-     labels contain "window". Slugs make the match exact regardless of
-     what is added to the dropdown or in what order.
-
-     A build-time preselection (the landing pages) is overridden by an
-     explicit ?service= in the URL, which is the more specific intent. */
+     Matched by SLUG against the fixed vocabulary the build stamps into
+     data-options (site.config.json -> forms.serviceOptions), never by
+     copying the URL text: the value written is always one of OUR labels,
+     so nothing typed into the address bar can reach Formspree or the
+     dataLayer. Slugs keep the match exact — "Residential Window Film" and
+     "Window Inserts / Noise Reduction" both contain "window". */
   (function prefillService() {
-    var sel = $("#service"); if (!sel) return;
+    var hid = $('#quote-form input[type="hidden"][name="service"]');
+    if (!hid || hid.value || !window.PELLIKAL_SERVICE_SLUG) return;
     var q = (location.search.match(/[?&]service=([^&]+)/) || [])[1];
     if (!q) return;
-    q = decodeURIComponent(q).toLowerCase().replace(/-/g, " ");
-    if (!window.PELLIKAL_SERVICE_SLUG) return;
-    var wanted = window.PELLIKAL_SERVICE_SLUG(q);
+    try { q = decodeURIComponent(q); } catch (e) { return; } // malformed %-escape: ignore, never throw
+    var wanted = window.PELLIKAL_SERVICE_SLUG(q.toLowerCase().replace(/-/g, " "));
     if (!wanted || wanted === "not_sure") return;
-    for (var i = 0; i < sel.options.length; i++) {
-      if (window.PELLIKAL_SERVICE_SLUG(sel.options[i].text) === wanted) { sel.selectedIndex = i; break; }
+    var labels = (hid.getAttribute("data-options") || "").split("|");
+    for (var i = 0; i < labels.length; i++) {
+      if (labels[i] && window.PELLIKAL_SERVICE_SLUG(labels[i]) === wanted) { hid.value = labels[i]; break; }
     }
   })();
 
@@ -277,38 +279,41 @@
       var leadLocation = form.getAttribute("data-form-location") || "";
       if (form.querySelector('[name="_gotcha"]').value) { return; } // bot: drop silently
       $$("input[type=text], input[type=email], input[type=tel], textarea", form).forEach(function (f) { f.value = f.value.trim(); });
+      /* ZIP: the pattern on the field does the checking; this only swaps the
+         browser's generic "match the requested format" bubble for plain
+         English. Cleared again as soon as the value fits. */
+      var zipEl = form.querySelector('[name="zip"]');
+      if (zipEl) zipEl.setCustomValidity(zipEl.validity.patternMismatch ? "Please enter your 5-digit ZIP code." : "");
       if (!form.checkValidity()) {
         form.reportValidity();
         if (window.PELLIKAL_TRACK_EVENT) window.PELLIKAL_TRACK_EVENT("quote_form_error", { error_type: "validation", form_location: leadLocation });
         return;
       }
-      /* Short form: phone OR email, not both. HTML5 can't express "one of",
-         so it's done here, with a real message and aria-invalid on both
-         fields — never a colour-only hint. */
-      if (form.getAttribute("data-form-layout") === "short") {
-        var phoneEl = form.querySelector('[name="phone"]'), emailEl = form.querySelector('[name="email"]');
-        /* Phone is judged on its digits only — "(516) 336-9586", "516 336 9586"
-           and "+1 516-336-9586" all pass; "abcdefg" does not. The value the
-           visitor typed is sent exactly as typed; the digit count is only
-           used to decide. Email is judged by the browser (type="email"). */
-        var phoneTyped = !!(phoneEl && phoneEl.value.trim());
-        var phoneDigits = phoneTyped ? phoneEl.value.replace(/\D/g, "").length : 0;
-        var hasPhone = phoneDigits >= 10 && phoneDigits <= 15;
-        var hasEmail = !!(emailEl && emailEl.value.trim() && emailEl.checkValidity());
-        if (!hasPhone && !hasEmail) {
-          var why = phoneTyped ? "phone_invalid" : "contact_required";
-          if (phoneEl) phoneEl.setAttribute("aria-invalid", "true");
-          if (emailEl && !phoneTyped) emailEl.setAttribute("aria-invalid", "true");
-          fmsg(errMsg, phoneTyped
-            ? "That phone number doesn\u2019t look complete \u2014 please check it, or add an email address instead."
-            : "Please add a phone number or an email address so we can reach you.");
-          if (phoneEl) phoneEl.focus();
-          if (window.PELLIKAL_TRACK_EVENT) window.PELLIKAL_TRACK_EVENT("quote_form_error", { error_type: why, form_location: leadLocation });
-          return;
-        }
-        if (phoneEl) phoneEl.removeAttribute("aria-invalid");
-        if (emailEl) emailEl.removeAttribute("aria-invalid");
+      /* Phone OR email, not both — every form on the site. HTML5 can't
+         express "one of", so it's done here, with a real message and
+         aria-invalid on both fields — never a colour-only hint. */
+      var phoneEl = form.querySelector('[name="phone"]'), emailEl = form.querySelector('[name="email"]');
+      /* Phone is judged on its digits only — "(516) 336-9586", "516 336 9586"
+         and "+1 516-336-9586" all pass; "abcdefg" does not. The value the
+         visitor typed is sent exactly as typed; the digit count is only
+         used to decide. Email is judged by the browser (type="email"). */
+      var phoneTyped = !!(phoneEl && phoneEl.value.trim());
+      var phoneDigits = phoneTyped ? phoneEl.value.replace(/\D/g, "").length : 0;
+      var hasPhone = phoneDigits >= 10 && phoneDigits <= 15;
+      var hasEmail = !!(emailEl && emailEl.value.trim() && emailEl.checkValidity());
+      if (!hasPhone && !hasEmail) {
+        var why = phoneTyped ? "phone_invalid" : "contact_required";
+        if (phoneEl) phoneEl.setAttribute("aria-invalid", "true");
+        if (emailEl && !phoneTyped) emailEl.setAttribute("aria-invalid", "true");
+        fmsg(errMsg, phoneTyped
+          ? "That phone number doesn\u2019t look complete \u2014 please check it, or add an email address instead."
+          : "Please add a phone number or an email address so we can reach you.");
+        if (phoneEl) phoneEl.focus();
+        if (window.PELLIKAL_TRACK_EVENT) window.PELLIKAL_TRACK_EVENT("quote_form_error", { error_type: why, form_location: leadLocation });
+        return;
       }
+      if (phoneEl) phoneEl.removeAttribute("aria-invalid");
+      if (emailEl) emailEl.removeAttribute("aria-invalid");
 
       if (!endpoint) { // not configured — be honest, keep their message
         fmsg(errMsg, "The online form isn\u2019t connected yet \u2014 please call or text 516-336-9586, or email info@pellikal.com, and we\u2019ll get right back to you. (Your details were not sent.)");
@@ -316,7 +321,8 @@
       }
 
       /* Capture the service CATEGORY now — form.reset() runs on success and
-         would clear it. This is a dropdown label, never free text or PII. */
+         would clear it. This is the hidden field's label (fixed at build
+         time, or resolved from ?service= above), never free text or PII. */
       var svcEl = form.querySelector('[name="service"], [name="goal"]');
       var leadService = window.PELLIKAL_SERVICE_SLUG ? window.PELLIKAL_SERVICE_SLUG(svcEl ? svcEl.value : "") : "";
       var leadPageType = document.body.getAttribute("data-page-type") || "";

@@ -119,7 +119,10 @@ assets stay hidden even with JavaScript disabled. Full detail: `docs/WINDOW-INSE
 - [ ] Formspree ID `maewnodj` unchanged in `js/config.js`
 - [ ] Test submission arrives at info@pellikal.com
 - [ ] A failed submission fires **no** conversion and keeps the typed text
-- [ ] `/contact/?service=window-inserts` pre-selects the dropdown
+- [ ] Every form (home, residential, commercial, window inserts, contact) asks
+      only: Full name · Phone · Email · ZIP code (optional)
+- [ ] `/contact/?service=window-inserts` → the Formspree email shows
+      `service: Window Inserts / Noise Reduction` (hidden field, no dropdown)
 
 ---
 

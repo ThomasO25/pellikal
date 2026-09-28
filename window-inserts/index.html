@@ -242,21 +242,21 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div data-reveal>
           <!-- @partial:quote-form:window_inserts -->
 <form id="quote-form" class="form form--short" action="https://formspree.io/f/maewnodj" method="POST" novalidate
-      data-form-location="window_inserts" data-form-layout="short" data-success-url="../thankyou/">
+      data-form-location="window_inserts" data-success-url="../thankyou/">
   <div class="form__msg form__msg--ok" data-msg="ok" role="status">Thanks — your request is in! We'll get back to you shortly. For a faster response, call or text 516-336-9586.</div>
-  <div class="form__msg form__msg--err" data-msg="err" role="alert">Sorry, something went wrong sending your message. Please call or text 516-336-9586 and we'll take care of you.</div>
+  <div class="form__msg form__msg--err" data-msg="err" role="alert">Sorry, something went wrong sending your request. Please call or text 516-336-9586 and we'll take care of you.</div>
   <div class="hp" aria-hidden="true"><label for="company-website">Company website</label><input type="text" id="company-website" name="_gotcha" tabindex="-1" autocomplete="off"></div>
   <input type="hidden" name="_next" value="https://www.pellikal.com/thankyou/">
   <input type="hidden" name="property_type" value="">
-  <input type="hidden" name="service" value="Window Inserts / Noise Reduction">
+  <input type="hidden" name="service" value="Window Inserts / Noise Reduction" data-options="Window Inserts / Noise Reduction|Residential Window Film|Commercial Window Film|Solar / Heat &amp; Glare|Privacy|Security &amp; Safety|Anti-Graffiti|Low-E / Energy|Not sure yet">
   <input type="hidden" name="form_variant" value="window_inserts_short_quote">
-  <div class="field"><label for="first-name">First name <span class="req">*</span></label><input type="text" id="first-name" name="first_name" autocomplete="given-name" required></div>
+  <div class="field"><label for="name">Full name <span class="req">*</span></label><input type="text" id="name" name="name" autocomplete="name" required></div>
   <div class="form__row">
     <div class="field"><label for="phone">Phone</label><input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" aria-describedby="contact-hint"></div>
     <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" aria-describedby="contact-hint"></div>
   </div>
   <p class="form__hint" id="contact-hint">Phone or email &mdash; whichever you'd rather we use.</p>
-  <div class="field"><label for="location">Town / ZIP <span class="opt">(optional)</span></label><input type="text" id="location" name="location" autocomplete="postal-code" placeholder="e.g. Garden City or 11530"></div>
+  <div class="field field--zip"><label for="zip">ZIP code <span class="opt">(optional)</span></label><input type="text" id="zip" name="zip" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" maxlength="10" placeholder="e.g. 11530"></div>
   <button type="submit" class="btn btn--cyan btn--lg btn--block">Get My Free Quote</button>
   <p class="form__legal">Free. No pressure. We'll follow up personally about your project and won't add you to any marketing list. See our <a href="../privacy/">Privacy Policy</a>.</p>
 </form>

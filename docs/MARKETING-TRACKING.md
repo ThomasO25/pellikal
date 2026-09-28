@@ -183,7 +183,7 @@ consistency. See `PHONE-AUDIT.md` for every location.
 
 **No customer PII passes through the dataLayer — verified by test.** A test
 enquiry was submitted and the entire dataLayer inspected: the name, email,
-phone number, town and message text do **not** appear anywhere.
+phone number and ZIP code (all the form asks for) do **not** appear anywhere.
 
 Events record only that an action happened, and roughly where on the page.
 
@@ -240,6 +240,15 @@ custom GTM tag with its own consent check. See `CONSENT-MODE.md`.
 
 
 ---
+
+## Added 25 Sep 2026 — one four-field form everywhere
+
+Every form, `/contact/` included, now asks only Full name · Phone · Email ·
+ZIP code (optional) — owner's request. `/contact/` is now titled and
+buttoned "Get … Free Quote" like every other entry point. No new events, no new parameters, no new
+`error_type` values. `/contact/?service=…` still categorises the lead through
+the hidden `service` field, so `service` values are unchanged. Detail in
+`LEAD-FLOW.md`.
 
 ## Added 17 Sep 2026 — funnel diagnostics and short forms
 

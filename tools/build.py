@@ -356,27 +356,19 @@ def formspree_action():
     return raw if "formspree.io" in raw else "https://formspree.io/f/" + raw
 
 
-def options_html(values, selected):
-    """A <select>'s options, with `selected` on the variant's default.
-
-    When the variant has no default the usual disabled placeholder is
-    shown, so a visitor still has to make a deliberate choice.
-    """
-    out = []
-    if not selected:
-        out.append('<option value="" selected disabled>Choose one&hellip;</option>')
-    else:
-        out.append('<option value="" disabled>Choose one&hellip;</option>')
-    for v in values:
-        esc = v.replace("&", "&amp;")
-        out.append(
-            "<option{}>{}</option>".format(" selected" if v == selected else "", esc)
-        )
-    return "".join(out)
+def attr(value):
+    """Escape a config string for use inside a double-quoted attribute."""
+    return value.replace("&", "&amp;").replace('"', "&quot;")
 
 
 def quote_form(cfg, variant, depth):
-    """Render partials/quote-form.html for one page."""
+    """Render partials/quote-form.html for one page.
+
+    One partial, one field set (full name, phone, email, ZIP) for every
+    variant since 25 Sep 2026. What differs per variant is only what the
+    page already knows — service, property type, which variant it is —
+    and that travels as hidden fields.
+    """
     forms = cfg.get("forms") or {}
     variants = forms.get("variants") or {}
     if variant not in variants:
@@ -385,15 +377,23 @@ def quote_form(cfg, variant, depth):
             "-> forms.variants".format(variant)
         )
     v = variants[variant]
-    short = v.get("layout", "full") == "short"
-    tpl = strip_comment(read("partials/quote-form-short.html" if short else "partials/quote-form.html"))
-    out = tpl
-    out = out.replace("{{SERVICE_OPTIONS}}", options_html(forms.get("serviceOptions", []), v.get("service", "")))
-    out = out.replace("{{PROPERTY_OPTIONS}}", options_html(forms.get("propertyOptions", []), v.get("propertyType", "")))
-    # short layout: what the page already knows travels as hidden fields
-    out = out.replace("{{PROPERTY_TYPE}}", v.get("propertyType", "").replace("&", "&amp;").replace('"', "&quot;"))
-    out = out.replace("{{SERVICE}}", v.get("service", "").replace("&", "&amp;").replace('"', "&quot;"))
-    out = out.replace("{{FORM_VARIANT}}", v.get("formVariant", variant + "_" + ("short" if short else "full")))
+    labels = forms.get("serviceOptions", [])
+    # The fixed vocabulary is the ONLY set of values the hidden service
+    # field can ever hold — at build time here, or at run time when
+    # js/main.js resolves /contact/?service=… into one of these labels.
+    # A variant whose fixed service is outside it would break that rule.
+    if v.get("service") and v["service"] not in labels:
+        raise SystemExit(
+            "quote-form variant {!r}: service {!r} is not in site.config.json "
+            "-> forms.serviceOptions".format(variant, v["service"])
+        )
+    if any("|" in s for s in labels):
+        raise SystemExit("forms.serviceOptions labels may not contain '|'")
+    out = strip_comment(read("partials/quote-form.html"))
+    out = out.replace("{{SERVICE_OPTIONS}}", attr("|".join(labels)))
+    out = out.replace("{{PROPERTY_TYPE}}", attr(v.get("propertyType", "")))
+    out = out.replace("{{SERVICE}}", attr(v.get("service", "")))
+    out = out.replace("{{FORM_VARIANT}}", v.get("formVariant", variant + "_short_quote"))
     out = out.replace("{{FORM_LOCATION}}", v.get("formLocation", variant))
     out = out.replace("{{SUBMIT_LABEL}}", v.get("submitLabel", "Send"))
     out = out.replace("{{SUCCESS_URL}}", url_for(forms.get("successPath", "thankyou"), depth))

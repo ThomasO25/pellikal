@@ -130,9 +130,10 @@
   };
 
   /* leadSource:   "homepage_form" | "contact_form"
-     service:      a short CATEGORY chosen from the form's dropdown — e.g.
-                   "window_inserts", "residential_film", "privacy". It is never
-                   free text and never identifies the customer.
+     service:      a short CATEGORY from the form's hidden service field —
+                   e.g. "window_inserts", "residential_film", "privacy". Fixed
+                   at build time per page (or resolved from ?service= into one
+                   of the same labels). Never free text, never the customer.
      pageType:     which page the form was on, e.g. "window_insert_landing".
      formLocation: NEW — which of the three embedded forms was used:
                    "contact" | "residential" | "window_inserts". A fixed
@@ -182,7 +183,7 @@
     }
   };
 
-  /* Turn the dropdown's human label into a safe, stable category slug.
+  /* Turn the service field's human label into a safe, stable category slug.
      ORDER MATTERS. "insert" is tested first because "Window Inserts /
      Noise Reduction" and "Residential Window Film" both contain "window";
      testing inserts first keeps the existing window_inserts slug intact. */

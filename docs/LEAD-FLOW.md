@@ -30,7 +30,7 @@ event.
 
 ---
 
-## One form, three pages
+## One form, five pages — four fields
 
 `partials/quote-form.html` is the only copy of the form. `tools/build.py`
 renders it into any page carrying a variant marker:
@@ -39,29 +39,41 @@ renders it into any page carrying a variant marker:
 <!-- @partial:quote-form:residential -->   ...generated...   <!-- @end -->
 ```
 
-| Page | Variant | Layout | Service (hidden on short) | Property type | Event on success |
-|---|---|---|---|---|---|
-| `/` | `homepage` | **short** | — | — | `homepage_form_submit` → `generate_lead` |
-| `/residential/` | `residential` | **short** | Residential Window Film | Residential | `contact_form_submit` → `generate_lead` |
-| `/commercial/` | `commercial` | **short** | Commercial Window Film | Commercial | `contact_form_submit` → `generate_lead` |
-| `/window-inserts/` | `window_inserts` | **short** | Window Inserts / Noise Reduction | — | `contact_form_submit` → `generate_lead` → `window_insert_lead` |
-| `/contact/` | `contact` | full | visitor chooses | visitor chooses | `contact_form_submit` → `generate_lead` |
+**Every form asks the same four things (25 Sep 2026, owner's request — quick
+conversions):**
 
-**Short layout (17 Sep 2026, paid-traffic conversion pass)** —
-`partials/quote-form-short.html`: first name (required), phone, email,
-town/ZIP (optional). **Phone OR email is required, not both** — enforced in
-`js/main.js` with a real message and `aria-invalid` on both fields. What the
-page already knows travels as hidden fields (`service`, `property_type`,
-`form_variant`), so the Formspree email still arrives complete and the
-tracking slug still comes from `[name="service"]`. Same endpoint, same
-handler, same `/thankyou/`, same events. `?service=` prefill only applies to
-the full form's dropdown.
+| Field | `name=` | Rule |
+|---|---|---|
+| Full name — one field, not first/last | `name` | required |
+| Phone | `phone` | **phone OR email** — one of the two; phone judged on its digits (10–15), value sent as typed |
+| Email | `email` | (same rule; judged by the browser's `type="email"`) |
+| ZIP code | `zip` | **optional**; if given, 5 digits (`11530-1234` also accepted); numeric keypad on phones |
+
+No last name, no property-type or service dropdown, no town/borough, no
+message box — on `/contact/` either. The phone-or-email rule is enforced in
+`js/main.js` with a real message and `aria-invalid` on both fields; a missing
+name or a ZIP that isn't 5 digits is reported by the browser (`reportValidity`)
+as `error_type: validation`. ZIP was made optional on review (25 Sep): get the
+lead first, qualify on the call; make it required again only if out-of-area
+enquiries turn out to be a real problem. What the page already knows travels as hidden
+fields (`service`, `property_type`, `form_variant`), so the Formspree email
+still arrives complete and the tracking slug still comes from
+`[name="service"]`. Same endpoint, same handler, same `/thankyou/`, same events.
+
+| Page | Variant | Service (hidden) | Property type (hidden) | Event on success |
+|---|---|---|---|---|
+| `/` | `homepage` | — (takes `?service=`) | — | `homepage_form_submit` → `generate_lead` |
+| `/residential/` | `residential` | Residential Window Film | Residential | `contact_form_submit` → `generate_lead` |
+| `/commercial/` | `commercial` | Commercial Window Film | Commercial | `contact_form_submit` → `generate_lead` |
+| `/window-inserts/` | `window_inserts` | Window Inserts / Noise Reduction | — | `contact_form_submit` → `generate_lead` → `window_insert_lead` |
+| `/contact/` | `contact` | — (takes `?service=`) | — | `contact_form_submit` → `generate_lead` |
 
 Defined in `site.config.json` → `forms.variants`. Edit the markup once, run
-`python3 tools/build.py`, and all three follow. The build prints which pages
-got which variant, and **fails** if a placeholder is left unfilled.
+`python3 tools/build.py`, and all five follow. The build prints which pages
+got which variant, **fails** if a placeholder is left unfilled, and fails if a
+variant's fixed service is not in `forms.serviceOptions`.
 
-The Formspree endpoint is **not** duplicated into the three pages — the build
+The Formspree endpoint is **not** duplicated into the pages — the build
 reads `FORMSPREE_ID` out of `js/config.js`, which stays its documented home.
 
 ### Where the form sits
@@ -78,19 +90,28 @@ behaviour rather than introducing new responsive rules.
 
 ---
 
-## A dropdown option had to be added
+## `?service=` without a dropdown
 
-The service dropdown had **no residential option** — the closest was
-"Solar / Heat & Glare". There was nothing to preselect.
+`/contact/?service=window-inserts` (the older CTA / ad landing URL) still
+categorises the lead. With the dropdown gone, `js/main.js` writes the matching
+label into the form's **hidden** `service` field instead — but only on a form
+whose service the page left blank (`/contact/`, the homepage). The landing
+pages fix their own service at build time and ignore the URL.
 
-So **"Residential Window Film" is new**, and it maps to a new service slug
-`residential_film`. Damian should expect that value to start appearing in GA4
-alongside the existing ones.
+The URL value is matched by **slug** against the fixed vocabulary the build
+stamps into the hidden field's `data-options` (`site.config.json` →
+`forms.serviceOptions`); the label written is always one of ours, never the
+URL text, so nothing typed into the address bar can reach Formspree or the
+dataLayer. `?service=window-inserts` therefore still produces
+`service: window_inserts` and `window_insert_lead`; `?service=commercial`
+resolves too ("Commercial Window Film" was added to the vocabulary on 25 Sep).
+An unknown or malformed value is ignored.
 
-Adding it broke `/contact/?service=window-inserts`: the old prefill matched on
-the first word, and both labels contain "window", so it started selecting
-"Residential Window Film" instead. The prefill now matches on **slug**, so it
-is exact regardless of what is added to the dropdown or in what order.
+History: `serviceOptions` was the dropdown's option list. "Residential Window
+Film" (slug `residential_film`) was added 14 Sep so the residential page had
+something to preselect, and the old first-word match was replaced by the slug
+match at the same time because both it and "Window Inserts / Noise Reduction"
+contain "window".
 
 ---
 
@@ -99,7 +120,7 @@ is exact regardless of what is added to the dropdown or in what order.
 In `js/main.js`, reached from exactly one place — inside the `r.ok` branch,
 after Formspree confirms:
 
-1. validate (`checkValidity`), bot honeypot check
+1. validate (`checkValidity`: name required, ZIP pattern if given), the phone-or-email rule, bot honeypot check
 2. `POST` to Formspree
 3. **only if `r.ok`** → reset form, show success, fire the events
 4. navigate to `data-success-url` (`../thankyou/`, written at build time),
@@ -137,7 +158,7 @@ redirect is guarded so it can only happen once.
 | `view_contact_page` | unchanged |
 | `click_to_call` / `click_to_text` / `click_to_email` | unchanged |
 | `homepage_form_submit` | unchanged (see note) |
-| `contact_form_submit` | unchanged — fires from all three forms |
+| `contact_form_submit` | unchanged — fires from every form except the homepage's |
 | `generate_lead` | unchanged, **plus one new parameter** |
 | `window_insert_lead` | unchanged |
 
@@ -146,7 +167,7 @@ redirect is guarded so it can only happen once.
 time — never anything a visitor typed. Existing parameters (`lead_source`,
 `service`, `page_type`) are untouched.
 
-`lead_source` stays `contact_form` for all three forms, so any existing GTM
+`lead_source` stays `contact_form` for every non-homepage form, so any existing GTM
 trigger on `contact_form_submit` keeps working exactly as before. Use
 `form_location` to tell them apart.
 
@@ -175,10 +196,10 @@ redirect is guarded to fire once. Verified: two clicks → one `generate_lead`.
 
 ### No PII
 
-Nothing typed into the form reaches the dataLayer, the URL, GTM, GA4, cookies
-or `localStorage`. Verified by filling the real form and searching every one of
-those for the submitted values. The only things measured are the service
-*category* as a slug and `form_location`.
+Nothing typed into the form — name, phone, email, ZIP — reaches the dataLayer,
+the URL, GTM, GA4, cookies or `localStorage`. Verified by filling the real form
+and searching every one of those for the submitted values. The only things
+measured are the service *category* as a slug and `form_location`.
 
 ---
 

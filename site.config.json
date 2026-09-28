@@ -107,13 +107,14 @@
       "label": "Accessibility"
     }
   ],
-  "_formsComment": "THE quote form, defined once. build.py renders partials/quote-form.html into every <!-- @partial:quote-form:VARIANT --> region, so /contact/, /residential/ and /window-inserts/ share one piece of markup and one submission path. The Formspree endpoint is NOT duplicated here - build.py reads it out of js/config.js, which stays the single place it lives.",
+  "_formsComment": "THE quote form, defined once. build.py renders partials/quote-form.html into every <!-- @partial:quote-form:VARIANT --> region, so /, /contact/, /residential/, /commercial/ and /window-inserts/ share one piece of markup and one submission path. Since 25 Sep 2026 every form asks the same four things (full name, phone, email, ZIP code) - the variants only differ in the hidden fields below. The Formspree endpoint is NOT duplicated here - build.py reads it out of js/config.js, which stays the single place it lives.",
   "forms": {
     "successPath": "thankyou",
     "_successNote": "Where a CONFIRMED successful Formspree response sends the visitor. build.py turns this into the correct relative link for each page's depth. The Google Ads conversion fires on the generate_lead event before the redirect; this page is the visitor's confirmation, not a second conversion.",
     "serviceOptions": [
       "Window Inserts / Noise Reduction",
       "Residential Window Film",
+      "Commercial Window Film",
       "Solar / Heat & Glare",
       "Privacy",
       "Security & Safety",
@@ -121,24 +122,17 @@
       "Low-E / Energy",
       "Not sure yet"
     ],
-    "_serviceNote": "'Residential Window Film' is NEW - the dropdown had no residential option to preselect. See docs/LEAD-FLOW.md. Order is for readability only; the code matches on slug, not position.",
-    "propertyOptions": [
-      "Residential",
-      "Commercial",
-      "Property Management",
-      "Other"
-    ],
-    "_variantNote": "layout: short = paid-traffic form (first name, phone OR email, optional town/ZIP; service + property type travel as hidden fields). full = the detailed contact form. formLocation is the non-PII parameter that tells them apart in GA4; the homepage variant fires homepage_form_submit, every other one contact_form_submit.",
+    "_serviceNote": "The FIXED VOCABULARY of the hidden service field - there is no dropdown any more (25 Sep 2026). Every variant's fixed service must be one of these (the build checks), and /contact/?service=... can only ever resolve to one of these labels (js/main.js matches by slug and copies OUR label, never the URL text). 'Commercial Window Film' was added 25 Sep so ?service=commercial resolves too. Order is for readability only.",
+    "_variantNote": "One layout for every variant: full name (required), phone OR email (one of the two, checked in js/main.js), ZIP code (optional; 5 digits if given - reviewer's call, get the lead first and qualify on the call). service + property type travel as hidden fields; leave service blank (contact, homepage) and the form accepts ?service=<slug> from the URL. formLocation is the non-PII parameter that tells the forms apart in GA4; the homepage variant fires homepage_form_submit, every other one contact_form_submit. formVariant is only for the Formspree email.",
     "variants": {
       "contact": {
-        "layout": "full",
         "formLocation": "contact",
         "service": "",
         "propertyType": "",
-        "submitLabel": "Request My Free Consultation"
+        "formVariant": "contact_short_quote",
+        "submitLabel": "Get My Free Quote"
       },
       "homepage": {
-        "layout": "short",
         "formLocation": "homepage",
         "service": "",
         "propertyType": "",
@@ -146,7 +140,6 @@
         "submitLabel": "Get My Free Quote"
       },
       "residential": {
-        "layout": "short",
         "formLocation": "residential",
         "service": "Residential Window Film",
         "propertyType": "Residential",
@@ -154,7 +147,6 @@
         "submitLabel": "Get My Free Quote"
       },
       "commercial": {
-        "layout": "short",
         "formLocation": "commercial",
         "service": "Commercial Window Film",
         "propertyType": "Commercial",
@@ -162,7 +154,6 @@
         "submitLabel": "Get My Free Quote"
       },
       "window_inserts": {
-        "layout": "short",
         "formLocation": "window_inserts",
         "service": "Window Inserts / Noise Reduction",
         "propertyType": "",

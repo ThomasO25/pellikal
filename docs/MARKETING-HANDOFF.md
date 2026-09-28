@@ -122,8 +122,8 @@ structured data and on Google Business Profile to protect NAP consistency.
 ## Privacy
 
 **No customer PII is passed to the dataLayer — verified by test submission.**
-Name, email, phone, town and message text do not appear anywhere in the
-dataLayer. Events record only that an action happened and roughly where.
+Name, email, phone and ZIP code (all the form asks for) do not appear anywhere
+in the dataLayer. Events record only that an action happened and roughly where.
 
 `/privacy/` discloses GTM, GA4, Google Ads measurement, Formspree, Supabase and
 GitHub Pages, and states call tracking is not currently active. Update it if

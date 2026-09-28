@@ -54,15 +54,23 @@ def check(label, got, want):
         print("          actual:   {!r}".format(got))
 
 
-def fill(pg, phone=True, email=True):
-    pg.fill("#first-name", "Jane")
-    if pg.query_selector("#last-name"): pg.fill("#last-name", "Testperson")
+# The four fields every form asks for (25 Sep 2026). 11570 is deliberately
+# NOT the placeholder ZIP (11530), so the PII sweeps can tell them apart.
+PII = ["jane", "testperson", "example.com", "5165550147", "11570"]
+
+
+def fill(pg, phone=True, email=True, zip_code="11570"):
+    pg.fill("#name", "Jane Testperson")
     if email: pg.fill("#email", "jane.testperson@example.com")
     if phone: pg.fill("#phone", "5165550147")
-    pg.fill("#location", "Garden City")
-    if pg.query_selector("#message"): pg.fill("#message", "Three south facing windows in the living room")
-    if pg.query_selector("#property-type") and pg.eval_on_selector("#property-type", "el => el.value") == "":
-        pg.select_option("#property-type", "Residential")
+    if zip_code: pg.fill("#zip", zip_code)
+
+
+FIELDS_JS = """() => {
+  const f = document.querySelector('#quote-form');
+  const vis = [...f.querySelectorAll('input:not([type=hidden]), select, textarea')]
+      .filter(el => !el.closest('.hp')).map(el => el.tagName.toLowerCase() + ':' + el.name);
+  return vis; }"""
 
 
 def run():
@@ -89,35 +97,65 @@ def run():
                                   "url": BASE}])
             return ctx, ctx.new_page()
 
-        print("\n=== 1. THE FORM RENDERS ON ALL THREE PAGES ===")
+        print("\n=== 1. THE FORM RENDERS ON ALL FIVE PAGES — FOUR FIELDS, NOTHING ELSE ===")
         ctx, pg = fresh()
-        for path, variant, service in [
-            ("/contact/", "contact", ""),
-            ("/residential/", "residential", "Residential Window Film"),
-            ("/window-inserts/", "window_inserts", "Window Inserts / Noise Reduction"),
+        for path, variant, service, prop, success in [
+            ("/", "homepage", "", "", "thankyou/"),
+            ("/contact/", "contact", "", "", "../thankyou/"),
+            ("/residential/", "residential", "Residential Window Film", "Residential", "../thankyou/"),
+            ("/commercial/", "commercial", "Commercial Window Film", "Commercial", "../thankyou/"),
+            ("/window-inserts/", "window_inserts", "Window Inserts / Noise Reduction", "", "../thankyou/"),
         ]:
             pg.goto(BASE + path, wait_until="domcontentloaded")
             pg.wait_for_timeout(400)
             check("{}: exactly one form".format(path),
                   pg.evaluate("() => document.querySelectorAll('form#quote-form').length"), 1)
+            check("{}: visible fields are exactly name, phone, email, zip".format(path),
+                  pg.evaluate(FIELDS_JS), ["input:name", "input:phone", "input:email", "input:zip"])
+            check("{}: full name is ONE field (autocomplete=name), required".format(path),
+                  pg.eval_on_selector("#name", "el => [el.autocomplete, el.required, el.type]"), ["name", True, "text"])
+            check("{}: ZIP optional, 5-digit pattern if given, numeric keypad, postal-code autofill".format(path),
+                  pg.eval_on_selector("#zip", "el => [el.required, el.pattern, el.inputMode, el.autocomplete, el.labels[0].textContent.trim()]"),
+                  [False, "[0-9]{5}(-[0-9]{4})?", "numeric", "postal-code", "ZIP code (optional)"])
+            check("{}: phone and email are NOT individually required (one of the two)".format(path),
+                  pg.evaluate("() => [document.querySelector('#phone').required, document.querySelector('#email').required]"), [False, False])
             check("{}: data-form-location".format(path),
                   pg.eval_on_selector("#quote-form", "el => el.dataset.formLocation"), variant)
             check("{}: success url is relative and correct".format(path),
-                  pg.eval_on_selector("#quote-form", "el => el.dataset.successUrl"), "../thankyou/")
-            check("{}: service carried".format(path),
-                  pg.eval_on_selector('[name="service"]', "el => el.value"), service)
+                  pg.eval_on_selector("#quote-form", "el => el.dataset.successUrl"), success)
+            check("{}: service + property type carried as hidden fields".format(path),
+                  pg.evaluate("() => [document.querySelector('[name=service]').value, document.querySelector('[name=property_type]').value]"), [service, prop])
+            check("{}: honeypot + _next + form_variant still present".format(path),
+                  pg.evaluate("() => ['_gotcha','_next','form_variant'].map(n => !!document.querySelector('#quote-form [name=' + n + ']'))"), [True] * 3)
         ctx.close()
 
-        print("\n=== 2. EXISTING ?service= BEHAVIOUR PRESERVED ===")
+        print("\n=== 2. ?service= STILL CATEGORISES THE LEAD (hidden field, no dropdown) ===")
         ctx, pg = fresh()
-        pg.goto(BASE + "/contact/?service=window-inserts", wait_until="domcontentloaded")
-        pg.wait_for_timeout(500)
-        check("/contact/?service=window-inserts still selects Window Inserts",
-              pg.eval_on_selector("#service", "el => el.value"), "Window Inserts / Noise Reduction")
-        pg.goto(BASE + "/residential/?service=privacy", wait_until="domcontentloaded")
-        pg.wait_for_timeout(500)
-        check("short form: service is fixed by the page, ?service= does not change it",
-              pg.eval_on_selector('[name="service"]', "el => el.value"), "Residential Window Film")
+        for url, want, label in [
+            ("/contact/?service=window-inserts", "Window Inserts / Noise Reduction", "/contact/?service=window-inserts -> hidden service = Window Inserts"),
+            ("/contact/?service=commercial", "Commercial Window Film", "/contact/?service=commercial -> Commercial Window Film"),
+            ("/?service=privacy", "Privacy", "homepage ?service=privacy -> Privacy"),
+            ("/contact/?service=%3Cscript%3Ealert(1)%3C%2Fscript%3E", "", "junk ?service= is ignored — never copied into the field"),
+            ("/contact/?service=%E0%A4%A", "", "malformed %-escape is ignored, page keeps working"),
+            ("/contact/?service=not-sure", "", "?service=not-sure leaves it blank"),
+            ("/residential/?service=privacy", "Residential Window Film", "landing page: service fixed by the page, ?service= does not change it"),
+        ]:
+            pg.goto(BASE + url, wait_until="domcontentloaded")
+            pg.wait_for_timeout(500)
+            check(label, pg.eval_on_selector('[name="service"]', "el => el.value"), want)
+        # the malformed-escape page must still have a working submit handler
+        check("…and the form handler still attached after a malformed ?service=",
+              pg.evaluate("() => !!document.querySelector('#quote-form') && typeof window.PELLIKAL_TRACK_LEAD === 'function'"), True)
+        ctx.close()
+        ctx, pg = fresh()
+        pg.add_init_script(RECORDER)
+        pg.goto(BASE + "/contact/?service=window-inserts", wait_until="domcontentloaded"); pg.wait_for_timeout(400)
+        fill(pg); pg.click("#quote-form button[type=submit]")
+        pg.wait_for_url("**/thankyou/**", timeout=6000); pg.wait_for_timeout(300)
+        rec = pg.evaluate(RECORDED_JS); evs = [x.get("event") for x in rec if isinstance(x, dict) and x.get("event")]
+        gl = [x for x in rec if isinstance(x, dict) and x.get("event") == "generate_lead"][0]
+        check("/contact/?service=window-inserts lead: service slug window_inserts + window_insert_lead fired",
+              [gl.get("service"), gl.get("form_location"), "window_insert_lead" in evs], ["window_inserts", "contact", True])
         ctx.close()
 
         print("\n=== 3. INVALID SUBMISSION DOES NOT REDIRECT ===")
@@ -159,8 +197,6 @@ def run():
             pg.goto(BASE + path, wait_until="domcontentloaded")
             pg.wait_for_timeout(400)
             fill(pg)
-            if path == "/contact/":
-                pg.select_option("#service", "Solar / Heat & Glare")
             captured = pg.evaluate("""() => { window.__ev = []; const d = window.dataLayer;
                 const orig = d.push.bind(d);
                 d.push = function(o){ try{ window.__ev.push(JSON.parse(JSON.stringify(o))); }catch(e){}
@@ -195,8 +231,7 @@ def run():
               wl.get("eventCallback"), "[fn]")
         check("landed on /thankyou/ after the events", pg.url.endswith("/thankyou/"), True)
         blob = repr(rec).lower()
-        leaks = [x for x in ["jane", "testperson", "example.com", "5165550147",
-                             "garden city", "south facing"] if x in blob]
+        leaks = [x for x in PII if x in blob]
         check("no PII in any recorded dataLayer push", leaks, [])
         ctx.close()
 
@@ -250,19 +285,18 @@ def run():
         pg.add_init_script(RECORDER)
         pg.goto(BASE + "/residential/", wait_until="domcontentloaded")
         pg.wait_for_timeout(400)
-        check("short layout on residential", pg.eval_on_selector("#quote-form", "el => el.dataset.formLayout"), "short")
-        check("no last name / property / service select / message on the short form",
-              pg.evaluate("() => ['#last-name','#property-type','select#service','#message'].map(s => !!document.querySelector(s))"), [False]*4)
+        check("nothing from the old forms survives (first/last name, property, service select, town, message)",
+              pg.evaluate("() => ['#first-name','#last-name','#property-type','select#service','#location','#message'].map(s => !!document.querySelector(s))"), [False]*6)
         pg.click('.page-hero__actions a[href="#quote"]'); pg.wait_for_timeout(600)
         evs = pg.evaluate(EVENTS_JS)
         check("quote_cta_click fired (hero)", "quote_cta_click" in evs, True)
         check("quote_form_view fired once the form scrolled in", evs.count("quote_form_view"), 1)
-        pg.fill("#first-name", "Jane"); pg.wait_for_timeout(100)
+        pg.fill("#name", "Jane Testperson"); pg.wait_for_timeout(100)
         check("quote_form_start fired once", pg.evaluate(EVENTS_JS).count("quote_form_start"), 1)
-        pg.fill("#location", "Garden City")
+        pg.fill("#zip", "11570")
         check("still once after more typing", pg.evaluate(EVENTS_JS).count("quote_form_start"), 1)
         pg.click("#quote-form button[type=submit]"); pg.wait_for_timeout(600)
-        check("name only (no phone, no email) is rejected: stays on page", "/residential/" in pg.url, True)
+        check("name + ZIP only (no phone, no email) is rejected: stays on page", "/residential/" in pg.url, True)
         check("error message shown, both fields aria-invalid",
               pg.evaluate("""() => [getComputedStyle(document.querySelector('[data-msg=err]')).display,
                      document.querySelector('#phone').getAttribute('aria-invalid'), document.querySelector('#email').getAttribute('aria-invalid')]"""),
@@ -281,7 +315,7 @@ def run():
         gl = [x for x in rec if isinstance(x, dict) and x.get("event") == "generate_lead"][0]
         check("residential slug + form_location from hidden fields", [gl.get("service"), gl.get("form_location"), gl.get("lead_source")], ["residential_film", "residential", "contact_form"])
         blob = repr(rec).lower()
-        check("no PII in any push (incl. funnel events)", [x for x in ["jane", "5165550147", "garden city"] if x in blob], [])
+        check("no PII in any push (incl. funnel events)", [x for x in PII if x in blob], [])
         ctx.close()
 
         ctx, pg = fresh()
@@ -303,7 +337,7 @@ def run():
         ]:
             ctx, pg = fresh()
             pg.goto(BASE + "/residential/", wait_until="domcontentloaded"); pg.wait_for_timeout(300)
-            pg.fill("#first-name", "Jane")
+            pg.fill("#name", "Jane Testperson"); pg.fill("#zip", "11570")
             if phone: pg.fill("#phone", phone)
             if email: pg.fill("#email", email)
             pg.click("#quote-form button[type=submit]")
@@ -316,7 +350,7 @@ def run():
             ctx.close()
         ctx, pg = fresh()
         pg.goto(BASE + "/residential/", wait_until="domcontentloaded"); pg.wait_for_timeout(300)
-        pg.fill("#first-name", "Jane"); pg.fill("#phone", "abcdefg"); pg.click("#quote-form button[type=submit]"); pg.wait_for_timeout(400)
+        pg.fill("#name", "Jane Testperson"); pg.fill("#zip", "11570"); pg.fill("#phone", "abcdefg"); pg.click("#quote-form button[type=submit]"); pg.wait_for_timeout(400)
         check("invalid phone reports error_type=phone_invalid and submitted value is untouched",
               [pg.evaluate("() => (window.dataLayer||[]).some(x => x && x.event === 'quote_form_error' && x.error_type === 'phone_invalid')"),
                pg.eval_on_selector("#phone", "el => el.value")], [True, "abcdefg"])
@@ -326,14 +360,61 @@ def run():
         fill(pg); pg.click("#quote-form button[type=submit]")
         pg.wait_for_url("**/thankyou/**", timeout=6000)
         check("gclid (and only the click IDs) forwarded to /thankyou/", pg.url.split("/thankyou/")[1], "?gclid=TeSt.Click-123")
-        check("no submitted PII in the thank-you URL or page", [x for x in ["jane", "5165550147", "example.com"] if x in (pg.url + pg.content()).lower()], [])
+        check("no submitted PII in the thank-you URL or page", [x for x in PII if x in (pg.url + pg.content()).lower()], [])
+        ctx.close()
+
+        print("\n=== 8b-iii. ZIP RULE (optional; 5 digits if given) — on /contact/, the page that used to have the long form ===")
+        for zip_code, expect, label in [
+            ("", True, "no ZIP -> accepted (optional)"),
+            ("1157", False, "4 digits -> rejected"),
+            ("abcde", False, "letters -> rejected"),
+            ("11570", True, "5 digits -> accepted"),
+            ("11570-1234", True, "ZIP+4 -> accepted"),
+            (" 11570 ", True, "padded with spaces -> trimmed and accepted"),
+        ]:
+            ctx, pg = fresh()
+            pg.goto(BASE + "/contact/", wait_until="domcontentloaded"); pg.wait_for_timeout(300)
+            fill(pg, zip_code=zip_code)
+            pg.click("#quote-form button[type=submit]")
+            if expect:
+                pg.wait_for_url("**/thankyou/**", timeout=6000)
+                check(label, pg.url.endswith("/thankyou/"), True)
+            else:
+                pg.wait_for_timeout(700)
+                check(label, ["/contact/" in pg.url,
+                              pg.evaluate("() => (window.dataLayer||[]).some(x => x && x.event === 'generate_lead')"),
+                              pg.evaluate("() => (window.dataLayer||[]).some(x => x && x.event === 'quote_form_error' && x.error_type === 'validation')")],
+                      [True, False, True])
+            ctx.close()
+        ctx, pg = fresh()
+        pg.goto(BASE + "/contact/", wait_until="domcontentloaded"); pg.wait_for_timeout(300)
+        fill(pg, zip_code="1157"); pg.click("#quote-form button[type=submit]"); pg.wait_for_timeout(300)
+        check("bad ZIP shows a plain-English message, then clears once fixed",
+              [pg.eval_on_selector("#zip", "el => el.validationMessage"),
+               pg.evaluate("() => { const z = document.querySelector('#zip'); z.value = '11570'; document.querySelector('#quote-form button[type=submit]').click(); return z.validationMessage; }")],
+              ["Please enter your 5-digit ZIP code.", ""])
+        pg.wait_for_url("**/thankyou/**", timeout=6000)
+        check("…and that corrected submission went through", pg.url.endswith("/thankyou/"), True)
+        ctx.close()
+        ctx, pg = fresh()
+        pg.goto(BASE + "/contact/", wait_until="domcontentloaded"); pg.wait_for_timeout(300)
+        fill(pg, phone=False, email=True)
+        pg.click("#quote-form button[type=submit]"); pg.wait_for_url("**/thankyou/**", timeout=6000)
+        check("/contact/: name + email + ZIP (no phone) accepted — phone-or-email now applies here too", pg.url.endswith("/thankyou/"), True)
+        ctx.close()
+        ctx, pg = fresh()
+        pg.goto(BASE + "/contact/", wait_until="domcontentloaded"); pg.wait_for_timeout(300)
+        fill(pg, phone=False, email=False)
+        pg.click("#quote-form button[type=submit]"); pg.wait_for_timeout(600)
+        check("/contact/: name + ZIP but no phone/email -> contact_required, stays",
+              ["/contact/" in pg.url, pg.evaluate("() => (window.dataLayer||[]).some(x => x && x.event === 'quote_form_error' && x.error_type === 'contact_required')")], [True, True])
         ctx.close()
 
         print("\n=== 8c. HOMEPAGE + COMMERCIAL VARIANTS ===")
         ctx, pg = fresh()
         pg.add_init_script(RECORDER)
         pg.goto(BASE + "/", wait_until="domcontentloaded"); pg.wait_for_timeout(400)
-        check("homepage has the short form", pg.evaluate("() => document.querySelectorAll('form#quote-form[data-form-layout=short]').length"), 1)
+        check("homepage has the (one and only) four-field form", pg.evaluate("() => document.querySelectorAll('form#quote-form').length + ':' + document.querySelectorAll('#quote-form #name, #quote-form #zip').length"), "1:2")
         check("empty-reviews placeholder is NOT visible", pg.evaluate("() => { const s = document.querySelector('#reviews'); return !s || s.hidden || getComputedStyle(s).display === 'none'; }"), True)
         check("hero CTA reads Get a Free Quote -> #quote", pg.evaluate("() => { const a = document.querySelector('.hero__actions a[data-quote-cta]'); return a && a.textContent.trim() + ' ' + a.getAttribute('href'); }"), "Get a Free Quote #quote")
         fill(pg); pg.click("#quote-form button[type=submit]")
@@ -353,7 +434,7 @@ def run():
         ctx.close()
 
         print("\n=== 9. RESPONSIVE — NO HORIZONTAL OVERFLOW ===")
-        for w in [375, 430, 768, 1440]:
+        for w in [320, 375, 430, 768, 1024, 1440]:
             ctx = browser.new_context(viewport={"width": w, "height": 900},
                                       is_mobile=w <= 430, has_touch=w <= 768)
             for pat in ["**://*.googletagmanager.com/**", "**://fonts.googleapis.com/**",
@@ -367,6 +448,14 @@ def run():
                 over = pg.evaluate("""() => document.documentElement.scrollWidth
                                        > document.documentElement.clientWidth + 1""")
                 check("{}px {}: no horizontal overflow".format(w, path), over, False)
+                # body has overflow-x:clip, so a form wider than the screen would NOT
+                # show up above — check the form's own box (pre-v22 the nowrap
+                # nowrap "Request My Free Consultation" button pushed /contact/ to 401px).
+                if path not in ("/thankyou/",):
+                    check("{}px {}: the form fits on the screen".format(w, path),
+                          pg.evaluate("""() => { const f = document.querySelector('#quote-form'); const r = f.getBoundingClientRect();
+                              const kids = [...f.querySelectorAll('input:not([type=hidden]),button,p')].filter(e => !e.closest('.hp'));
+                              return r.right <= innerWidth && r.left >= 0 && kids.every(k => k.getBoundingClientRect().right <= r.right + 1); }"""), True)
                 if w <= 768:
                     bar = pg.evaluate("""() => { const b = document.querySelector('.mobile-bar'); if (!b || getComputedStyle(b).display === 'none') return 'hidden';
                         const a = [...b.querySelectorAll('a')]; return a.length + ':' + a.every(x => x.getBoundingClientRect().height >= 44) + ':' + (a[2] ? a[2].getAttribute('href') : ''); }""")

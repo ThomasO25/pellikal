@@ -1,25 +1,42 @@
 <!-- ============================================================
-     THE QUOTE FORM - single source of truth for /contact/,
-     /residential/ and /window-inserts/.
+     THE QUOTE FORM - the ONLY form on the site, shared by
+     /, /contact/, /residential/, /commercial/ and /window-inserts/.
 
      Edit THIS file, then run:  python3 tools/build.py
 
      A page asks for it with a variant marker comment reading
      "@partial:quote-form:residential" followed by an "@end" marker.
+     Variants live in site.config.json under forms.variants.
+
+     WHAT IT ASKS (25 Sep 2026, owner's request - quick conversions):
+       Full name (one field, not first/last)   required
+       Phone / Email                           one of the two, checked
+                                               in js/main.js
+       ZIP code                                optional; 5 digits if given
+     Nothing else. Everything the page already knows (service, property
+     type, which variant this is) travels as hidden fields, so the
+     Formspree email still arrives complete without asking the visitor.
 
      CAUTION: do not write a literal HTML comment opener or closer
      anywhere inside this heading block. tools/build.py strips this
      comment by matching up to the first closer it finds, so an extra
      one here would leak the rest of this text into every page.
-     The build now fails loudly if that happens, but do not rely on it.
+     The build fails loudly if that happens, but do not rely on it.
 
      What the build fills in, from site.config.json forms:
-       SERVICE_OPTIONS    the dropdown, with this variant preselected
-       PROPERTY_OPTIONS   same, for property type
-       FORM_LOCATION      residential | window_inserts | contact
+       FORM_LOCATION      homepage | contact | residential | commercial |
+                          window_inserts  (the non-PII GA4 parameter)
+       SERVICE            the variant's fixed service label, or blank
+       SERVICE_OPTIONS    the fixed vocabulary of service labels, pipe
+                          separated - only ever used by js/main.js to
+                          resolve a ?service= URL into one of OUR labels
+       PROPERTY_TYPE      the variant's fixed property type, or blank
+       FORM_VARIANT       tells the Formspree email which form it was
        SUBMIT_LABEL       the button text
        SUCCESS_URL        relative link to /thankyou/ for this page depth
+       SITE_THANKYOU      absolute /thankyou/ for the no-JavaScript path
        FORMSPREE_ACTION   read out of js/config.js, not duplicated here
+       PHONE_DISPLAY      business phone, for the status messages
        URL:privacy        relative link to the privacy policy
 
      ON SUBMISSION
@@ -31,28 +48,24 @@
      ON PII
      Nothing typed into these fields ever reaches the dataLayer. The only
      things tracking sees are the service CATEGORY as a slug and the
-     form_location below. Both are fixed vocabularies, never free text.
+     form_location. Both are fixed vocabularies, never free text.
      ============================================================ -->
-<form id="quote-form" class="form" action="{{FORMSPREE_ACTION}}" method="POST" novalidate
+<form id="quote-form" class="form form--short" action="{{FORMSPREE_ACTION}}" method="POST" novalidate
       data-form-location="{{FORM_LOCATION}}" data-success-url="{{SUCCESS_URL}}">
   <div class="form__msg form__msg--ok" data-msg="ok" role="status">Thanks — your request is in! We'll get back to you shortly. For a faster response, call or text {{PHONE_DISPLAY}}.</div>
-  <div class="form__msg form__msg--err" data-msg="err" role="alert">Sorry, something went wrong sending your message. Please call or text {{PHONE_DISPLAY}} and we'll take care of you.</div>
+  <div class="form__msg form__msg--err" data-msg="err" role="alert">Sorry, something went wrong sending your request. Please call or text {{PHONE_DISPLAY}} and we'll take care of you.</div>
   <div class="hp" aria-hidden="true"><label for="company-website">Company website</label><input type="text" id="company-website" name="_gotcha" tabindex="-1" autocomplete="off"></div>
   <input type="hidden" name="_next" value="{{SITE_THANKYOU}}">
+  <input type="hidden" name="property_type" value="{{PROPERTY_TYPE}}">
+  <input type="hidden" name="service" value="{{SERVICE}}" data-options="{{SERVICE_OPTIONS}}">
+  <input type="hidden" name="form_variant" value="{{FORM_VARIANT}}">
+  <div class="field"><label for="name">Full name <span class="req">*</span></label><input type="text" id="name" name="name" autocomplete="name" required></div>
   <div class="form__row">
-    <div class="field"><label for="first-name">First name <span class="req">*</span></label><input type="text" id="first-name" name="first_name" autocomplete="given-name" required></div>
-    <div class="field"><label for="last-name">Last name <span class="req">*</span></label><input type="text" id="last-name" name="last_name" autocomplete="family-name" required></div>
+    <div class="field"><label for="phone">Phone</label><input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" aria-describedby="contact-hint"></div>
+    <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" aria-describedby="contact-hint"></div>
   </div>
-  <div class="form__row">
-    <div class="field"><label for="email">Email <span class="req">*</span></label><input type="email" id="email" name="email" autocomplete="email" required></div>
-    <div class="field"><label for="phone">Phone <span class="req">*</span></label><input type="tel" id="phone" name="phone" autocomplete="tel" required></div>
-  </div>
-  <div class="form__row">
-    <div class="field"><label for="property-type">Property type <span class="req">*</span></label><select id="property-type" name="property_type" required>{{PROPERTY_OPTIONS}}</select></div>
-    <div class="field"><label for="service">Service interested in <span class="req">*</span></label><select id="service" name="service" required>{{SERVICE_OPTIONS}}</select></div>
-  </div>
-  <div class="field"><label for="location">Project location (town / borough)</label><input type="text" id="location" name="location" placeholder="e.g. Garden City, Brooklyn, Huntington" autocomplete="address-level2"></div>
-  <div class="field"><label for="message">Tell us about your project</label><textarea id="message" name="message" placeholder="How many windows, what you're trying to solve, timing, etc."></textarea></div>
+  <p class="form__hint" id="contact-hint">Phone or email &mdash; whichever you'd rather we use.</p>
+  <div class="field field--zip"><label for="zip">ZIP code <span class="opt">(optional)</span></label><input type="text" id="zip" name="zip" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" maxlength="10" placeholder="e.g. 11530"></div>
   <button type="submit" class="btn btn--cyan btn--lg btn--block">{{SUBMIT_LABEL}}</button>
-  <p class="form__legal">By submitting this form you agree that Pellikal may contact you about your enquiry. We will not add you to any marketing list. See our <a href="{{URL:privacy}}">Privacy Policy</a>.</p>
+  <p class="form__legal">Free. No pressure. We'll follow up personally about your project and won't add you to any marketing list. See our <a href="{{URL:privacy}}">Privacy Policy</a>.</p>
 </form>

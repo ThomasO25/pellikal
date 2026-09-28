@@ -34,10 +34,12 @@ should see. **17 September 2026.**
 2. Choose **Reject Non-Essential** on the banner — the worst case for
    measurement is the one to test.
 3. Click **Get a Free Quote** in the hero → `quote_cta_click`.
-4. Type a first name → `quote_form_view` (fired as the form scrolled in) and
+4. Type a name → `quote_form_view` (fired as the form scrolled in) and
    `quote_form_start`.
 5. Submit with no phone and no email → `quote_form_error`
    (`error_type: contact_required`). **Confirm `generate_lead` did NOT fire.**
+   (A ZIP that isn't 5 digits is blocked by the browser first —
+   `error_type: validation`; a blank ZIP is fine, it is optional.)
 6. Add a phone number → submit.
 7. Network tab: one `POST formspree.io/f/…` with status **200**.
 8. Tag Assistant: `contact_form_submit` then **exactly one `generate_lead`**.
@@ -47,13 +49,13 @@ should see. **17 September 2026.**
    browser lands on `/thankyou/?gclid=test123` — a page view, not a
    conversion.
 10. Open `generate_lead` in Tag Assistant: parameters are `lead_source`,
-    `service`, `form_location` only — no name, phone, email, town.
+    `service`, `form_location` only — no name, phone, email, ZIP.
 11. Refresh `/thankyou/`, press Back, press Forward: `generate_lead` count
     stays at **1** and the Ads tag does **not** fire again. (The thank-you
     **page view** repeats — which is exactly why nothing may be triggered by
     it.)
-12. In the email inbox: one Formspree message with `form_variant`,
-    `service`, `property_type` filled in.
+12. In the email inbox: one Formspree message with `name`, `phone`/`email`,
+    `zip` (if given), plus `form_variant`, `service`, `property_type`.
 
 ## Expected dataLayer sequence
 
@@ -88,8 +90,8 @@ allow it, so look for a second listener added in GTM.
 
 ## A/B-ready
 
-The form layout is a per-variant setting (`site.config.json` →
-`forms.variants.*.layout`: `short` | `full`). A multi-step variant would be
-a third partial with `layout: "steps"`, using the same handler, the same
-events and the same `/thankyou/`. Do not build it until Pellikal's own data
-says the single short form is the bottleneck.
+There is one form layout — four fields, every page (25 Sep 2026). A
+multi-step variant would be a second partial selected per variant in
+`site.config.json` → `forms.variants`, using the same handler, the same events
+and the same `/thankyou/`. Do not build it until Pellikal's own data says the
+single short form is the bottleneck.

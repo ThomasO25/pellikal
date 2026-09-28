@@ -51,9 +51,10 @@ commercial.html         (same) … one for each page above
 partials/
   header.html           The site header + menu, shared by every page
   footer.html           The footer + sticky mobile call bar
-  quote-form.html       ⭐ THE full quote form (/contact/).
-  quote-form-short.html ⭐ THE short quote form (home, residential, commercial,
-                        window inserts). Variants in site.config.json -> forms.
+  quote-form.html       ⭐ THE quote form — the only one. Full name, phone,
+                        email, ZIP (optional); same on home, residential, commercial,
+                        window inserts AND contact. Variants (hidden fields
+                        only) in site.config.json -> forms.
 
 tools/
   build.py              Copies partials + config into every page
