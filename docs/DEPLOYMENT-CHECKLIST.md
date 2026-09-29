@@ -79,9 +79,18 @@ assets stay hidden even with JavaScript disabled. Full detail: `docs/WINDOW-INSE
 
 - [ ] Consent block sits **above** the GTM snippet in `<head>` on every tracked page
 - [ ] Consent version is `v2` in `site.config.json` (granular categories)
-- [ ] Tag Assistant, before choosing: all four optional categories **denied**
+- [ ] **Regional defaults (28 Sep 2026)** — Tag Assistant Consent view, before
+      choosing, from `?consent=reset`:
+      - from **Spain / UK / Switzerland** (simulated location or VPN): all four
+        optional categories **denied**
+      - from **New York**: all four optional categories **granted**
+      (`CONVERSION-DEBUG.md` → "Manual regional verification"; the local suite
+      proves the emitted commands, not Google's geography — this box is a
+      person's signature: name + date + how location was simulated)
 - [ ] After **Accept All**: all four **granted**
-- [ ] After **Reject Non-Essential**: all four still **denied**
+- [ ] After **Reject Non-Essential**: all four **denied** — from New York too
+- [ ] Returning visitor who **rejected**: the update to denied lands **before**
+      `Container Loaded` (no granted window on any page)
 - [ ] Manage → Analytics only: `analytics_storage` granted, ad categories denied
 - [ ] Manage → Advertising only: three ad categories granted, analytics denied
 - [ ] Returning visitor who accepted: the update lands **before** `Container Loaded`

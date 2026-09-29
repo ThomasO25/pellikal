@@ -166,9 +166,10 @@ prepared and are not yet active** — which is true today.
       and change the date at the top
 - [ ] If call tracking with number replacement is introduced, confirm that
       section reflects it
-- [ ] **SUPERSEDED 14 Sep 2026.** The consent banner now ships. Everything
-      optional defaults to denied before GTM loads, and visitors choose Accept
-      All or Necessary Only. The old `CONSENT_DEFAULT_DENIED` flag in
+- [ ] **SUPERSEDED 14 Sep 2026.** The consent banner now ships. Defaults are
+      set before GTM loads — **regional since 28 Sep 2026** (denied in the
+      EEA/UK/Switzerland, granted elsewhere; a saved choice always wins) — and
+      visitors choose Accept All / Reject Non-Essential / Manage. The old `CONSENT_DEFAULT_DENIED` flag in
       `js/config.js` has been removed — it never did anything. Read
       `docs/CONSENT-MODE.md` before changing any of it.
 

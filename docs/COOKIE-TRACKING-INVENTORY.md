@@ -8,11 +8,18 @@ last person who checked.
 Preferences are changed via **Tracking preferences** (footer of every page,
 and inline in the privacy policy), or `?consent=reset`.
 
+**Defaults are regional since 28 Sep 2026** (Pellikal's configuration, not a
+legal finding): for visitors Google places in the EEA, the UK or Switzerland
+every optional category starts **denied**; for everyone else it starts
+**granted**. A saved Accept/Reject overrides either default and is restored
+before GTM loads. The "Consent required" column below reads accordingly: an
+opt-in inside the listed regions, an opt-out everywhere else.
+
 | Provider | Purpose | Category | Loads when | Consent required | Data (high level) | Where set |
 |---|---|---|---|---|---|---|
 | **Pellikal** — `pellikal_consent` cookie (+ `localStorage` mirror) | Remembers the visitor's tracking choice, 180 days | Necessary | On saving a choice | No (it *is* the consent record) | version, analytics flag, advertising flag, date. No personal data. | `js/consent.js` |
 | **Supabase Auth** — session in `sessionStorage` | Keeps a staff member signed in on `/admin/` for that tab only | Necessary (admin page only) | On admin sign-in | No | auth tokens for that session | `js/admin.js` |
-| **Google Tag Manager** (`GTM-MK2PHWB`) | Container that loads the tools below | — | Every tracked page, after Consent Mode defaults | Loads regardless; **every tag inside it obeys the consent state** (Google tags automatically; custom tags only if gated) | technical request data to Google | `tools/build.py` |
+| **Google Tag Manager** (`GTM-MK2PHWB`) | Container that loads the tools below | — | Every tracked page, after the two Consent Mode defaults (regional denied, then granted elsewhere) and any saved choice | Loads regardless; **every tag inside it obeys the consent state** (Google tags automatically; custom tags only if gated) | technical request data to Google | `tools/build.py` |
 | **Google Analytics 4** (`G-J8SQ4CC7BT`) | Visits, pages, sources, in aggregate | Analytics | Via GTM | `analytics_storage = granted` | Google's own cookies/identifiers when granted; limited cookieless pings when denied | inside GTM |
 | **Google Ads** (`AW-859941989`) | Conversion measurement on the `generate_lead` event; remarketing | Advertising | Via GTM | `ad_storage`, `ad_user_data`, `ad_personalization` all `granted` | advertising identifiers when granted; redacted cookieless pings when denied (`ads_data_redaction`) | inside GTM |
 | **Microsoft Clarity** | Session replay / heatmaps | Analytics | Via GTM — **must be paused or gated on `analytics_storage`** | Would be `analytics_storage` | session recordings | inside GTM — **not visible from this repo** |

@@ -211,6 +211,9 @@ def sync_contact_details(html, cfg):
 SAFE_TOKEN = re.compile(r"^[A-Za-z0-9_-]+$")
 
 
+REGION_CODE = re.compile(r"^[A-Z]{2}(-[A-Z0-9]{1,3})?$")   # ISO 3166-2: "ES", "US-CA"
+
+
 def consent_settings(cfg):
     """Read + validate analytics.consent from site.config.json."""
     c = dict(cfg["analytics"].get("consent") or {})
@@ -230,25 +233,80 @@ def consent_settings(cfg):
         raise SystemExit("site.config.json: analytics.consent.rememberDays must be a number")
     if not 1 <= c["rememberDays"] <= 400:
         raise SystemExit("site.config.json: analytics.consent.rememberDays must be 1-400")
+
+    # ---- regional defaults (28 Sep 2026) ----
+    # Missing block = the pre-28-Sep behaviour: denied everywhere, no
+    # region-specific command at all. Failure direction: less tracking.
+    rd = dict(c.get("regionalDefaults") or {})
+    regions = []
+    for code in rd.get("deniedRegions") or []:
+        code = str(code).strip().upper()
+        if not REGION_CODE.match(code):
+            raise SystemExit(
+                "site.config.json: analytics.consent.regionalDefaults.deniedRegions "
+                "contains {!r} - use ISO 3166-2 codes such as ES or US-CA".format(code)
+            )
+        if code not in regions:
+            regions.append(code)
+    elsewhere = str(rd.get("elsewhere", "denied")).strip().lower()
+    if elsewhere not in ("granted", "denied"):
+        raise SystemExit(
+            "site.config.json: analytics.consent.regionalDefaults.elsewhere must be "
+            "'granted' or 'denied' (got {!r})".format(rd.get("elsewhere"))
+        )
+    if elsewhere == "granted" and not regions:
+        # The safety rail: you cannot ship "granted for the whole world" by
+        # emptying the list. Say it on purpose by setting elsewhere: denied.
+        raise SystemExit(
+            "site.config.json: regionalDefaults.elsewhere is 'granted' but "
+            "deniedRegions is empty - that would default EVERY visitor to granted"
+        )
+    label = str(rd.get("deniedRegionsLabel") or "the listed regions")
+    if "<" in label or ">" in label:
+        raise SystemExit("site.config.json: regionalDefaults.deniedRegionsLabel may not contain < or >")
+    c["deniedRegions"] = regions
+    c["elsewhere"] = elsewhere
+    c["deniedRegionsLabel"] = label
     return c
 
 
 def consent_head(cfg):
-    """Google Consent Mode v2 defaults.
+    """Google Consent Mode v2 defaults - REGIONAL since 28 Sep 2026.
 
     THIS MUST BE EMITTED ABOVE THE GTM SNIPPET. It is generated into the
     same @partial:gtm-head region as the container itself precisely so the
-    two can never drift apart or be reordered by hand — a rebuild always
+    two can never drift apart or be reordered by hand - a rebuild always
     restores both, in this order.
 
-    All four optional categories default to DENIED. A previously stored
-    choice is re-applied here, synchronously, before gtm.js is requested,
-    so a returning visitor who accepted is not measured as denied for the
-    first hit of every page. That is also why there is no `wait_for_update`:
-    nothing about this is asynchronous, so there is nothing to wait for.
+    What the block does, in order, all synchronously, all before gtm.js:
+
+      1. dataLayer + gtag() exist.
+      2. gtag('consent','default', {all four optional DENIED, region:[...]})
+         for every visitor Google places in regionalDefaults.deniedRegions
+         (EEA + GB + CH as configured).
+      3. gtag('consent','default', {all four optional = regionalDefaults.
+         elsewhere}) with NO region property - Google's documented way of
+         setting the default for every visitor not matched above. The
+         region-specific command is emitted first, as in Google's own
+         example; Google resolves which one applies from the request. The
+         pages do no geolocation of any kind.
+      4. ads_data_redaction (only has an effect while ad_storage is denied).
+      5. A previously stored choice is re-applied as an UPDATE - ALWAYS,
+         including a stored Reject. Before the regional change a stored
+         Reject needed no update because the default was already denied;
+         with a granted default outside the listed regions, a visitor who
+         rejected would otherwise be measured as granted. This is the line
+         that guarantees "no tracking window" for a saved Reject.
+
+    That is also why there is no `wait_for_update`: Google offers it for
+    consent tools that restore the stored state asynchronously. Nothing
+    here is asynchronous, so there is nothing to wait for.
+
+    This is Pellikal's configured behaviour. It is not a statement about
+    what any law requires anywhere.
 
     No personal data is read, written or pushed. The stored value is a
-    version tag, a choice, and a date.
+    version tag, two flags and a date.
     """
     c = consent_settings(cfg)
     settings = json.dumps(
@@ -257,10 +315,28 @@ def consent_head(cfg):
             "version": c["version"],
             "days": c["rememberDays"],
             "redact": bool(c["adsDataRedaction"]),
+            "deniedRegions": c["deniedRegions"],
+            "elsewhere": c["elsewhere"],
+            "regionsLabel": c["deniedRegionsLabel"],
         },
         separators=(",", ":"),
         sort_keys=True,
     )
+    # json.dumps leaves "/" alone; a label containing "</script>" is refused
+    # by consent_settings() (no < or >), so the block cannot be broken open.
+    region_js = "[" + ",".join("'" + r + "'" for r in c["deniedRegions"]) + "]"
+    ew = c["elsewhere"]
+    regional_default = (
+        "gtag('consent','default',{\n"
+        "'ad_storage':'denied',\n"
+        "'analytics_storage':'denied',\n"
+        "'ad_user_data':'denied',\n"
+        "'ad_personalization':'denied',\n"
+        "'functionality_storage':'granted',\n"
+        "'security_storage':'granted',\n"
+        "'region':" + region_js + "\n"
+        "});\n"
+    ) if c["deniedRegions"] else ""
     return (
         "<!-- Referrer policy: send only the origin cross-site. GitHub Pages cannot\n"
         "     set response headers, so this is done in the document. -->\n"
@@ -268,6 +344,8 @@ def consent_head(cfg):
         "<!-- Google Consent Mode v2 defaults - GENERATED by tools/build.py.\n"
         "     Do not edit here and do not move it below the GTM snippet:\n"
         "     defaults only count if they are set BEFORE gtm.js loads.\n"
+        "     Regional: denied in the listed regions, " + ew + " elsewhere; a stored\n"
+        "     choice overrides either and is re-applied here, before gtm.js.\n"
         "     Settings live in site.config.json -> analytics.consent.\n"
         "     Full explanation: docs/CONSENT-MODE.md -->\n"
         "<script>\n"
@@ -276,15 +354,19 @@ def consent_head(cfg):
         "w.dataLayer=w.dataLayer||[];\n"
         "function gtag(){w.dataLayer.push(arguments);}\n"
         "w.gtag=w.gtag||gtag;\n"
+        "/* 1. Listed regions: everything optional denied until the visitor chooses. */\n"
+        + regional_default +
+        "/* 2. Everyone else (no region property = all visitors not matched above). */\n"
         "gtag('consent','default',{\n"
-        "'ad_storage':'denied',\n"
-        "'analytics_storage':'denied',\n"
-        "'ad_user_data':'denied',\n"
-        "'ad_personalization':'denied',\n"
+        "'ad_storage':'" + ew + "',\n"
+        "'analytics_storage':'" + ew + "',\n"
+        "'ad_user_data':'" + ew + "',\n"
+        "'ad_personalization':'" + ew + "',\n"
         "'functionality_storage':'granted',\n"
         "'security_storage':'granted'\n"
         "});\n"
         "if(S.redact){gtag('set','ads_data_redaction',true);}\n"
+        "/* 3. A stored choice overrides either default - applied now, before gtm.js. */\n"
         "var v='';\n"
         "try{var ck=('; '+d.cookie).split('; '+S.name+'=');\n"
         "if(ck.length>1){v=decodeURIComponent(ck.pop().split(';').shift());}\n"
@@ -293,13 +375,15 @@ def consent_head(cfg):
         "/* stored format: VERSION:a0|a1:d0|d1:DATE  (analytics, advertising) */\n"
         "if(v.indexOf(S.version+':')===0){\n"
         "var a=v.indexOf(':a1')>-1,ad=v.indexOf(':d1')>-1;\n"
-        "if(a||ad){gtag('consent','update',{\n"
+        "/* ALWAYS an update, a stored Reject included: outside the listed regions the default is "
+        + ew + ", so a saved Reject must land here or it would not apply until js/consent.js runs. */\n"
+        "gtag('consent','update',{\n"
         "'analytics_storage':a?'granted':'denied',\n"
         "'ad_storage':ad?'granted':'denied',\n"
         "'ad_user_data':ad?'granted':'denied',\n"
         "'ad_personalization':ad?'granted':'denied'\n"
-        "});}\n"
-        "if(S.redact&&ad){gtag('set','ads_data_redaction',false);}\n"
+        "});\n"
+        "if(S.redact){gtag('set','ads_data_redaction',!ad);}\n"
         "}\n"
         "})(window,document);\n"
         "</script>\n"

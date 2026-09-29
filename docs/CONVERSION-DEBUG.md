@@ -32,7 +32,10 @@ should see. **17 September 2026.**
 1. Tag Assistant → **Connect** to the site → open `/residential/?gclid=test123`
    (a fake click ID stands in for a real ad click).
 2. Choose **Reject Non-Essential** on the banner — the worst case for
-   measurement is the one to test.
+   measurement is the one to test. (From New York the *default* before you
+   click is now granted — see "Manual regional verification" below — so
+   pressing Reject is what puts the page into the denied state this run
+   records.)
 3. Click **Get a Free Quote** in the hero → `quote_cta_click`.
 4. Type a name → `quote_form_view` (fired as the form scrolled in) and
    `quote_form_start`.
@@ -63,9 +66,14 @@ Recorded from a real run (Chromium, Formspree stubbed with a 200) on
 17 Sep 2026 — compare Tag Assistant's Summary against this, top to bottom:
 
 ```
- 0. gtag(consent, default, {ad_storage:denied, analytics_storage:denied,
-                            ad_user_data:denied, ad_personalization:denied,
-                            functionality_storage:granted, security_storage:granted})
+ 0a. gtag(consent, default, {ad_storage:denied, analytics_storage:denied,
+                             ad_user_data:denied, ad_personalization:denied,
+                             functionality_storage:granted, security_storage:granted,
+                             region:[AT … SE, GB, CH]})   ← listed regions (28 Sep 2026)
+ 0b. gtag(consent, default, {ad_storage:granted, analytics_storage:granted,
+                             ad_user_data:granted, ad_personalization:granted,
+                             functionality_storage:granted, security_storage:granted})
+                                                        ← no region = everyone else
  1. gtag(set, ads_data_redaction, true)
  2. GTM bootstrap {gtm.start, event:'gtm.js'}          ← container loads AFTER the defaults
  3. gtag(consent, update, {all four: denied})          ← visitor chose Reject
@@ -79,10 +87,42 @@ Recorded from a real run (Chromium, Formspree stubbed with a 200) on
 11. event: generate_lead {lead_source:contact_form, service:residential_film, form_location:residential}
     ← Google Ads lead conversion tag fires HERE (Custom Event trigger)
     → navigation to /thankyou/?gclid=… once GTM reports done (or after 1.4 s)
-12. gtag(consent, default, {…denied…})                 ← new page, same defaults
+12. gtag(consent, default, {…denied…, region:[…]})    ← new page, same two defaults
+12b. gtag(consent, default, {…granted…})
 13. gtag(set, ads_data_redaction, true)
+13b. gtag(consent, update, {all four: denied})         ← the SAVED Reject, restored by the head
+13c. gtag(set, ads_data_redaction, true)                  block BEFORE the container bootstrap
 14. GTM bootstrap {gtm.start, event:'gtm.js'}          ← page view only; no conversion here
 ```
+
+Line 13b is the one the 28 Sep change added: a stored Reject is now
+re-applied on every page load *before* GTM, because the default for a
+visitor outside the listed regions is granted.
+
+## Manual regional verification (Tag Assistant) — added 28 Sep 2026
+
+The automated suite proves which commands the pages emit and in what order.
+It does **not** exercise Google's geographic resolution — nothing in the
+repository can. These steps have to be run by a person, and until they have
+been, the regional behaviour is *configured*, not *verified*.
+
+Use Tag Assistant → **Consent** tab (the *On-page Default* and *Update*
+columns) with the browser's location simulated (DevTools → Sensors →
+Location, or a VPN exit in the country). Start every case from
+`?consent=reset` so no stored choice interferes.
+
+| Case | Location | First-load expectation (On-page Default) | Then |
+|---|---|---|---|
+| A | New York, United States | `ad_storage` **granted**, `analytics_storage` **granted**, `ad_user_data` **granted**, `ad_personalization` **granted** | Click **Reject Non-Essential** → Update row: all four **denied**. Reload → the Update to denied appears **before** `Container Loaded` (saved Reject honoured immediately, no granted window). |
+| B | Spain | all four **denied** | Click **Accept All** → Update row: all four **granted**. Reload → the Update to granted appears **before** `Container Loaded`. |
+| C | United Kingdom | all four **denied** | (optional) Accept / Reject as in B. |
+| D | Switzerland | all four **denied** | (optional) Accept / Reject as in B. |
+
+Also confirm in every case that the Google Ads lead conversion still fires
+only on `generate_lead` (steps 6–11 above) and that `/thankyou/` remains a
+page view. Record the date and who ran it in `DEPLOYMENT-CHECKLIST.md` §4b.
+
+Do not write up any of A–D as passed on the strength of the local suite.
 
 If `generate_lead` appears before a 200 from Formspree, or appears twice,
 or appears after an error — that is a bug; the code path above does not

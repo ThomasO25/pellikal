@@ -130,10 +130,13 @@ GitHub Pages, and states call tracking is not currently active. Update it if
 that changes.
 
 **SUPERSEDED 14 Sep 2026.** ~~No cookie banner ships.~~ Google Consent Mode v2
-now ships **in the website**: all four optional categories default to denied in
-the `<head>` above the GTM snippet, and a banner lets the visitor choose Accept
-All or Necessary Only. Do not add a second consent tool in GTM, and do not
-remove the defaults from the pages. See `CONSENT-MODE.md`.
+now ships **in the website**: the defaults are set in the `<head>` above the
+GTM snippet, and a banner lets the visitor choose Accept All / Reject
+Non-Essential / Manage. **Updated 28 Sep 2026 — the defaults are regional:**
+denied for visitors in the EEA, the UK and Switzerland, granted everywhere
+else (Pellikal's configuration, not a legal claim); a saved choice overrides
+either and is restored before GTM. Do not add a second consent tool in GTM,
+and do not remove the defaults from the pages. See `CONSENT-MODE.md`.
 
 Consent Mode does **not** automatically gate custom tags you add in GTM
 (Clarity, chat, pixels). Each one needs its own consent check, or the banner

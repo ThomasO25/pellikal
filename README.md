@@ -160,7 +160,11 @@ Open that page's `index.html` and change the text inside `<main>`. No build.
 **How tracking is wired (current architecture)**
 - The GTM container ID lives in `site.config.json` → `analytics.gtmContainerId`.
 - `tools/build.py` stamps the Consent Mode v2 defaults **and then** the GTM
-  head snippet into every tracked public page, in that order.
+  head snippet into every tracked public page, in that order. The defaults
+  are **regional** (28 Sep 2026): denied for visitors in the EEA, the UK and
+  Switzerland, granted everywhere else — Pellikal's configuration, set in
+  `site.config.json` → `analytics.consent.regionalDefaults`; a saved
+  Accept/Reject is restored before GTM either way.
 - There is intentionally **no GTM `<noscript>` iframe**: the consent mechanism
   needs JavaScript, and the privacy-safe design does not load the container
   for visitors who could never be asked. See `docs/CONSENT-MODE.md`.

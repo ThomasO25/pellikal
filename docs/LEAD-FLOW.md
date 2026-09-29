@@ -222,7 +222,8 @@ fetching the page, so it would never read the `noindex`. The two together are a
 common and self-defeating mistake. `noindex` + out of the sitemap is correct.
 
 Converting does **not** override a visitor's tracking choice. Someone who chose
-Necessary Only still arrives with all four categories denied.
+Reject Non-Essential still arrives with all four categories denied — from any
+region, the regional defaults (28 Sep 2026) notwithstanding.
 
 No submitted details appear on the page or in its URL.
 

@@ -3,7 +3,8 @@
 Google Consent Mode v2 on pellikal.com — what it does, how to verify it,
 and how to reset it for testing.
 
-**Added:** 14 September 2026 · **v2 (granular categories) same day**
+**Added:** 14 September 2026 · **v2 (granular categories) same day** ·
+**Regional defaults 28 September 2026** (see "What the defaults are")
 
 ---
 
@@ -31,29 +32,80 @@ hand, and a rebuild always restores both.
 
 ---
 
-## What the defaults are
+## What the defaults are — REGIONAL since 28 Sep 2026
 
-| Category | Default | Why |
+This is **Pellikal's configured behaviour**. It is not a statement that any
+law does or does not require consent anywhere; that question was not part of
+the change and is not answered by it.
+
+| Category | Visitors Google places in the listed regions | Everyone else |
 |---|---|---|
-| `ad_storage` | **denied** | optional |
-| `analytics_storage` | **denied** | optional |
-| `ad_user_data` | **denied** | optional |
-| `ad_personalization` | **denied** | optional |
-| `functionality_storage` | granted | the site has to work |
-| `security_storage` | granted | anti-fraud / security |
+| `ad_storage` | **denied** | **granted** |
+| `analytics_storage` | **denied** | **granted** |
+| `ad_user_data` | **denied** | **granted** |
+| `ad_personalization` | **denied** | **granted** |
+| `functionality_storage` | granted | granted |
+| `security_storage` | granted | granted |
 
-Plus `ads_data_redaction: true` while denied, which tells Google Ads to
-redact ad-click identifiers in its cookieless pings. It is switched off
-automatically the moment a visitor accepts.
+**The listed regions** (`site.config.json` → `analytics.consent.regionalDefaults.deniedRegions`,
+32 ISO 3166-2 codes): the 27 EU states + Iceland, Liechtenstein and Norway
+(= the EEA), plus the United Kingdom and Switzerland —
 
-**`url_passthrough` is deliberately OFF.** It would thread the `gclid` through
-internal links when consent is denied. It is privacy-*decreasing*, so it is not
-enabled quietly. Turn it on only as a deliberate, recorded decision.
+```
+AT BE BG HR CY CZ DK EE FI FR DE GR HU IS IE IT LV LI LT LU
+MT NL NO PL PT RO SK SI ES SE GB CH
+```
 
-**There is no `wait_for_update`.** Google recommends it when a stored choice is
-restored asynchronously. Here it is restored synchronously in the same head
-block, so there is nothing to wait for — adding it would delay every tag by
-half a second for no benefit.
+How it is expressed — two `default` commands, in this order, both before
+`gtm.js`:
+
+```js
+gtag('consent','default',{ ad_storage:'denied', analytics_storage:'denied',
+  ad_user_data:'denied', ad_personalization:'denied',
+  functionality_storage:'granted', security_storage:'granted',
+  region:['AT','BE', … ,'GB','CH'] });          // 1. the listed regions
+gtag('consent','default',{ ad_storage:'granted', analytics_storage:'granted',
+  ad_user_data:'granted', ad_personalization:'granted',
+  functionality_storage:'granted', security_storage:'granted' });   // 2. no region = everyone else
+```
+
+Google's rule: a default command *without* a `region` sets the default for
+every visitor not covered by a region-specific command, and where commands
+overlap the more specific region wins. Google resolves the region from the
+request — **the pages do no geolocation**: no IP lookup, no third-party
+service, no language/locale guessing. The property is spelled `region`
+(singular) and takes an array.
+
+`ads_data_redaction: true` is still set on every page. It only has an effect
+while `ad_storage` is *denied* — i.e. for the listed regions by default and
+for anyone anywhere who rejected — and is inert while granted. It is switched
+off the moment advertising is granted, exactly as before.
+
+**A stored choice beats either default.** The head block re-applies a saved
+Accept *or Reject* as an `update` before `gtm.js` — see "Where the choice is
+stored". That line is what guarantees a New York visitor who pressed Reject
+is never measured as granted, not even for the first hit of a page.
+
+Fail-safe: if `regionalDefaults` is removed from the config, the build goes
+back to a single denied-everywhere default; if `js/consent.js` is missing
+from a page, the head defaults still stand and a stored choice is still
+honoured. The build refuses an empty region list while `elsewhere` is
+`granted`, so "granted for the whole world" cannot happen by accident.
+
+**`url_passthrough` is deliberately OFF — unchanged.** It would thread the
+`gclid` through internal links when consent is denied. It is
+privacy-*decreasing*, so it is not enabled quietly. With the regional
+defaults it matters even less: outside the listed regions `ad_storage` is
+granted unless the visitor rejects, so the Conversion Linker writes its
+cookie normally; inside them the denied behaviour is exactly what it was.
+`js/main.js` still forwards `gclid`/`gbraid`/`wbraid`/`gclsrc` through the
+`/thankyou/` redirect (measurement continuity, not a consent bypass).
+
+**There is no `wait_for_update` — still.** Google offers it for consent tools
+that restore the stored state *asynchronously*, so tags wait up to N ms for
+the update. Here the stored choice is restored synchronously in the same
+head block, before `gtm.js` is even requested, so there is nothing to wait
+for — adding it would delay every tag by half a second for no benefit.
 
 ---
 
@@ -61,7 +113,8 @@ half a second for no benefit.
 
 | | `ad_storage` | `analytics_storage` | `ad_user_data` | `ad_personalization` |
 |---|---|---|---|---|
-| Before any choice | denied | denied | denied | denied |
+| Before any choice — listed regions (EEA/UK/CH) | denied | denied | denied | denied |
+| Before any choice — everywhere else | granted | granted | granted | granted |
 | **Accept All** | granted | granted | granted | granted |
 | **Reject Non-Essential** | denied | denied | denied | denied |
 | Manage → **Analytics only** | denied | **granted** | denied | denied |
@@ -69,7 +122,11 @@ half a second for no benefit.
 
 Analytics maps to `analytics_storage` alone. Advertising maps to the three ad
 categories together. They are never tied to each other internally. Nothing is
-pre-selected; a reopened dialog shows the visitor's *current* saved choice.
+pre-selected: the dialog's switches start OFF even where the regional default
+is granted (pre-ticking them would be a dark pattern), and the intro says so
+until a choice is saved. A reopened dialog shows the visitor's *saved* choice.
+An explicit choice applies everywhere regardless of region — Reject means
+denied in New York as much as in Madrid.
 
 Every save sends an explicit `update`, even when everything stays denied, so
 the decision is visible in Tag Assistant rather than looking unanswered. The
@@ -96,8 +153,18 @@ Four fields: version, analytics, advertising, date. **No personal data, ever.** 
 prefix is how you re-ask everyone — bump `version` in `site.config.json` and
 every stored choice stops matching.
 
-A returning visitor's choice is re-applied **in the head, before GTM**, so
-someone who accepted is not measured as denied on the first hit of each page.
+A returning visitor's choice is re-applied **in the head, before GTM** —
+**always, a stored Reject included** (changed 28 Sep 2026). Before the
+regional defaults a stored Reject needed no `update` because the default was
+already denied; with a granted default outside the listed regions that
+shortcut would have measured a visitor who rejected as granted until
+`js/consent.js` ran at the end of the body. So the head block now pushes the
+`update` for every valid stored value: Accept is not measured as denied, and
+Reject is never measured as granted, not even for the first hit of a page.
+
+`?consent=reset` and `PELLIKAL_CONSENT.reset()` clear the stored value and
+push an explicit `update` to denied for the rest of that page view; from the
+next page load the regional default applies again until a new choice is saved.
 
 ---
 
@@ -124,15 +191,21 @@ The footer/privacy controls stay hidden unless `js/consent.js` is running
 
 | Step | Expect |
 |---|---|
-| Before choosing | all four optional = **denied** |
+| Before choosing, **from the listed regions** (e.g. Spain, UK, Switzerland) | On-page Default: all four optional = **denied** |
+| Before choosing, **from anywhere else** (e.g. New York) | On-page Default: all four optional = **granted** |
 | Click **Accept All** | an *Update* row, all four = **granted** |
-| Reset, click **Reject Non-Essential** | an *Update* row, all four still **denied** |
+| Reset, click **Reject Non-Essential** | an *Update* row, all four = **denied** — in New York too |
 | Reset, Manage → Analytics on → Save | `analytics_storage` granted, three ad categories denied |
-| Navigate to another page after accepting | default denied, then an immediate update to granted, **both before** the `Container Loaded` event |
+| Navigate to another page after accepting | defaults, then an immediate update to granted, **both before** `Container Loaded` |
+| Navigate to another page after **rejecting** | defaults, then an immediate update to **denied**, **both before** `Container Loaded` |
 
-That last row is the important one. If the update appears *after*
+The last two rows are the important ones. If the update appears *after*
 `Container Loaded`, the head block is not running first and something has been
-edited by hand.
+edited by hand. The regional rows can only be checked with a real or
+simulated location (Tag Assistant's Consent view plus browser location
+simulation / a VPN); the repository's automated suite proves the *commands
+emitted*, not Google's geographic resolution. Step-by-step plan:
+`CONVERSION-DEBUG.md` → "Manual regional verification".
 
 Also check the **Variables** tab on any tag: `Consent State` should match.
 
@@ -160,8 +233,10 @@ Other console helpers: `PELLIKAL_CONSENT.get()` returns
 **Banner appears on every page** — the cookie is not being written. Check you
 are on `http(s)://` and not `file://`, and that `Path=/` was not changed.
 
-**Tag Assistant shows granted before any choice** — the head block is missing
-from that page. Run `python3 tools/build.py`.
+**Tag Assistant shows granted before any choice** — from outside the listed
+regions that is now the configured default. From inside them (or with a
+saved Reject anywhere) it means the head block is missing from that page, or
+the update is landing after `Container Loaded`. Run `python3 tools/build.py`.
 
 **Console warns "Consent Mode defaults are missing from `<head>`"** — same
 cause. `js/consent.js` sets the defaults late as a safety net, but late is not
@@ -203,22 +278,29 @@ tag is added or paused.
 | File | Role |
 |---|---|
 | `tools/build.py` → `consent_head()` | generates the defaults; **the important one** |
-| `site.config.json` → `analytics.consent` | cookie name, version, duration, redaction |
+| `site.config.json` → `analytics.consent` | cookie name, version, duration, redaction, **`regionalDefaults` (region list, `elsewhere`, label)** |
 | `js/consent.js` | the banner, the update, storage, reopen/reset |
 | `css/styles.css` § 16 | banner styling |
 | `partials/footer.html` | the footer reopen button |
 | `privacy/index.html` | the policy wording and the inline reopen control |
 
-If `js/consent.js` is blocked, the defaults still stand and everything optional
-stays denied. The failure direction is always *less* tracking.
+If `js/consent.js` is blocked, the head defaults still stand (denied in the
+listed regions, granted elsewhere) and a stored choice is still honoured. If
+the head block is missing, `js/consent.js` falls back to denied everywhere.
+The failure direction is always *less* tracking.
 
 
 ---
 
 ## What deny-by-default does to Google Ads measurement (US traffic)
 
-Nothing here is legally required for Nassau/Suffolk/NYC visitors; deny-by-
-default is a privacy choice. It has a measurement cost worth knowing:
+> **SUPERSEDED 28 Sep 2026.** Option (b) below was taken: outside the listed
+> regions the default is now *granted* and the banner acts as an opt-out.
+> Everything in this section still describes the listed regions (EEA/UK/CH)
+> and any visitor anywhere who rejects. Kept for the record.
+
+Deny-by-default was a privacy choice, not something this project established
+as required or not required anywhere. It has a measurement cost worth knowing:
 
 - Every visitor who has not pressed **Accept All** (or switched Advertising
   on) is measured with `ad_storage: denied`. The Conversion Linker cannot

@@ -38,6 +38,9 @@ absolute, because nothing can.
 
 ## VERIFIED LOCALLY (real Chromium, Playwright, 107 automated checks)
 
+- *(28 Sep 2026: defaults are now regional — denied in the EEA/UK/CH, granted
+  elsewhere, saved choice restored before GTM either way; the suite grew
+  accordingly. See `CONSENT-MODE.md`. The line below is the 14 Sep record.)*
 - Consent v2 suite, **42/42**: defaults denied before GTM; Accept / Reject /
   Manage; Analytics-only and Advertising-only map to exactly the right Google
   categories; per-category restore lands before the GTM bootstrap on later
