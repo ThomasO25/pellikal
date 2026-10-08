@@ -62,8 +62,9 @@ def run():
         check("config region list is exactly EEA (27 EU + IS/LI/NO) + GB + CH, 32 codes", WANT_REGIONS, EEA + ["GB", "CH"])
         check("config: elsewhere = granted", cfg["analytics"]["consent"]["regionalDefaults"]["elsewhere"], "granted")
         tracked = [pg_["file"] for pg_ in cfg["pages"] if pg_.get("partials", True)] + ["404.html"]
-        GA4 = cfg["analytics"]["ga4MeasurementId"]; DIRECT = bool(cfg["analytics"].get("ga4DirectTag"))
-        check("config: ga4MeasurementId is G-J8SQ4CC7BT", GA4, "G-J8SQ4CC7BT")
+        GA4 = cfg["analytics"]["ga4MeasurementId"]; TAG = cfg["analytics"]["googleTagId"]; DIRECT = bool(cfg["analytics"].get("ga4DirectTag"))
+        check("config ID roles: installed Google tag AW-859941989; GA4 destination G-J8SQ4CC7BT (kept); container GTM-MK2PHWB; Ads AW-859941989",
+              [TAG, GA4, cfg["analytics"]["gtmContainerId"], cfg["analytics"]["googleAdsId"]], ["AW-859941989", "G-J8SQ4CC7BT", "GTM-MK2PHWB", "AW-859941989"])
         print("        (ga4DirectTag = {} - the GA4 checks below assert {})".format(DIRECT, "exactly one direct tag, correctly placed" if DIRECT else "NO direct tag (rollback mode)"))
         untracked = [pg_["file"] for pg_ in cfg["pages"] if not pg_.get("partials", True)]
         CMD = re.compile(r"gtag\('consent','default',\{(.*?)\}\);", re.S)
@@ -97,18 +98,18 @@ def run():
                   [i_first < i_gen_end < blk.find("ads_data_redaction") < blk.find("gtag('consent','update'"), "gtm.start" not in blk], [True, True])
             check("{}: the stored-choice restore is unconditional (a saved Reject is re-applied too)".format(f),
                   "if(a||ad){gtag('consent','update'" not in blk and "gtag('consent','update',{" in blk, True)
-            # ---- GA4 base tag as the page's own Google tag (7 Oct 2026) ----
-            loader = 'src="https://www.googletagmanager.com/gtag/js?id=' + GA4 + '"'
-            cfgcmd = "gtag('config','" + GA4 + "')"
+            # ---- the Google tag installed by the page: AW-859941989, GA4 destination G-J8SQ4CC7BT (7 Oct 2026) ----
+            loader = 'src="https://www.googletagmanager.com/gtag/js?id=' + TAG + '"'
+            cfgcmd = "gtag('config','" + TAG + "')"
             if DIRECT:
                 i_end_consent, i_loader, i_cfg, i_gtm = head.find("End Google Consent Mode v2 defaults"), head.find(loader), head.find(cfgcmd), gtm_at
-                check("{}: direct GA4 tag sits AFTER the consent block (defaults + restore) and BEFORE the GTM snippet".format(f),
+                check("{}: direct Google tag sits AFTER the consent block (defaults + restore) and BEFORE the GTM snippet".format(f),
                       0 < i_end_consent < i_loader < i_cfg < i_gtm, True)
-                check("{}: exactly ONE gtag.js loader, ONE gtag('config') for G-J8SQ4CC7BT, ONE GTM-MK2PHWB; no gtag('event'); no AW- in code".format(f),
-                      [html.count("gtag/js?id="), html.count(loader), html.count("gtag('config'"), html.count(cfgcmd), html.count("GTM-MK2PHWB"), html.count("gtag('event'"),
-                       len(re.findall(r"AW-\d", re.sub(r"<p[^>]*>.*?</p>|<li[^>]*>.*?</li>", "", html, flags=re.S)))],
-                      [1, 1, 1, 1, 1, 0, 0])
-                check("{}: GA4 config is guarded on the consent block having run, and reuses the page's gtag() (no second dataLayer/gtag definition)".format(f),
+                check("{}: exactly ONE gtag.js loader and ONE gtag('config') - both AW-859941989; ONE GTM-MK2PHWB; NO G-J8SQ4CC7BT loader/config; no gtag('event'); no conversion label".format(f),
+                      [html.count("gtag/js?id="), html.count(loader), html.count("gtag('config'"), html.count(cfgcmd), html.count("GTM-MK2PHWB"),
+                       html.count("gtag/js?id=G-"), html.count("gtag('config','G-"), html.count("gtag('event'"), len(re.findall(r"AW-\d+/", html)), html.count("'conversion'")],
+                      [1, 1, 1, 1, 1, 0, 0, 0, 0, 0])
+                check("{}: Google tag config is guarded on the consent block having run, and reuses the page's gtag() (no second dataLayer/gtag definition)".format(f),
                       ["if(window.PELLIKAL_CONSENT_SETTINGS&&typeof window.gtag==='function'){" in head[i_loader:i_gtm],
                        head[i_loader:i_gtm].count("function gtag"), head[i_loader:i_gtm].count("window.dataLayer = window.dataLayer")], [True, 0, 0])
             else:
@@ -127,8 +128,8 @@ def run():
         check("runtime dataLayer: two defaults, the regional one first (has region[]), the general one second (no region)",
               [len(d), isinstance(d[0].get("region"), list) if d else None, "region" in d[1] if len(d) > 1 else None], [2, True, False])
         check("no consent update pushed before the visitor chooses (only the defaults)", pg.evaluate(ORDER).count("consent-update"), 0)
-        check("runtime order: default, default, [js, config(G-J8SQ4CC7BT)], GTM - the GA4 config is queued after the consent defaults and before gtm.start",
-              pg.evaluate(ORDER), ["consent-default", "consent-default"] + (["js", "config-G-J8SQ4CC7BT"] if DIRECT else []) + ["GTM"])
+        check("runtime order: default, default, [js, config(AW-859941989)], GTM - the Google tag config is queued after the consent defaults and before gtm.start",
+              pg.evaluate(ORDER), ["consent-default", "consent-default"] + (["js", "config-AW-859941989"] if DIRECT else []) + ["GTM"])
         check("banner copy says plainly that outside the listed regions tracking is on until you choose",
               pg.evaluate("() => document.querySelector('.consent__text').textContent"), 
               "We use optional analytics and advertising technologies to understand site usage and measure our advertising. Outside the EEA, the UK and Switzerland they are on by default until you choose otherwise. You can accept optional tracking, reject it, or choose by category.")
@@ -150,7 +151,7 @@ def run():
         check("no banner on page 2", banner(pg), False); check("granted restored on page 2", st(pg), GRANTED)
         o = pg.evaluate(ORDER); check("restored update lands BEFORE GTM bootstrap", o.index("consent-update") < o.index("GTM"), True)
         if DIRECT:
-            check("...and BEFORE the GA4 config, so the direct tag replays the saved choice first", o.index("consent-update") < o.index("config-G-J8SQ4CC7BT"), True)
+            check("...and BEFORE the Google tag config, so the direct tag replays the saved choice first", o.index("consent-update") < o.index("config-AW-859941989"), True)
         ctx.close()
         ctx, pg = fresh(); pg.goto(BASE+"/", wait_until="domcontentloaded"); pg.wait_for_timeout(300)
         pg.click('[data-consent-choice="reject"]'); pg.wait_for_timeout(200)
@@ -160,7 +161,7 @@ def run():
         check("no banner on page 2 after reject", banner(pg), False); check("still denied - for a US visitor whose default would be granted", st(pg, "US"), DENIED)
         o = pg.evaluate(ORDER); check("restored REJECT update lands BEFORE GTM bootstrap (no granted window)", o.index("consent-update") < o.index("GTM"), True)
         if DIRECT:
-            check("...and BEFORE the GA4 config: saved Reject is queued ahead of gtag('config')", o.index("consent-update") < o.index("config-G-J8SQ4CC7BT"), True)
+            check("...and BEFORE the Google tag config: saved Reject is queued ahead of gtag('config')", o.index("consent-update") < o.index("config-AW-859941989"), True)
         check("...and that pre-GTM update is all four denied", pg.evaluate(UPDATES_BEFORE_GTM), [DENIED])
         ctx.close()
 
@@ -174,11 +175,11 @@ def run():
                 pg.goto(BASE+path, wait_until="domcontentloaded"); pg.wait_for_timeout(150)
                 o = pg.evaluate(ORDER); ups = pg.evaluate(UPDATES_BEFORE_GTM)
                 ok = ("consent-update" in o and "GTM" in o and o.index("consent-update") < o.index("GTM")
-                      and (not DIRECT or ("config-G-J8SQ4CC7BT" in o and o.index("consent-update") < o.index("config-G-J8SQ4CC7BT") < o.index("GTM")
-                                          and o.count("config-G-J8SQ4CC7BT") == 1))
+                      and (not DIRECT or ("config-AW-859941989" in o and o.index("consent-update") < o.index("config-AW-859941989") < o.index("GTM")
+                                          and o.count("config-AW-859941989") == 1 and "config-G-J8SQ4CC7BT" not in o))
                       and ups == [want] and st(pg, "US") == want and st(pg, "ES") == want and not banner(pg))
                 if not ok: bad.append((path, o, ups, st(pg, "US"), st(pg, "ES"), banner(pg)))
-            check("{}: restored as an update BEFORE the GA4 config and BEFORE gtm.start on all {} tracked pages (one config each); resolves the same for US and ES; no banner".format(label, len(pages)), bad, [])
+            check("{}: restored as an update BEFORE the Google tag config and BEFORE gtm.start on all {} tracked pages (one config each, AW-859941989); resolves the same for US and ES; no banner".format(label, len(pages)), bad, [])
             ctx.close()
 
         print("\n=== 3. MANAGE PREFERENCES DIALOG (a11y) ===")
@@ -265,9 +266,9 @@ def run():
         rec = pg.evaluate("() => JSON.parse(sessionStorage.getItem('__ev')||'[]')")
         evs = [x.get("event") for x in rec if isinstance(x, dict) and x.get("event")]
         check("Formspree 2xx -> exactly ONE generate_lead, contact_form_submit before it, then /thankyou/", [evs.count("generate_lead"), "contact_form_submit" in evs, pg.url.endswith("/thankyou/")], [1, True, True])
-        check("/thankyou/ after converting with a saved Reject: still all four denied (US resolution), update before GTM, one GA4 page-view config, no Ads conversion / gtag('event') on the page",
+        check("/thankyou/ after converting with a saved Reject: still all four denied (US resolution), update before GTM, one page-view config, no conversion label / gtag('event') on the page",
               [st(pg, "US"), pg.evaluate(ORDER).index("consent-update") < pg.evaluate(ORDER).index("GTM"),
-               pg.evaluate("() => (document.documentElement.innerHTML.match(/AW-\\d|gtag\\(\\s*['\"]event['\"]/g)||[])"),
+               pg.evaluate("() => (document.documentElement.innerHTML.match(/AW-\\d+\\/|gtag\\(\\s*['\"]event['\"]|['\"]conversion['\"]/g)||[])"),
                pg.evaluate("() => (document.documentElement.innerHTML.match(/gtag\\(\\s*['\"]config['\"]/g)||[]).length")], [DENIED, True, [], 1 if DIRECT else 0])
         check("no PII in any dataLayer push during the conversion", [x for x in ["jane", "testperson", "5165550147", "11570"] if x in repr(rec).lower()], [])
         ctx.close()

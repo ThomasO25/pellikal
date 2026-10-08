@@ -75,8 +75,9 @@ Recorded from a real run (Chromium, Formspree stubbed with a 200) on
                              functionality_storage:granted, security_storage:granted})
                                                         ← no region = everyone else
  1. gtag(set, ads_data_redaction, true)
- 1b. gtag(js, <Date>)                                   ← the page's own GA4 tag (7 Oct 2026)
- 1c. gtag(config, G-J8SQ4CC7BT)                         ← queued AFTER the defaults; sends the page_view
+ 1b. gtag(js, <Date>)                                   ← the page's own Google tag (7 Oct 2026)
+ 1c. gtag(config, AW-859941989)                         ← queued AFTER the defaults; the GA4 page_view goes
+                                                           to destination G-J8SQ4CC7BT through this tag
  2. GTM bootstrap {gtm.start, event:'gtm.js'}          ← container loads AFTER the defaults
  3. gtag(consent, update, {all four: denied})          ← visitor chose Reject
  4. gtag(set, ads_data_redaction, true)
@@ -94,13 +95,14 @@ Recorded from a real run (Chromium, Formspree stubbed with a 200) on
 13. gtag(set, ads_data_redaction, true)
 13b. gtag(consent, update, {all four: denied})         ← the SAVED Reject, restored by the head
 13c. gtag(set, ads_data_redaction, true)                  block BEFORE the container bootstrap
-13d. gtag(js, <Date>) / gtag(config, G-J8SQ4CC7BT)     ← GA4 page_view for /thankyou/ — a page view, NOT a conversion
+13d. gtag(js, <Date>) / gtag(config, AW-859941989)     ← page_view for /thankyou/ (to G-J8SQ4CC7BT) — a page view, NOT a conversion
 14. GTM bootstrap {gtm.start, event:'gtm.js'}          ← page view only; no conversion here
 ```
 
-With the GA4 base tag now on the page (7 Oct 2026), every page load sends
-**one** `page_view` through the direct tag — the GTM Google Tag `GA4` must be
-paused or there are two (`GA4-DIRECT-TAG.md` §4, §7).
+With the Google tag now installed by the page (7 Oct 2026; installed ID
+`AW-859941989`, GA4 destination `G-J8SQ4CC7BT`), every page load sends **one**
+`page_view` through it — the GTM Google Tag `GA4` is paused and stays paused
+or there are two (`GA4-DIRECT-TAG.md` §4, §7).
 
 Line 13b is the one the 28 Sep change added: a stored Reject is now
 re-applied on every page load *before* GTM, because the default for a

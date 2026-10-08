@@ -8,7 +8,7 @@ from playwright.sync_api import sync_playwright
 
 import json, os
 BASE = "http://127.0.0.1:8901"
-# The GA4 base tag is the page's own gtag.js while site.config.json -> analytics.ga4DirectTag is true (7 Oct 2026).
+# The Google tag (AW-859941989; GA4 destination G-J8SQ4CC7BT) is installed by the page while site.config.json -> analytics.ga4DirectTag is true (7 Oct 2026).
 GA4_DIRECT = bool(json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "site.config.json")))["analytics"].get("ga4DirectTag"))
 EVENTS_JS = "() => (window.dataLayer||[]).filter(x => x && x.event).map(x => x.event)"
 PARAMS_JS = """() => {
@@ -252,15 +252,17 @@ def run():
         check("GTM bootstrap present exactly once",
               pg.evaluate("""() => (window.dataLayer||[]).filter(x => x && x['gtm.start']).length"""), 1)
         # gtag( appears: the Consent Mode v2 API, plus - since 7 Oct 2026 - the
-        # page's own GA4 base tag (ONE loader, ONE config = one page_view).
-        # What must not appear is an Ads conversion, a gtag('event'), or a
-        # SECOND GA4 loader/config, any of which would double-count.
-        check("GA4 base tag: exactly one gtag.js loader and one gtag('config') for G-J8SQ4CC7BT; no Ads conversion, no gtag('event'), no second loader",
+        # page's own Google tag: ONE loader + ONE config for the INSTALLED tag ID
+        # AW-859941989 (unified tag; the GA4 stream G-J8SQ4CC7BT is a destination
+        # of it). What must not appear is a conversion label, a gtag('event'),
+        # or a second loader/config (incl. any G-J8SQ4CC7BT loader), any of
+        # which would double-count or 404.
+        check("Google tag: exactly one gtag.js loader and one gtag('config'), both AW-859941989; no G-J8SQ4CC7BT loader/config; no conversion label; no gtag('event')",
               pg.evaluate("""() => { const h = document.documentElement.innerHTML; const n = re => (h.match(re) || []).length;
-                    return [n(/gtag\\/js\\?id=G-J8SQ4CC7BT/g), n(/gtag\\(\\s*['\"]config['\"]\\s*,\\s*['\"]G-J8SQ4CC7BT['\"]/g), n(/gtag\\/js/g), n(/gtag\\(\\s*['\"]config['\"]/g),
-                            n(/AW-\\d/g), n(/gtag\\(\\s*['\"]event['\"]/g)]; }"""), [1, 1, 1, 1, 0, 0] if GA4_DIRECT else [0, 0, 0, 0, 0, 0])
+                    return [n(/gtag\\/js\\?id=AW-859941989/g), n(/gtag\\(\\s*['\"]config['\"]\\s*,\\s*['\"]AW-859941989['\"]/g), n(/gtag\\/js/g), n(/gtag\\(\\s*['\"]config['\"]/g),
+                            n(/gtag\\/js\\?id=G-/g), n(/AW-\\d+\\//g), n(/gtag\\(\\s*['\"]event['\"]/g)]; }"""), [1, 1, 1, 1, 0, 0, 0] if GA4_DIRECT else [0, 0, 0, 0, 0, 0, 0])
         if GA4_DIRECT:
-            check("GA4 config is queued AFTER the consent defaults and BEFORE the GTM bootstrap",
+            check("Google tag config (AW-859941989) is queued AFTER the consent defaults and BEFORE the GTM bootstrap",
                   pg.evaluate("""() => { const o = []; (window.dataLayer||[]).forEach(i => { if (!i) return; if (i[0]==='consent') o.push('consent'); else if (i[0]==='config') o.push('config'); else if (i['gtm.start']) o.push('GTM'); });
                         return [o.lastIndexOf('consent') < o.indexOf('config'), o.indexOf('config') < o.indexOf('GTM'), o.filter(x => x === 'config').length]; }"""), [True, True, 1])
         check("consent state honoured (granted here)",

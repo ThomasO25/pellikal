@@ -169,11 +169,14 @@ Open that page's `index.html` and change the text inside `<main>`. No build.
   needs JavaScript, and the privacy-safe design does not load the container
   for visitors who could never be asked. See `docs/CONSENT-MODE.md`.
 - `js/tracking.js` only supplies the website's dataLayer events.
-- The GA4 **base** tag (`G-J8SQ4CC7BT`) is the page's own Google tag since
-  7 Oct 2026, generated into `<head>` by `tools/build.py` right after the
-  consent block (`analytics.ga4DirectTag`); the GTM Google Tag for that ID
-  must stay paused. GA4 custom events and Google Ads stay inside the live GTM
-  container — never hard-coded here. See `docs/GA4-DIRECT-TAG.md`,
+- The Google tag is installed by the page since 7 Oct 2026: loader/config ID
+  **`AW-859941989`** (`analytics.googleTagId` — the account's unified tag), with
+  the GA4 stream **`G-J8SQ4CC7BT`** (`analytics.ga4MeasurementId`) as its
+  destination, generated into `<head>` by `tools/build.py` right after the
+  consent block (`analytics.ga4DirectTag`). `G-J8SQ4CC7BT` is never a loader
+  ID. The GTM Google Tag `GA4` stays paused. GA4 custom events and the Google
+  Ads conversion stay inside the live GTM container — no conversion label is
+  ever hard-coded here. See `docs/GA4-DIRECT-TAG.md`,
   `docs/MARKETING-TRACKING.md` and `docs/LEAD-FLOW.md`.
 
 ---
@@ -224,7 +227,7 @@ written into the HTML; Supabase only replaces it when it responds.
 | `docs/WINDOW-INSERTS-ASSETS.md` | Insert photography: what's used, what's still needed |
 | `docs/FINAL-CLAIMS-REVIEW.md` | Every marketing claim, categorised |
 | `docs/CONSENT-MODE.md` | Consent Mode v2: defaults, verifying, resetting |
-| `docs/GA4-DIRECT-TAG.md` | GA4 base tag as the page's own Google tag: GTM tag to pause, live checks, rollback |
+| `docs/GA4-DIRECT-TAG.md` | The page-installed Google tag (`AW-859941989`, GA4 destination `G-J8SQ4CC7BT`): ID roles, GTM state, live checks, rollback |
 | `docs/LEAD-FLOW.md` | Ad → landing form → confirmed Formspree success → `generate_lead` / Google Ads conversion → `/thankyou/` |
 | `docs/FINAL-SECURITY-AUDIT.md` | What was verified, where, and what still needs a live test |
 | `docs/OWNER-LEGAL-REVIEW.md` | Facts and decisions only the owner / a lawyer can supply |

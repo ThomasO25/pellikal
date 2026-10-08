@@ -28,11 +28,12 @@ window.PELLIKAL_CONFIG = {
      by tools/build.py from "analytics" in site.config.json.
      To change the container ID, edit site.config.json and re-run:
          python3 tools/build.py
-     GA4 (G-J8SQ4CC7BT): the BASE tag is the page's own Google tag,
-     generated into <head> by tools/build.py (analytics.ga4DirectTag,
-     7 Oct 2026); GA4 custom events + Google Ads stay inside GTM.
-     Never add a second gtag.js snippet anywhere or page views
-     double-count. */
+     The Google tag is installed by the page (7 Oct 2026): loader +
+     config for analytics.googleTagId (AW-859941989, the unified tag),
+     generated into <head> by tools/build.py; the GA4 stream
+     G-J8SQ4CC7BT is that tag's destination, never a loader ID. GA4
+     custom events + the Ads conversion stay inside GTM. Never add a
+     second gtag.js snippet anywhere or page views double-count. */
 
   /* ---- Google Consent Mode v2 ----
      There is deliberately no consent switch in this file.
