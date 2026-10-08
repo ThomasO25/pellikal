@@ -249,6 +249,18 @@ custom GTM tag with its own consent check. See `CONSENT-MODE.md`.
 
 ---
 
+## Added 7 Oct 2026 — Google reviews on the site (optional diagnostic event)
+
+The homepage, Residential and Commercial pages now show real Google Business
+Profile reviews, synced to Supabase every 12 h (`GOOGLE-REVIEWS.md`). One
+**optional** event: `google_reviews_click` (`cta_location`, `page_type`) when
+a "Read all reviews on Google" link is used (`cta_location`:
+`home_reviews` · `residential_reviews` · `commercial_reviews`, and
+`residential_hero` / `commercial_hero` when the hero count links out to
+Google during the bootstrap period). Add the name to the
+`GA4 - Pellikal Custom Events` trigger if you want it in GA4. It is a
+diagnostic — **never** a conversion or key event. No other tracking changed.
+
 ## Added 25 Sep 2026 — one four-field form everywhere
 
 Every form, `/contact/` included, now asks only Full name · Phone · Email ·

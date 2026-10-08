@@ -63,7 +63,20 @@ Standalone photos. Same publish/sort/alt pattern.
 
 ### `testimonials`
 `quote`, `author`, optional `location` and `source`. **Real customers only** —
-a policy the CMS states but a human must honour.
+a policy the CMS states but a human must honour. *Since 7 Oct 2026 the
+homepage shows Google reviews instead (below); this table and its admin
+editor remain, untouched, but are not rendered anywhere.*
+
+### `google_review_summary` · `google_reviews` (7 Oct 2026)
+A **cache of Google Business Profile data**, written only by the
+`sync-google-reviews` Edge Function (service role) every 12 h; the site reads
+the display columns with the anon key. `google_review_summary` is one row:
+Google's own `average_rating` and `total_review_count`, the profile's
+`place_id`/`maps_uri`, sync status. `google_reviews` is one row per review
+keyed by Google's `reviewId` (idempotent upserts), with `deleted_at` for
+reviews Google stops returning. Not editable in `/admin/` — it is Google's
+and the reviewers' content. Migration `0004`. Full detail:
+`GOOGLE-REVIEWS.md`.
 
 ### `admin_audit_log`
 Append-only: `actor`, `action`, `entity`, `record_id`, `created_at`. Written by

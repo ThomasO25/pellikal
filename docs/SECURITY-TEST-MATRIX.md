@@ -170,6 +170,11 @@ filtering happens server-side (`is_published = true`, `featured = true`,
 |---|---|
 | Seeded database, load homepage | Exactly **6** projects, in `sort_order` order |
 | Add a 7th featured project with a `sort_order` **after** the existing six | Homepage still shows **6** — the newcomer is queued, not displayed |
+| A20 | **Google reviews (7 Oct 2026):** no Google credential / refresh token / Google API host in any client file; every JWT in client code is `role: anon`; `js/reviews.js` uses `textContent` only; it requests display columns only (never `last_error`) | ✅ pass (`tools/qa/verify_reviews.py` §1, every run) |
+| A21 | Pages never call Google; review elements stay hidden — fallback NOT used — when Supabase is unreachable or answers with an error (400, 401, 403, a 404 other than PostgREST's missing-table error, 406, 500, a non-JSON body); hero, form and lead flow unaffected in every case (a quote is submitted successfully in each); cached data survives a later outage in the session | ✅ pass (`verify_reviews.py` §3–4, v30) |
+| A22 | Sync: repeated runs do not duplicate (fake PostgREST returns 409 on a duplicate key without upsert semantics); failures never upsert or soft-delete; error text contains no secret | ✅ pass (`deno test tools/qa/sync_google_reviews_test.ts`, 8/8) |
+| A23 | **On a real PostgreSQL 16** with Supabase's default privileges simulated: migration 0004 idempotent; anon reads display columns only, `last_error` denied, insert/update/delete denied, `mark_missing()` denied; service_role upserts without duplicates; `schedule_google_reviews_sync.sql` raises on an unreplaced `<SYNC_SECRET>` and creates nothing, runs clean once replaced, job text never contains the secret | ✅ pass (`tools/qa/verify_sql.py`, 25/25) |
+| A24 | Bootstrap fallback (verified snapshot 5.0 / 12 + three verified cards, verbatim): used only when Supabase *positively* reports no successful sync (2xx with no synced row, or PostgREST's own missing-table error `PGRST205` / `42P01` naming `google_review_summary`); live data replaces it completely, never mixed; no "updated" note; the hero count and "Read all reviews" open the configured public Google listing (`rel="noopener noreferrer"`), never a dead `#`; the site never writes to Supabase (every request is a GET) | ✅ pass (`verify_reviews.py` §3–4, v30) |
 | Move that 7th project's `sort_order` **ahead** of an existing one | It enters the top six; the one it displaced drops off |
 | Untick "Show on homepage" on one of the six | The next featured project by `sort_order` fills the freed slot |
 | Untick "Show on homepage" on **all** projects | Homepage falls back to the static six-card HTML — never to unfeatured rows |
@@ -188,6 +193,25 @@ filtering happens server-side (`is_published = true`, `featured = true`,
 
 ---
 
+### B6 · Google reviews cache (7 Oct 2026)
+
+SQL Editor as the stated role, and a REST client / curl for the function.
+
+| Test | Expected |
+|---|---|
+| `set role anon; select average_rating, total_review_count from public.google_review_summary;` | ✅ one row |
+| `set role anon; select last_error, last_sync_status from public.google_review_summary;` | ❌ permission denied (column not granted) |
+| `set role anon; select reviewer_name, star_rating, comment from public.google_reviews;` | ✅ non-deleted rows only |
+| `set role anon; insert into public.google_reviews (google_review_id, star_rating, create_time, update_time) values ('x', 5, now(), now());` | ❌ denied (RLS, no policy) |
+| `set role anon; update public.google_reviews set star_rating = 5;` / `delete from public.google_reviews;` | ❌ denied |
+| `set role anon; select public.google_reviews_mark_missing(array['x']);` | ❌ permission denied (service_role only) |
+| `curl -X POST …/functions/v1/sync-google-reviews` with no `x-sync-secret` / a wrong one | ❌ HTTP 403 |
+| the same with the right secret | ✅ HTTP 200, `ok: true`, `last_sync_status = ok` |
+| `GET …/sync-google-reviews?discover=1` without the secret | ❌ HTTP 403 |
+| `reset role;` | |
+
+---
+
 ## C. Record the run
 
 | Section | Run by | Date | Result |
@@ -199,6 +223,7 @@ filtering happens server-side (`is_published = true`, `featured = true`,
 | B3 Admin | | | |
 | B4 Input/file | | | |
 | B5 Resilience | | | |
+| B6 Google reviews cache | | | |
 
 Do not treat the CMS as production-ready until **B1b and B2 both pass in
 full**. B1b proves MFA is enforced by the database; B2 proves that simply

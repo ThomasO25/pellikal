@@ -262,6 +262,20 @@ Session lifetime within a tab is governed by the Supabase project's JWT expiry
 and refresh settings (dashboard → Authentication). Do not revert to
 `localStorage` without recording the decision here.
 
+## Google reviews cache (7 Oct 2026)
+
+Two more tables, same model: RLS on, `anon` may `SELECT` display columns
+only (column-level grants — `last_error` and sync status are not readable
+from the site), no write policy, so only the `service_role` key can write —
+and that key exists only inside the `sync-google-reviews` Edge Function,
+alongside the Google OAuth client secret and refresh token. The function is
+protected by a shared secret header compared in constant time and deployed
+with JWT verification off (the anon JWT is public and would be no
+protection). The browser never calls Google. `tools/qa/verify_reviews.py` §1
+asserts on every run that no credential and no Google API host appears in
+any client file and that every JWT in client code carries `role: anon`.
+Full detail: `GOOGLE-REVIEWS.md`.
+
 ## Launch gates — verify in the live dashboard, every time
 
 - [ ] Authentication → Sign In / Providers → **Allow new users to sign up: OFF**

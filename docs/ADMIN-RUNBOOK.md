@@ -82,6 +82,12 @@ Real customers only. Do not invent, reword the meaning of, or reuse someone
 else's review. Light typo fixes are fine. If a review was given in exchange for
 anything, flag it — it may need disclosure.
 
+> **Since 7 Oct 2026 the homepage shows your Google reviews instead** —
+> synced automatically from your Google Business Profile every 12 hours
+> (`docs/GOOGLE-REVIEWS.md`). Nothing you add here is displayed anywhere at
+> the moment; the editor is kept so nothing is lost. To get a review onto the
+> site, ask the customer to post it on Google.
+
 ---
 
 ## What you cannot change here, and where to change it instead

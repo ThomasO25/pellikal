@@ -63,6 +63,11 @@ supabase/
   migrations/0001_pellikal_cms.sql   ⭐ the ONE authoritative database schema
   migrations/0003_…hero_repositioning ⚠️ run on the live project after deploying
                                        the Sep-2026 homepage copy (see docs/SEO-SEARCH-RESULT.md)
+  migrations/0004_google_reviews.sql  Google-review cache tables (7 Oct 2026)
+  functions/sync-google-reviews/     Edge Function: Google Business Profile → Supabase,
+                                       every 12 h. Holds the Google secrets - never the site.
+  sql/schedule_google_reviews_sync.sql  the pg_cron schedule (run by hand; secret via Vault)
+  .env.example                        placeholder secrets → copy to supabase/.env (git-ignored)
 
 css/
   styles.css            All styling. Contents list at the top of the file.
@@ -72,6 +77,10 @@ js/
   main.js               Site behaviour: menu, form, gallery, animations
   tracking.js           Website dataLayer event layer (NOT the GTM loader — see below)
   consent.js            Cookie/tracking consent (Consent Mode v2, granular)
+  reviews.js            Google reviews from the Supabase cache (anon, read-only,
+                        deferred; verified temporary snapshot + cards before the
+                        first successful sync, live data replaces them after it)
+                        — docs/GOOGLE-REVIEWS.md
   vendor/               Supabase JS, pinned copy — see docs/FINAL-SECURITY-AUDIT.md
   admin.js              Powers /admin/ only
 
@@ -227,6 +236,7 @@ written into the HTML; Supabase only replaces it when it responds.
 | `docs/WINDOW-INSERTS-ASSETS.md` | Insert photography: what's used, what's still needed |
 | `docs/FINAL-CLAIMS-REVIEW.md` | Every marketing claim, categorised |
 | `docs/CONSENT-MODE.md` | Consent Mode v2: defaults, verifying, resetting |
+| `docs/GOOGLE-REVIEWS.md` | Google Business Profile reviews → Supabase → site: architecture, rules, the temporary bootstrap fallback, the brand-name discrepancy (§10), and the owner's step-by-step **GOOGLE BUSINESS PROFILE SETUP REQUIRED** |
 | `docs/GA4-DIRECT-TAG.md` | The page-installed Google tag (`AW-859941989`, GA4 destination `G-J8SQ4CC7BT`): ID roles, GTM state, live checks, rollback |
 | `docs/LEAD-FLOW.md` | Ad → landing form → confirmed Formspree success → `generate_lead` / Google Ads conversion → `/thankyou/` |
 | `docs/FINAL-SECURITY-AUDIT.md` | What was verified, where, and what still needs a live test |

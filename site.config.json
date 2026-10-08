@@ -7,7 +7,9 @@
     "phoneSchema": "+1-516-336-9586",
     "email": "info@pellikal.com",
     "domain": "https://www.pellikal.com/",
-    "serviceArea": "Long Island · Nassau · Suffolk · Queens · Brooklyn · Manhattan · NYC"
+    "serviceArea": "Long Island · Nassau · Suffolk · Queens · Brooklyn · Manhattan · NYC",
+    "googleReviewsUrl": "https://www.google.com/maps/search/?api=1&query=Pellikal+Window+Solutions&query_place_id=ChIJtUq8B35lwokR1llyrUB1VWc",
+    "_googleReviewsUrlNote": "SET 7 Oct 2026 (v30): the PUBLIC Google Maps listing of 'Pellikal Window Solutions' (maps/search?api=1 + query_place_id). It is the FIRST choice for every 'Read all reviews on Google' link and for the hero count, in fallback mode and live mode alike (then Google's synced mapsUri, then a placeId URL). PUBLIC URL ONLY - never the signed-in Business Profile management URL: nothing with authuser=, /customers/reviews or any other account-specific parameter; must start with https://. Any value starting with REPLACE_ is treated as unknown and NO link is shown - never invented. Change it here only, then run python3 tools/build.py: it is copied into every data-greviews-url attribute and every 'Read all reviews' href."
   },
   "_analyticsComment": "PRODUCTION Google IDs - FOUR ROLES, keep them straight: googleTagId AW-859941989 = the Google tag INSTALLED on the pages (unified tag); ga4MeasurementId G-J8SQ4CC7BT = the GA4 DESTINATION of that tag; gtmContainerId GTM-MK2PHWB = the container; googleAdsId AW-859941989 = the Ads account whose conversion fires inside GTM on generate_lead. tools/build.py stamps THREE generated pieces, in this order, into every tracked public page's <head>: (1) the Consent Mode v2 block (regional defaults + saved choice), (2) the Google tag (gtag.js loader + gtag('config', googleTagId)) - DIRECT since 7 Oct 2026, switched by ga4DirectTag, (3) the GTM container snippet. Google Ads conversions, the Conversion Linker, Microsoft Clarity and the GA4 custom-EVENT tag stay inside GTM. The GTM Google Tag 'GA4' (G-J8SQ4CC7BT) is PAUSED and stays paused - see docs/GA4-DIRECT-TAG.md.",
   "analytics": {
@@ -217,6 +219,36 @@
         "https://indowwindows.com/products/acoustic-window-inserts",
         "https://indowwindows.com/solutions/noise-performance"
       ]
+    }
+  },
+  "_reviewsComment": "Google reviews (docs/GOOGLE-REVIEWS.md). The site shows the LIVE rating/count/reviews synced into Supabase. 'fallback' is a ONE-TIME BOOTSTRAP for the hero trust line only, for the period before Google approves API access: the values were read from the verified public Google Business Profile ('Pellikal Window Solutions') on 7 Oct 2026. js/reviews.js uses them ONLY when Supabase answers that no successful sync exists yet (no last_synced_at, or the table not created). The moment google_review_summary holds a successful sync, live data wins and the fallback is never used again - it cannot overwrite anything (the site never writes). 'fallback.reviews' (added later the same day) holds three verified review cards for the same waiting period - see _reviewsNote. Everything rendered from the fallback is marked data-greviews-source=\"fallback\" (live data: \"live\"); the two are never mixed. REMOVE after the first successful sync: set rating and count to null and rebuild (build.py stamps the values into data-greviews-fallback-* on the hero proof elements).",
+  "reviews": {
+    "fallback": {
+      "rating": 5.0,
+      "count": 12,
+      "asOf": "2026-10-07",
+      "source": "Verified public Google Business Profile snapshot, 7 Oct 2026 - temporary bootstrap; remove after the first successful API sync",
+      "reviews": [
+        {
+          "reviewer_name": "Steven Matt",
+          "star_rating": 5,
+          "review_date": "2023-10-07",
+          "review_text": "Really great service and installation of the privacy film. I live in a first floor condo in Brooklyn and I needed a way to prevent people from seeing inside. This was the best combination of privacy, energy efficiency, and UV rejection. Thank you!"
+        },
+        {
+          "reviewer_name": "Maureen Paradine",
+          "star_rating": 5,
+          "review_date": "2023-08-30",
+          "review_text": "Bart is a true professional and a pleasure to work with. He is reliable, knowledgeable and very reasonable. His heat reflecting film is a game changer. It is a very effective solution for keeping the heat out, while allowing the natural light to filter in. I highly recommend Bart and his window film."
+        },
+        {
+          "reviewer_name": "Meryl Feldman",
+          "star_rating": 5,
+          "review_date": "2023-08-28",
+          "review_text": "Great service from start to finish. Great communication, knowledgeable about the product. Great follow-through and thorough. I had 20 year old film on my windows that should have been changed 12 years again. Bert came in assessed the windows and what I wanted the film to achieve. Came in, stripped the old stuff, replaced it with new stuff. Cleaned up and was gone in record time. You wouldn't know he was here except the sun no longer blinds me when in the room. Thank you for your excellence service."
+        }
+      ],
+      "_reviewsNote": "Three REAL reviews copied by hand from the Pellikal Window Solutions Google Business Profile on 7 Oct 2026, in the order chosen for usefulness. Text is verbatim - spelling, grammar and all - and must never be edited here (the QA suite compares what renders against these strings). Shown ONLY while Supabase reports that no successful sync exists; labelled 'Featured Google Reviews' (not 'most recent'); replaced entirely by the live reviews after the first successful sync, never mixed with them, never written to Supabase. Set to [] (and rating/count to null) after the first successful sync, then rebuild."
     }
   },
   "_syncOnlyComment": "Files with no header/footer, but which still contain the phone/email and must stay in sync.",

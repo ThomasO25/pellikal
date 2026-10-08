@@ -15,6 +15,17 @@ Follow them in order. Nothing works until step 3 is done.
 2. Open **`supabase/migrations/0001_pellikal_cms.sql`**, copy the whole file, paste, **Run**
 3. Expect *Success. No rows returned.* It is safe to run again.
 
+### 1c. Google reviews (7 Oct 2026, optional until set up)
+
+`supabase/migrations/0004_google_reviews.sql` adds the two cache tables for
+Google Business Profile reviews. Run it the same way (safe to re-run; touches
+nothing existing). The Edge Function, its secrets and the 12-hour schedule
+are a separate, owner-driven setup: **`docs/GOOGLE-REVIEWS.md` → GOOGLE
+BUSINESS PROFILE SETUP REQUIRED.** Until the first successful sync the site
+shows the verified temporary Google snapshot and review cards from
+`site.config.json → reviews.fallback` (`GOOGLE-REVIEWS.md` §5a); after it,
+live Supabase data replaces them completely.
+
 ### 1b. Run the seed — **do not skip this**
 
 **SQL Editor → New query** → paste **`supabase/migrations/0002_seed_current_content.sql`** → **Run**.

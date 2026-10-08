@@ -148,6 +148,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <h1>Commercial Window Film That Pays You Back</h1>
       <p class="page-hero__sub">Lower cooling costs, keep tenants comfortable, harden your glass and control glare across offices, storefronts and multifamily buildings — installed on your schedule, with tenants in place and no glass replacement required.</p>
       <div class="page-hero__actions"><a class="btn btn--cyan btn--lg" href="#quote" data-quote-cta="hero">Get a Free Quote</a><a class="btn btn--ghost btn--lg" href="tel:+15163369586">Call or Text 516-336-9586</a></div>
+      <!-- Google proof line (rating + count for the whole profile; no claim that reviewers were
+           commercial clients). Filled by js/reviews.js from the live Supabase summary or, until
+           the first successful sync, the verified bootstrap snapshot stamped by the build
+           (site.config.json -> reviews.fallback). Hidden until one of those exists. -->
+      <p class="gproof"><span class="gproof__google" data-greviews-section data-greviews-role="proof" data-greviews-url="https://www.google.com/maps/search/?api=1&amp;query=Pellikal+Window+Solutions&amp;query_place_id=ChIJtUq8B35lwokR1llyrUB1VWc" data-greviews-fallback-rating="5.0" data-greviews-fallback-count="12" data-greviews-fallback-asof="2026-10-07" hidden><span class="gstars" data-greviews="stars"></span><span><span data-greviews="rating"></span> on Google</span><a class="gproof__link" data-greviews="proof-link" data-cta-location="commercial_hero" href="#google-reviews"><span data-greviews="count"></span> Google reviews</a><span class="gproof__sep" aria-hidden="true">&middot;</span></span><span class="gproof__item">Free, no-pressure site quote</span><span class="gproof__sep" aria-hidden="true">&middot;</span><span class="gproof__item">LLumar&reg; SelectPro&trade; dealer network</span></p>
     </div>
   </section>
 
@@ -213,7 +218,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
   </section>
 
-  <section class="cta-band"><div class="container cta-band__inner"><div><p class="eyebrow eyebrow--light">Site quotes for commercial projects</p><h2>Let's scope your building</h2><p>Share your property type and square footage of glass and we'll put together a clear proposal.</p></div><div class="cta-band__actions"><a class="btn btn--cyan btn--lg" href="tel:+15163369586">Call or Text 516-336-9586</a><a class="btn btn--outline-light btn--lg" href="#quote" data-quote-cta="cta_band">Get a Free Quote</a></div></div></section>
+    <!-- ===== GOOGLE REVIEWS - compact (docs/GOOGLE-REVIEWS.md) =====
+       The rating/count are for the WHOLE profile and the cards are simply the newest
+       written Google reviews, whoever wrote them. Nothing here claims a reviewer was a
+       commercial client - the site has no trusted metadata that could say so, and it
+       does not guess from the wording. Ships HIDDEN: before the first successful
+       sync it may show the verified temporary snapshot and cards stamped below;
+       after it, live Supabase data replaces the fallback completely. ===== -->
+  <section class="section greviews greviews--compact" id="google-reviews" data-greviews-section data-greviews-max="3" data-greviews-url="https://www.google.com/maps/search/?api=1&amp;query=Pellikal+Window+Solutions&amp;query_place_id=ChIJtUq8B35lwokR1llyrUB1VWc" data-greviews-fallback-rating="5.0" data-greviews-fallback-count="12" data-greviews-fallback-asof="2026-10-07" hidden>
+    <div class="container">
+      <!-- Verified fallback review cards for the API-approval waiting period, stamped by
+           the build from site.config.json -> reviews.fallback.reviews (verbatim). Used only
+           while Supabase reports no successful sync; replaced entirely by live reviews after. -->
+      <script type="application/json" data-greviews-fallback-reviews>[{"reviewer_name":"Steven Matt","star_rating":5,"review_date":"2023-10-07","review_text":"Really great service and installation of the privacy film. I live in a first floor condo in Brooklyn and I needed a way to prevent people from seeing inside. This was the best combination of privacy, energy efficiency, and UV rejection. Thank you!"},{"reviewer_name":"Maureen Paradine","star_rating":5,"review_date":"2023-08-30","review_text":"Bart is a true professional and a pleasure to work with. He is reliable, knowledgeable and very reasonable. His heat reflecting film is a game changer. It is a very effective solution for keeping the heat out, while allowing the natural light to filter in. I highly recommend Bart and his window film."},{"reviewer_name":"Meryl Feldman","star_rating":5,"review_date":"2023-08-28","review_text":"Great service from start to finish. Great communication, knowledgeable about the product. Great follow-through and thorough. I had 20 year old film on my windows that should have been changed 12 years again. Bert came in assessed the windows and what I wanted the film to achieve. Came in, stripped the old stuff, replaced it with new stuff. Cleaned up and was gone in record time. You wouldn't know he was here except the sun no longer blinds me when in the room. Thank you for your excellence service."}]</script>
+      <div class="greviews__head">
+        <div class="section-head"><p class="eyebrow">Google reviews</p><h2>What Pellikal customers say</h2></div>
+        <div class="greviews__summary"><span class="gstars gstars--lg" data-greviews="stars"></span><p class="greviews__rating"><span data-greviews="rating"></span> on Google</p><p class="greviews__count"><span data-greviews="count"></span> Google reviews</p></div>
+      </div>
+      <div data-greviews-cards-wrap hidden>
+        <p class="greviews__label">Google Reviews &mdash; most recent</p>
+        <div class="greviews__grid" data-greviews="cards"></div>
+      </div>
+      <div class="greviews__cta">
+        <a class="btn btn--navy" data-greviews="link" data-cta-location="commercial_reviews" href="https://www.google.com/maps/search/?api=1&amp;query=Pellikal+Window+Solutions&amp;query_place_id=ChIJtUq8B35lwokR1llyrUB1VWc" hidden>Read All Reviews on Google</a>
+        <p class="greviews__note">Shown as written by their authors on Google. The rating and count are Google&rsquo;s own, for the whole Pellikal profile &mdash; residential and commercial work alike.</p>
+      </div>
+    </div>
+  </section>
+
+<section class="cta-band"><div class="container cta-band__inner"><div><p class="eyebrow eyebrow--light">Site quotes for commercial projects</p><h2>Let's scope your building</h2><p>Share your property type and square footage of glass and we'll put together a clear proposal.</p></div><div class="cta-band__actions"><a class="btn btn--cyan btn--lg" href="tel:+15163369586">Call or Text 516-336-9586</a><a class="btn btn--outline-light btn--lg" href="#quote" data-quote-cta="cta_band">Get a Free Quote</a></div></div></section>
 </div>
 </main>
 <!-- @partial:footer -->
@@ -254,5 +287,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <script src="../js/consent.js"></script>
 <script src="../js/tracking.js"></script>
 <script src="../js/main.js"></script>
+<script src="../js/reviews.js" defer></script>
 </body>
 </html>

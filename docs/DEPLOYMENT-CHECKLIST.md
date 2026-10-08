@@ -144,6 +144,22 @@ assets stay hidden even with JavaScript disabled. Full detail: `docs/WINDOW-INSE
 
 ---
 
+## 4c. Google reviews (7 Oct 2026) — `docs/GOOGLE-REVIEWS.md`
+
+- [ ] Migration `0004_google_reviews.sql` run on the live project (safe to re-run)
+- [ ] No Google credential anywhere in the repo: `grep -rn "GOCSPX-\|1//0\|refresh_token" --include=*.html --include=*.js --include=*.json .` finds nothing; `supabase/.env` is git-ignored and not committed
+- [ ] `python3 tools/qa/verify_reviews.py` passes (stubbed Supabase; also proves the pages never call Google)
+- [ ] `deno test --allow-read tools/qa/sync_google_reviews_test.ts` passes (idempotent upsert, fail-safe)
+- [ ] `python3 tools/qa/verify_sql.py` passes against a local PostgreSQL (anon column grants / no writes; cron file refuses its placeholder)
+- [ ] Bootstrap fallback (`site.config.json → reviews.fallback`: 5.0 / 12 + the three verified cards, copied 7 Oct 2026) still matches the public profile; **after the first successful sync set rating/count to null and reviews to [] and rebuild**
+- [ ] `business.googleReviewsUrl` is the PUBLIC Google Maps listing (set 7 Oct 2026, v30; `GOOGLE-REVIEWS.md` §5c) — no `authuser=`, no `/customers/reviews`, starts with `https://`; the hero count and every "Read all reviews" button open it in a new tab (`verify_reviews.py` §1 + §3 prove it)
+- [ ] Review labels say "most recent" and the cards ARE the newest written reviews (no star filter, no wording classifier on Commercial)
+- [ ] Brand name discrepancy (Window Solutions vs Window Enhancements) decided by the owner — `GOOGLE-REVIEWS.md` §10; no rename happens without approval
+- [ ] Owner setup done: function deployed with `--no-verify-jwt`, secrets set, first manual sync returned `"ok": true`, `google_review_summary.last_sync_status = ok`
+- [ ] Schedule installed (`supabase/sql/schedule_google_reviews_sync.sql`), `cron.job` shows `sync-google-reviews`, a run has completed with HTTP 200
+- [ ] Live site: Residential hero shows the Google line; `/`, `/residential/`, `/commercial/` show real reviews. Before the first successful sync they show the verified temporary snapshot (5.0 / 12) and the three verified cards ("Featured Google Reviews"); after it, live data replaces the fallback completely. If Supabase answers with an error, nothing shows (the fallback never masks a configuration problem)
+- [ ] `google_reviews_click` is **not** a key event / conversion anywhere (diagnostic only)
+
 ## 5. Forms
 
 - [ ] Formspree ID `maewnodj` unchanged in `js/config.js`

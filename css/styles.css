@@ -1259,3 +1259,67 @@ html.consent-dialog-open{overflow:hidden}
 @media (max-width:430px){
   .mobile-bar a{padding:.85rem .4rem;font-size:.92rem;gap:.35rem}
 }
+
+/* ==========================================================================
+   17. GOOGLE REVIEWS (synced from Google Business Profile via Supabase)
+   Every element here ships hidden and is revealed by js/reviews.js: before
+   the first successful sync with the verified temporary snapshot and cards,
+   after it with live synced data (which replaces the fallback completely).
+   See docs/GOOGLE-REVIEWS.md.
+   ========================================================================== */
+:root{--star:#F2A516}
+
+/* `hidden` must win over component display rules (e.g. .btn is inline-flex):
+   the "Read all reviews" button is hidden when no verified Google URL exists. */
+.greviews [hidden],.gproof [hidden],.greviews__google[hidden]{display:none!important}
+
+/* stars */
+.gstars{display:inline-block;color:var(--star);letter-spacing:.06em;font-size:1rem;line-height:1;white-space:nowrap}
+.gstars--lg{font-size:1.45rem}
+
+/* hero proof line - compact, sits under the CTAs, above the trust strip */
+.gproof{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem .7rem;margin:1.1rem 0 0;font-size:.9rem;font-weight:800;color:var(--navy);line-height:1.35}
+.gproof__google{display:inline-flex;flex-wrap:wrap;align-items:center;gap:.45rem .55rem}
+.gproof__link{color:var(--cyan-ink);text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px;font-weight:800}
+.gproof__link:hover{color:var(--navy)}
+.gproof__link--static,.gproof__link--static:hover{color:var(--navy);text-decoration:none;cursor:default}
+.gproof__sep{color:var(--muted);font-weight:400}
+.gproof__item{font-weight:700;color:var(--text)}
+
+/* review section */
+.greviews__head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:1rem 2rem;margin-bottom:clamp(1.4rem,3vw,2rem)}
+.greviews__head .section-head{margin-bottom:0}
+.greviews__summary{display:grid;gap:.15rem;justify-items:start}
+.greviews__rating{margin:0;font-size:1.05rem;font-weight:800;color:var(--navy)}
+.greviews__count{margin:0;font-size:.9rem;color:var(--muted);font-weight:700}
+.greviews__label{display:inline-flex;align-items:center;gap:.5rem;margin:0 0 1rem;font-size:.78rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan-ink)}
+.greviews__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1rem,2.4vw,1.5rem)}
+.greviews__cta{margin:clamp(1.4rem,3vw,2rem) 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:.8rem 1.2rem}
+.greviews__note{margin:0;font-size:.82rem;color:var(--muted)}
+
+/* one review */
+.greview{display:flex;flex-direction:column;gap:.8rem;margin:0;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow-sm);min-width:0}
+.greview__top{display:flex;justify-content:space-between;align-items:center;gap:.6rem}
+.greview__src{font-size:.74rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.greview__text{margin:0;color:var(--text);font-style:italic;overflow-wrap:anywhere}
+.greview__text p{margin:0}
+.greview__text.is-clamped p{display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden}
+.greview__more{align-self:flex-start;background:none;border:0;padding:.35rem 0;min-height:44px;font:inherit;font-size:.86rem;font-weight:800;color:var(--cyan-ink);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.greview__by{margin-top:auto;display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;font-size:.9rem;color:var(--navy)}
+.greview__name{font-weight:800}
+.greview__dot{color:var(--muted)}
+.greview__when{color:var(--muted)}
+
+/* commercial: compact trust strip variant */
+.greviews--compact .greviews__grid{grid-template-columns:repeat(3,1fr)}
+
+@media (max-width:900px){.greviews__grid,.greviews--compact .greviews__grid{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){
+  .greviews__grid,.greviews--compact .greviews__grid{grid-template-columns:1fr}
+  .greviews__head{align-items:flex-start}
+  .greview{padding:1.25rem}
+  /* phones: one fact per line, no dangling separators; the Google line stays together */
+  .gproof{font-size:.9rem;flex-direction:column;align-items:flex-start;gap:.45rem}
+  .gproof__sep{display:none}
+  .gproof__google{gap:.35rem .5rem}
+}

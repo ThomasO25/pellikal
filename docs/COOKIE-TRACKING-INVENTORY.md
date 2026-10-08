@@ -24,7 +24,7 @@ opt-in inside the listed regions, an opt-out everywhere else.
 | **Google Ads** (`AW-859941989`) | Conversion measurement on the `generate_lead` event; remarketing | Advertising | Ads tag: loaded by the page's own Google tag (7 Oct 2026); the conversion itself: via GTM only | `ad_storage`, `ad_user_data`, `ad_personalization` all `granted` | advertising identifiers when granted; redacted cookieless pings when denied (`ads_data_redaction`) | inside GTM |
 | **Microsoft Clarity** | Session replay / heatmaps | Analytics | Via GTM — **must be paused or gated on `analytics_storage`** | Would be `analytics_storage` | session recordings | inside GTM — **not visible from this repo** |
 | **Formspree** | Delivers the consultation form by email | Necessary to the action the visitor chose | Only on form submit | No — it is the service the visitor is using | the fields they typed | `partials/quote-form.html`, `js/main.js` |
-| **Supabase** (REST) | Public CMS content (projects, testimonials, editable text) | Necessary | Every public page | No | none about the visitor beyond the request itself | `js/main.js` |
+| **Supabase** (REST) | Public CMS content (projects, editable text) and, on `/`, `/residential/`, `/commercial/`, the cached Google reviews (7 Oct 2026) | Necessary | Every public page | No | none about the visitor beyond the request itself; reviews are public Google content | `js/main.js`, `js/reviews.js` |
 | **Google Fonts** | The Mulish typeface | — | Every page, before any choice | Cannot be gated from the dialog | IP/technical data to Google to serve the file; no cookies | page `<head>` — disclosed in the privacy policy; self-hosting recommended |
 | **GitHub Pages** | Hosting | — | Every request | No | standard server logs | hosting |
 

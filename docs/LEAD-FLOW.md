@@ -183,6 +183,7 @@ trigger on `contact_form_submit` keeps working exactly as before. Use
 | `quote_form_view` | a quote form scrolls ≥35% into view, once per page | `form_location` |
 | `quote_form_start` | first keystroke in a quote form, once per page | `form_location` |
 | `quote_form_error` | submission blocked or failed | `error_type`: validation · contact_required · phone_invalid · provider · network |
+| `google_reviews_click` (7 Oct 2026) | a "Read all reviews on Google" link was used | `cta_location`: residential_reviews · home_reviews · commercial_reviews · residential_hero · commercial_hero; `page_type` — **diagnostic only, never a key event** |
 
 `click_to_call` / `click_to_text` already cover phone and text taps. Every
 parameter passes an allow-list in `js/tracking.js` (`PELLIKAL_TRACK_EVENT`),

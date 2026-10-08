@@ -205,6 +205,59 @@ def sync_contact_details(html, cfg):
     # any visible 000-000-0000 style number, and the email in text
     html = re.sub(r"\b\d{3}-\d{3}-\d{4}\b", b["phoneDisplay"], html)
     html = re.sub(r"\b[A-Za-z0-9._%+-]+@pellikal\.com\b", b["email"], html)
+    # Google reviews link (7 Oct 2026, v30): business.googleReviewsUrl - the
+    # PUBLIC Maps listing - is copied into every data-greviews-url attribute
+    # AND into the href of every "Read all reviews on Google" button, so no
+    # "#" placeholder ships. js/reviews.js uses it first (then the synced
+    # mapsUri, then a placeId URL) and treats a REPLACE_ placeholder as
+    # "unknown - show no link"; the button keeps href="#" only in that case,
+    # and it ships hidden either way until the script reveals it.
+    raw_gurl = str(b.get("googleReviewsUrl", ""))
+    if raw_gurl.startswith("REPLACE") or not raw_gurl:
+        pass
+    elif not raw_gurl.startswith("https://") or re.search(r"authuser=|/customers/reviews|[\s<>\"']", raw_gurl):
+        raise SystemExit("site.config.json: business.googleReviewsUrl must be the PUBLIC https:// Google listing - "
+                         "no authuser=, no /customers/reviews, no account-specific (signed-in) management URL")
+    gurl = raw_gurl.replace("&", "&amp;").replace('"', "&quot;")
+    html = re.sub(r'data-greviews-url="[^"]*"', lambda m: 'data-greviews-url="' + gurl + '"', html)
+    link_href = gurl if raw_gurl.startswith("https://") else "#"
+    html = re.sub(r'(data-greviews="link"[^>]*?\shref=")[^"]*(")', lambda m: m.group(1) + link_href + m.group(2), html)
+    # One-time bootstrap fallback for the hero trust line (site.config.json ->
+    # reviews.fallback). Empty attributes = no fallback. Validated so a typo
+    # can never put an impossible rating on the page.
+    fb = ((cfg.get("reviews") or {}).get("fallback") or {})
+    rating, count = fb.get("rating"), fb.get("count")
+    if rating is not None or count is not None:
+        try:
+            rating = float(rating); count = int(count)
+        except (TypeError, ValueError):
+            raise SystemExit("site.config.json: reviews.fallback.rating must be a number 1-5 and .count an integer >= 1 (or both null)")
+        if not (1.0 <= rating <= 5.0) or count < 1:
+            raise SystemExit("site.config.json: reviews.fallback.rating must be 1-5 and .count >= 1 (or both null)")
+        rating_s, count_s = "{:.1f}".format(rating), str(count)
+    else:
+        rating_s, count_s = "", ""
+    asof = re.sub(r"[^0-9-]", "", str(fb.get("asOf") or "")) if rating_s else ""
+    html = re.sub(r'data-greviews-fallback-rating="[^"]*"', lambda m: 'data-greviews-fallback-rating="' + rating_s + '"', html)
+    html = re.sub(r'data-greviews-fallback-count="[^"]*"', lambda m: 'data-greviews-fallback-count="' + count_s + '"', html)
+    html = re.sub(r'data-greviews-fallback-asof="[^"]*"', lambda m: 'data-greviews-fallback-asof="' + asof + '"', html)
+    # The verified fallback REVIEW CARDS (reviews.fallback.reviews) go into the
+    # JSON block inside each review section, exactly as written in the config.
+    # Validated so nothing malformed can reach a page; "<" is escaped so the
+    # JSON can never close the <script> or open a comment.
+    rows = []
+    for i, r in enumerate(fb.get("reviews") or []):
+        try:
+            name = str(r["reviewer_name"]).strip(); stars = int(r["star_rating"]); date = str(r["review_date"]).strip(); text = str(r["review_text"])
+        except (KeyError, TypeError, ValueError):
+            raise SystemExit("site.config.json: reviews.fallback.reviews[{}] needs reviewer_name, star_rating, review_date, review_text".format(i))
+        if not (1 <= len(name) <= 200) or not (1 <= stars <= 5) or not re.match(r"^\d{4}-\d{2}-\d{2}$", date) or not (1 <= len(text) <= 8000):
+            raise SystemExit("site.config.json: reviews.fallback.reviews[{}] has an invalid field (name 1-200 chars, stars 1-5, date YYYY-MM-DD, text 1-8000 chars)".format(i))
+        rows.append({"reviewer_name": name, "star_rating": stars, "review_date": date, "review_text": text})
+    if rows and not rating_s:
+        raise SystemExit("site.config.json: reviews.fallback.reviews is set but rating/count are null - the cards need the summary line too")
+    payload = json.dumps(rows, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
+    html = re.sub(r'(<script type="application/json" data-greviews-fallback-reviews>)(.*?)(</script>)', lambda m: m.group(1) + payload + m.group(3), html, flags=re.S)
     return html
 
 
