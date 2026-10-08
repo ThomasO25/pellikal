@@ -212,7 +212,7 @@ measured are the service *category* as a slug and `form_location`.
 | Robots | `noindex, follow` |
 | Sitemap | excluded (`inSitemap: false`) |
 | `robots.txt` | **deliberately not disallowed** |
-| GTM | `GTM-MK2PHWB`, once, the standard public-page install (GA4 page view + Conversion Linker) |
+| Google code | the standard tracked-page head: consent block, the page's own GA4 tag (one `page_view`, 7 Oct 2026), `GTM-MK2PHWB` once (Conversion Linker) |
 | Extra tags | none — no second GA4 config, no Ads conversion in the page. **This page view is not a conversion trigger.** |
 | Consent | same state as the rest of the site |
 | Legacy `.html` forwarder | none (`redirect: false`) |

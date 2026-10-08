@@ -6,7 +6,10 @@ account or the live Google Ads conversion works — see the report.
 """
 from playwright.sync_api import sync_playwright
 
+import json, os
 BASE = "http://127.0.0.1:8901"
+# The GA4 base tag is the page's own gtag.js while site.config.json -> analytics.ga4DirectTag is true (7 Oct 2026).
+GA4_DIRECT = bool(json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "site.config.json")))["analytics"].get("ga4DirectTag"))
 EVENTS_JS = "() => (window.dataLayer||[]).filter(x => x && x.event).map(x => x.event)"
 PARAMS_JS = """() => {
   const g = (window.dataLayer||[]).filter(x => x && x.event === 'generate_lead');
@@ -248,12 +251,18 @@ def run():
               "https://www.pellikal.com/thankyou/")
         check("GTM bootstrap present exactly once",
               pg.evaluate("""() => (window.dataLayer||[]).filter(x => x && x['gtm.start']).length"""), 1)
-        # gtag( DOES appear now -- it is the Consent Mode v2 API, which is not
-        # a tag. What must not appear is a GA4 config, an Ads conversion, or a
-        # second gtag.js loader, any of which would double-count the lead.
-        check("no hard-coded GA4 config, Ads conversion or second gtag.js loader",
-              pg.evaluate("""() => (document.documentElement.innerHTML
-                    .match(/AW-\\d|G-J8SQ4|gtag\\(\\s*['\"](config|event)['\"]|gtag\\/js/g)) || []"""), [])
+        # gtag( appears: the Consent Mode v2 API, plus - since 7 Oct 2026 - the
+        # page's own GA4 base tag (ONE loader, ONE config = one page_view).
+        # What must not appear is an Ads conversion, a gtag('event'), or a
+        # SECOND GA4 loader/config, any of which would double-count.
+        check("GA4 base tag: exactly one gtag.js loader and one gtag('config') for G-J8SQ4CC7BT; no Ads conversion, no gtag('event'), no second loader",
+              pg.evaluate("""() => { const h = document.documentElement.innerHTML; const n = re => (h.match(re) || []).length;
+                    return [n(/gtag\\/js\\?id=G-J8SQ4CC7BT/g), n(/gtag\\(\\s*['\"]config['\"]\\s*,\\s*['\"]G-J8SQ4CC7BT['\"]/g), n(/gtag\\/js/g), n(/gtag\\(\\s*['\"]config['\"]/g),
+                            n(/AW-\\d/g), n(/gtag\\(\\s*['\"]event['\"]/g)]; }"""), [1, 1, 1, 1, 0, 0] if GA4_DIRECT else [0, 0, 0, 0, 0, 0])
+        if GA4_DIRECT:
+            check("GA4 config is queued AFTER the consent defaults and BEFORE the GTM bootstrap",
+                  pg.evaluate("""() => { const o = []; (window.dataLayer||[]).forEach(i => { if (!i) return; if (i[0]==='consent') o.push('consent'); else if (i[0]==='config') o.push('config'); else if (i['gtm.start']) o.push('GTM'); });
+                        return [o.lastIndexOf('consent') < o.indexOf('config'), o.indexOf('config') < o.indexOf('GTM'), o.filter(x => x === 'config').length]; }"""), [True, True, 1])
         check("consent state honoured (granted here)",
               pg.evaluate("""() => { const dl = window.dataLayer||[]; const st = {};
                 for (const i of dl) if (i && i[0]==='consent') Object.assign(st, i[2]||{});

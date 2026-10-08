@@ -169,8 +169,12 @@ Open that page's `index.html` and change the text inside `<main>`. No build.
   needs JavaScript, and the privacy-safe design does not load the container
   for visitors who could never be asked. See `docs/CONSENT-MODE.md`.
 - `js/tracking.js` only supplies the website's dataLayer events.
-- GA4 and Google Ads tags are configured inside the live GTM container — never
-  hard-coded here. See `docs/MARKETING-TRACKING.md` and `docs/LEAD-FLOW.md`.
+- The GA4 **base** tag (`G-J8SQ4CC7BT`) is the page's own Google tag since
+  7 Oct 2026, generated into `<head>` by `tools/build.py` right after the
+  consent block (`analytics.ga4DirectTag`); the GTM Google Tag for that ID
+  must stay paused. GA4 custom events and Google Ads stay inside the live GTM
+  container — never hard-coded here. See `docs/GA4-DIRECT-TAG.md`,
+  `docs/MARKETING-TRACKING.md` and `docs/LEAD-FLOW.md`.
 
 ---
 
@@ -220,6 +224,7 @@ written into the HTML; Supabase only replaces it when it responds.
 | `docs/WINDOW-INSERTS-ASSETS.md` | Insert photography: what's used, what's still needed |
 | `docs/FINAL-CLAIMS-REVIEW.md` | Every marketing claim, categorised |
 | `docs/CONSENT-MODE.md` | Consent Mode v2: defaults, verifying, resetting |
+| `docs/GA4-DIRECT-TAG.md` | GA4 base tag as the page's own Google tag: GTM tag to pause, live checks, rollback |
 | `docs/LEAD-FLOW.md` | Ad → landing form → confirmed Formspree success → `generate_lead` / Google Ads conversion → `/thankyou/` |
 | `docs/FINAL-SECURITY-AUDIT.md` | What was verified, where, and what still needs a live test |
 | `docs/OWNER-LEGAL-REVIEW.md` | Facts and decisions only the owner / a lawyer can supply |

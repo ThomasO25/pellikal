@@ -9,12 +9,14 @@
     "domain": "https://www.pellikal.com/",
     "serviceArea": "Long Island · Nassau · Suffolk · Queens · Brooklyn · Manhattan · NYC"
   },
-  "_analyticsComment": "PRODUCTION Google IDs. The GTM container snippet is stamped into every public page by tools/build.py. GA4 is configured INSIDE GTM - do not add a gtag.js snippet to the pages or page views will be counted twice.",
+  "_analyticsComment": "PRODUCTION Google IDs. tools/build.py stamps THREE generated pieces, in this order, into every tracked public page's <head>: (1) the Consent Mode v2 block (regional defaults + saved choice), (2) the GA4 base Google tag (gtag.js) for ga4MeasurementId - DIRECT since 7 Oct 2026, switched by ga4DirectTag, (3) the GTM container snippet. Google Ads conversions, the Conversion Linker, Microsoft Clarity and the GA4 custom-EVENT tag stay inside GTM. While ga4DirectTag is true the GTM container must NOT also carry a Google Tag for the GA4 ID or every page view counts twice - see docs/GA4-DIRECT-TAG.md.",
   "analytics": {
     "gtmContainerId": "GTM-MK2PHWB",
     "ga4MeasurementId": "G-J8SQ4CC7BT",
     "googleAdsId": "AW-859941989",
-    "_idNote": "GTM is the ONLY tag installed on the pages. GA4 and Google Ads are configured INSIDE the GTM container - never add gtag.js to a page or measurement double-counts. The GA4 and Ads IDs are recorded here purely as the authoritative reference for the marketing specialist.",
+    "ga4DirectTag": true,
+    "_ga4DirectNote": "true = build.py emits Google's gtag.js loader + gtag('config', ga4MeasurementId) on every tracked page, AFTER the consent block (so the regional defaults and any saved Accept/Reject are already queued) and BEFORE the GTM snippet. The page's own gtag() is reused; no second dataLayer, no second consent implementation. MANUAL STEP THAT GOES WITH true: pause the GTM tag 'GA4' (Google Tag, G-J8SQ4CC7BT, Initialization - All Pages). ROLLBACK: set false, run python3 tools/build.py (the snippet disappears from every page), publish, then un-pause that GTM tag. Never run both at once.",
+    "_idNote": "GTM is the only CONTAINER on the pages. The GA4 base tag is the page's own Google tag (ga4DirectTag); Google Ads is configured INSIDE the GTM container only - never add an Ads/conversion snippet to a page. Do not add a second GA4 loader anywhere: one gtag.js per page, generated here, or page views double-count.",
     "_retiredGa4": "G-TPD5SKWWVC - WRONG/OLD property. Must not be used anywhere.",
     "excludeFromTracking": [
       "admin/index.html",
@@ -313,7 +315,7 @@
       "inSitemap": false,
       "priority": "0.0",
       "redirect": false,
-      "_note": "Lead-confirmation page. Keeps the GTM container for GA4's page view and the Conversion Linker; the Ads lead conversion fires on generate_lead before the redirect, NOT on this page view. Kept out of the sitemap and marked noindex because it is a confirmation screen, not SEO content. Deliberately NOT disallowed in robots.txt - blocking the crawl would stop Google ever seeing the noindex. redirect:false because the exact address is /thankyou/ with no .html forwarder."
+      "_note": "Lead-confirmation page. Keeps the page's own GA4 Google tag (a page view, nothing more) and the GTM container (Conversion Linker, Ads); the Ads lead conversion fires on generate_lead before the redirect, NOT on this page view. Kept out of the sitemap and marked noindex because it is a confirmation screen, not SEO content. Deliberately NOT disallowed in robots.txt - blocking the crawl would stop Google ever seeing the noindex. redirect:false because the exact address is /thankyou/ with no .html forwarder."
     },
     {
       "slug": "admin",

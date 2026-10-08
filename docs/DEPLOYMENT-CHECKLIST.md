@@ -65,15 +65,29 @@ assets stay hidden even with JavaScript disabled. Full detail: `docs/WINDOW-INSE
 
 - [ ] `GTM-MK2PHWB` present once in `<head>` per public page — and **no** `<noscript>` iframe (removed on purpose; see `CONSENT-MODE.md`)
 - [ ] `/admin/` and `/local-law-97/` carry **no** container
-- [ ] No hard-coded `G-` or `AW-` in page code, and no `gtag('config'…)`,
-      `gtag('event'…)` or second `gtag.js` loader
+- [ ] **GA4 base tag is the page's own Google tag (7 Oct 2026):** exactly ONE
+      `gtag/js?id=G-J8SQ4CC7BT` loader and ONE `gtag('config','G-J8SQ4CC7BT')`
+      per tracked page, placed after the consent block and before the GTM
+      snippet — and **none** on `/admin/` or `/local-law-97/`
+- [ ] No `AW-` and no `gtag('event'…)` anywhere in page code (Ads conversions
+      and GA4 custom events stay inside GTM)
 - [ ] `generate_lead` and `window_insert_lead` intact
-- [ ] GA4 `G-J8SQ4CC7BT` and Ads `AW-859941989` configured **inside GTM only**
+- [ ] Ads `AW-859941989` configured **inside GTM only**
+- [ ] **GTM: the Google Tag `GA4` (`G-J8SQ4CC7BT`, Initialization – All Pages)
+      is PAUSED** before the site with the direct tag goes live — otherwise
+      every page view counts twice (`docs/GA4-DIRECT-TAG.md` §4)
+- [ ] `docs/GA4-DIRECT-TAG.md` §7 live checks done and signed (name + date):
+      direct `gtag/js` → 200, one `/g/collect` `page_view` → 204 per page,
+      custom events once, `generate_lead` once, no second `gtag/js` loader
+      from GTM. **If the direct loader is `ERR_BLOCKED_BY_CLIENT`, do not
+      publish; roll back per §9.**
 
-> **`gtag(` now appears on every page and that is correct.** The Consent Mode
-> v2 block defines `gtag()` and calls `gtag('consent', …)`. That is the consent
-> API, not a tag. The thing to check for is a GA4 *config* or an Ads
-> *conversion* in page code. See `docs/CONSENT-MODE.md`.
+> **`gtag(` appears on every page and that is correct.** The Consent Mode v2
+> block defines `gtag()` and calls `gtag('consent', …)` (the consent API), and
+> since 7 Oct 2026 the page's own GA4 tag calls `gtag('config', 'G-J8SQ4CC7BT')`
+> exactly once. The things to check for are a *second* GA4 config/loader, or
+> an Ads *conversion* in page code. See `docs/CONSENT-MODE.md`,
+> `docs/GA4-DIRECT-TAG.md`.
 
 ### 4b. Consent Mode v2 (`docs/CONSENT-MODE.md`)
 

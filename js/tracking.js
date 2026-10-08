@@ -14,8 +14,9 @@
      site.config.json) and the Consent Mode v2 defaults are generated
      inline into each page's <head> by tools/build.py, defaults first.
      There is intentionally no GTM <noscript> iframe.
-   - It contains no GA4 ID, Google Ads ID or conversion label. Those are
-     configured inside the live GTM container.
+   - It contains no GA4 ID, Google Ads ID or conversion label. The GA4
+     base tag is generated into <head> by tools/build.py (7 Oct 2026);
+     the Ads conversion and the GA4 custom-event tag live inside GTM.
    - It never sends personally identifiable information. No names,
      emails, phone numbers, addresses or message text are ever pushed
      to the dataLayer.

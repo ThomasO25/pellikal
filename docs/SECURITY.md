@@ -220,7 +220,7 @@ confirm it is on.
 
 A `Content-Security-Policy` in a `<meta>` tag. Reasons: `frame-ancestors`,
 `report-uri` and report-only are unsupported in meta; the generated inline
-scripts (consent defaults, GTM snippet, JSON-LD) would need hashes regenerated
+scripts (consent defaults, GA4 tag, GTM snippet, JSON-LD) would need hashes regenerated
 every build; GTM/GA4/Ads/Formspree/Supabase each require host lists that
 change under the vendor's control. A policy that silently blocks the Google
 Ads conversion costs more than it protects. Do not add one without testing
